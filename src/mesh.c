@@ -54,3 +54,8 @@ bool vertex_buffer_new_mesh(
   
   return true;
 }
+
+void mesh_draw(mesh_t *mesh)
+{
+  glDrawArrays(GL_TRIANGLES, mesh.ptr, mesh.num_vertices);
+}

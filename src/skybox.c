@@ -6,7 +6,6 @@
 #include <SDL2/SDL_image.h>
 
 static const vertex_t cube_vertices[] = {
-  
   // Right
   { .pos = { +1.0f, -1.0f, -1.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 1.0f } },
   { .pos = { +1.0f, -1.0f, +1.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 0.0f } },

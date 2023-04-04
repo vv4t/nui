@@ -32,4 +32,6 @@ bool vertex_buffer_new_mesh(
   int             num_vertices
 );
 
+void mesh_draw(mesh_t mesh);
+
 #endif

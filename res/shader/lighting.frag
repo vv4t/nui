@@ -10,7 +10,8 @@ in mat3 vs_TBN;
 
 uniform sampler2D u_color;
 uniform sampler2D u_normal;
-uniform samplerCube u_depth_cube_map;
+
+uniform samplerCube u_depth_cube_map[4];
 
 struct light_t {
   vec3  pos;
