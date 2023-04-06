@@ -12,7 +12,7 @@ typedef struct {
   mat4x4_t  model;
   vec3_t    view_pos;
   float     pad[1];
-} ubo_matrices_t;
+} ub_matrices_t;
 
 typedef struct {
   vertex_buffer_t vertex_buffer;

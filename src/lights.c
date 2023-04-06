@@ -4,14 +4,27 @@
 #include "shader.h"
 
 static bool lights_init_light_shader(lights_t *lights);
+static bool lights_init_shadow_shader(lights_t *lights);
 static bool lights_init_lights(lights_t *lights);
+static bool lights_init_shadow(lights_t *lights);
+
+typedef struct {
+  mat4x4_t  mvp;
+  mat4x4_t  model;
+  vec3_t    view_pos;
+  float     pad[1];
+} ub_matrices_t;
 
 bool lights_init(lights_t *lights)
 {
   if (!lights_init_light_shader(lights))
     return false;
   
+  if (!lights_init_shadow_shader(lights))
+    return false;
+  
   lights_init_lights(lights);
+  lights_init_shadow(lights);
   
   return true;
 }
@@ -19,6 +32,9 @@ bool lights_init(lights_t *lights)
 void lights_bind(lights_t *lights)
 {
   glUseProgram(lights->light_shader);
+  
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, lights->depth_map);
 }
 
 void lights_bind_material(material_t *material)
@@ -30,9 +46,22 @@ void lights_bind_material(material_t *material)
   glBindTexture(GL_TEXTURE_2D, material->normal);
 }
 
-void lights_set_light(lights_t *lights, int light_id, vec3_t pos, float intensity, vec4_t color)
+void lights_set_light(
+  lights_t  *lights,
+  int       light_id,
+  void      *ctx,
+  void      (*draw_scene)(void *ctx),
+  GLuint    ubo_matrices,
+  vec3_t    pos,
+  float     intensity,
+  vec4_t    color)
 {
+  mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
+  mat4x4_t view_matrix = mat4x4_init_look_at(vec3_init(0.0, 0.0, 1.0), pos);
+  mat4x4_t view_projection_matrix = mat4x4_mul(view_matrix, projection_matrix);
+  
   light_t light = {
+    .light_matrix = view_projection_matrix,
     .pos = pos,
     .intensity = intensity,
     .color = color
@@ -40,6 +69,45 @@ void lights_set_light(lights_t *lights, int light_id, vec3_t pos, float intensit
   
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);
   glBufferSubData(GL_UNIFORM_BUFFER, light_id * sizeof(light_t), sizeof(light_t), &light);
+  
+  ub_matrices_t ub_matrices = {
+    .model = mat4x4_init_identity(),
+    .mvp = view_projection_matrix,
+    .view_pos = pos
+  };
+  
+  glViewport(0, 0, 1024, 1024);
+  glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
+  glUseProgram(lights->shadow_shader);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  
+  glBindBuffer(GL_UNIFORM_BUFFER, ubo_matrices);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
+  
+  draw_scene(ctx);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+static bool lights_init_shadow(lights_t *lights)
+{
+  glGenTextures(1, &lights->depth_map);
+  glBindTexture(GL_TEXTURE_2D, lights->depth_map);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  
+  float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+  
+  glGenFramebuffers(1, &lights->depth_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, lights->depth_map, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 }
 
 static bool lights_init_lights(lights_t *lights)
@@ -70,15 +138,32 @@ static bool lights_init_light_shader(lights_t *lights)
   
   GLuint ul_color = glGetUniformLocation(lights->light_shader, "u_color");
   GLuint ul_normal = glGetUniformLocation(lights->light_shader, "u_normal");
-  GLuint ul_depth_map = glGetUniformLocation(lights->light_shader, "u_depth_cube_map");
+  GLuint ul_depth_map = glGetUniformLocation(lights->light_shader, "u_depth_map");
   
   glUseProgram(lights->light_shader);
   glUniform1i(ul_color, 0);
   glUniform1i(ul_normal, 1);
-  // glUniform1i(ul_depth_map, 2);
+  glUniform1i(ul_depth_map, 2);
   
   glUniformBlockBinding(lights->light_shader, ubl_matrices, 0);
   glUniformBlockBinding(lights->light_shader, ubl_lights, 1);
+  
+  return true;
+}
+
+static bool lights_init_shadow_shader(lights_t *lights)
+{
+  char *src_vertex = file_read_all("res/shader/shadow.vert");
+  char *src_fragment = file_read_all("res/shader/shadow.frag");
+  
+  if (!shader_load(&lights->shadow_shader, src_vertex, NULL, src_fragment))
+    return false;
+  
+  free(src_vertex);
+  free(src_fragment);
+  
+  GLuint ubl_matrices = glGetUniformBlockIndex(lights->shadow_shader, "ubo_matrices");
+  glUniformBlockBinding(lights->shadow_shader, ubl_matrices, 0);
   
   return true;
 }

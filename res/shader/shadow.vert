@@ -9,10 +9,7 @@ layout (std140) uniform ubo_matrices {
   float pad[1];
 };
 
-out vec3 vs_pos;
-
 void main()
 {
-  vs_pos = v_pos;
   gl_Position = mvp * vec4(v_pos, 1.0);
 }

@@ -6,6 +6,10 @@ void game_init(game_t *game)
 {
   game->position = vec3_init(0.0, 0.0, 0.0);
   game->rotation = quat_init(0.0, 0.0, 0.0, 1.0);
+  
+  game->camera_yaw = 0.0;
+  game->camera_pitch = 0.0;
+  game->time = 0.0;
 }
 
 void game_update(game_t *game, float delta, const usercmd_t *usercmd)

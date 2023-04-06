@@ -1,4 +1,5 @@
 #version 300 es
+precision mediump float;
 
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_tangent;
@@ -13,6 +14,18 @@ layout (std140) uniform ubo_matrices {
   float pad[1];
 };
 
+struct light_t {
+  mat4  light_matrix;
+  vec3  pos;
+  float intensity;
+  vec4  color;
+};
+
+layout (std140) uniform ubo_lights {
+  light_t lights[8];
+};
+
+out vec4 vs_light_pos;
 out vec2 vs_uv;
 out vec3 vs_pos;
 out vec3 vs_normal;
@@ -25,6 +38,7 @@ void main() {
   
   vs_TBN = mat3(tangent, bitangent, normal);
   
+  vs_light_pos = lights[0].light_matrix * vec4(v_pos, 1.0);
   vs_pos = vec3(model * vec4(v_pos, 1.0));
   vs_uv = v_uv;
   vs_normal = normal;

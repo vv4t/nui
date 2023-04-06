@@ -42,7 +42,7 @@ bool shader_load(
   glGetProgramiv(*shader, GL_LINK_STATUS, &success);
   
   if (!success) {
-    glGetShaderInfoLog(*shader, 1024, NULL, info);
+    glGetProgramInfoLog(*shader, 1024, NULL, info);
     LOG_ERROR("failed to link shader\n%s", info);
     return false;
   }

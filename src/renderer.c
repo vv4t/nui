@@ -14,6 +14,11 @@ static void renderer_init_projection_matrix(renderer_t *renderer);
 static void renderer_setup_view_projection_matrix(renderer_t *renderer, const game_t *game);
 static void renderer_game_render(renderer_t *renderer, const game_t *game);
 
+static void game_draw_scene(void *ctx)
+{
+  mesh_draw((*(renderer_t*) ctx).scene_mesh);
+}
+
 bool renderer_init(renderer_t *renderer)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -39,6 +44,9 @@ bool renderer_init(renderer_t *renderer)
   lights_set_light(
     &renderer->lights,
     0,
+    renderer,
+    game_draw_scene,
+    renderer->ubo_matrices,
     vec3_init(0.0, 0.0, 0.0),
     40.0,
     vec4_init(1.0, 0.0, 1.0, 1.0)
@@ -49,7 +57,8 @@ bool renderer_init(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0, 0, 1280, 720);
+  glClear(GL_DEPTH_BUFFER_BIT);
   
   renderer_setup_view_projection_matrix(renderer, game);
   skybox_render(&renderer->skybox, renderer->projection_matrix, game->rotation);
@@ -61,7 +70,7 @@ static void renderer_game_render(renderer_t *renderer, const game_t *game)
   mat4x4_t model_matrix = mat4x4_init_identity();
   mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, renderer->view_projection_matrix);
   
-  ubo_matrices_t ubo_matrices = {
+  ub_matrices_t ub_matrices = {
     .model = model_matrix,
     .mvp = mvp_matrix,
     .view_pos = game->position
@@ -70,7 +79,7 @@ static void renderer_game_render(renderer_t *renderer, const game_t *game)
   lights_bind(&renderer->lights);
   
   glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ubo_matrices_t), &ubo_matrices);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
   lights_bind_material(&renderer->mtl_ground);
   mesh_draw(renderer->scene_mesh);
 }
@@ -138,6 +147,6 @@ static void renderer_init_matrices(renderer_t *renderer)
 {
   glGenBuffers(1, &renderer->ubo_matrices);
   glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ubo_matrices_t), NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_matrices_t), NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, renderer->ubo_matrices); 
 }
