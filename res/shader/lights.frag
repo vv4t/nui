@@ -11,7 +11,7 @@ in mat3 vs_TBN;
 uniform sampler2D u_color;
 uniform sampler2D u_normal;
 
-uniform samplerCube u_depth_cube_map[4];
+// uniform samplerCube u_depth_cube_map[4];
 
 struct light_t {
   vec3  pos;
@@ -37,14 +37,14 @@ void main() {
   normal = normal * 2.0 - 1.0;
   normal = normalize(vs_TBN * normal);
   
-  vec3 l = lights[0].pos - vs_pos;
+  // vec3 l = lights[0].pos - vs_pos;
   
-  float closest_depth = texture(u_depth_cube_map, l).r;
-  float current_depth = length(l);
+  // float closest_depth = texture(u_depth_cube_map, l).r;
+  // float current_depth = length(l);
   
-  float cos_theta = dot(vs_normal, normalize(-l));
-  float bias = clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
-  float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+  // float cos_theta = dot(vs_normal, normalize(-l));
+  // float bias = clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
+  // float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
   
   for (int i = 0; i < 8; i++) {
     if (lights[i].intensity <= 0.0)
@@ -64,9 +64,8 @@ void main() {
     light += lights[i].color.xyz * intensity;
   }
   
-  light *= vec3(1.0 - shadow);
+  // light *= vec3(1.0 - shadow);
   light += vec3(0.3, 0.3, 0.3);
   
   frag_color = texture(u_color, vs_uv) * vec4(light, 1.0);
-  // frag_color = vec4(vec3(1.0 / closest_depth), 1.0);
 }

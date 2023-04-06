@@ -117,6 +117,14 @@ inline static vec3_t vec3_mul(vec3_t a, vec3_t b)
     a.z * b.z);
 }
 
+inline static vec3_t vec3_cross(vec3_t a, vec3_t b)
+{
+  return vec3_init(
+    a.y * b.z - a.z * b.y,
+    a.z * b.x - a.x * b.z,
+    a.x * b.y - a.y * b.x);
+}
+
 inline static float vec3_dot(vec3_t a, vec3_t b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -203,7 +211,8 @@ inline static vec3_t vec3_rotate(vec3_t v, quat_t q)
   return vec3_init(full_rot.x, full_rot.y, full_rot.z);
 }
 
-inline static mat4x4_t mat4x4_init_identity() {
+inline static mat4x4_t mat4x4_init_identity()
+{
   mat4x4_t m;
   m.m[0]  = 1;  m.m[4]  = 0;  m.m[8]  = 0;  m.m[12] = 0;
   m.m[1]  = 0;  m.m[5]  = 1;  m.m[9]  = 0;  m.m[13] = 0;
@@ -212,7 +221,8 @@ inline static mat4x4_t mat4x4_init_identity() {
   return m;
 }
 
-inline static mat4x4_t mat4x4_init_translation(vec3_t v) {
+inline static mat4x4_t mat4x4_init_translation(vec3_t v)
+{
   mat4x4_t m;
   m.m[0]  = 1;  m.m[4]  = 0;  m.m[8]  = 0;  m.m[12] = v.x;
   m.m[1]  = 0;  m.m[5]  = 1;  m.m[9]  = 0;  m.m[13] = v.y;
@@ -221,7 +231,8 @@ inline static mat4x4_t mat4x4_init_translation(vec3_t v) {
   return m;
 }
 
-inline static mat4x4_t mat4x4_init_scale(vec3_t v) {
+inline static mat4x4_t mat4x4_init_scale(vec3_t v)
+{
   mat4x4_t m;
   m.m[0]  = v.x;  m.m[4]  = 0;    m.m[8]  = 0;    m.m[12] = 0;
   m.m[1]  = 0;    m.m[5]  = v.y;  m.m[9]  = 0;    m.m[13] = 0;
@@ -257,6 +268,24 @@ inline static mat4x4_t mat4x4_init_rotation(quat_t q)
   return m;
 }
 
+inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from)
+{
+  vec3_t z_axis = vec3_normalize(vec3_sub(from, at));
+  vec3_t x_axis = vec3_cross(z_axis, vec3_init(0.0, 1.0, 0.0));
+  vec3_t y_axis = vec3_cross(z_axis, x_axis);
+  
+  float x_eye = vec3_dot(x_axis, from);
+  float y_eye = vec3_dot(y_axis, from);
+  float z_eye = vec3_dot(z_axis, from);
+  
+  mat4x4_t m;
+  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = x_eye;
+  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = y_eye;
+  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = z_eye;
+  m.m[3]  = 0;        m.m[7]  = 0;        m.m[11] = 0;        m.m[15] = 1;
+  return m;
+}
+
 inline static mat4x4_t mat4x4_init_perspective(float aspect_ratio, float fov, float near, float far)
 {
   float tan_fov = 1 / tan(fov / 2);
@@ -287,10 +316,10 @@ inline static mat4x4_t mat4x4_init_orthogonal(float l, float r, float t, float b
 
 inline static mat4x4_t mat4x4_print(mat4x4_t m)
 {
-  printf("%f %f %f %f\n", m.m[0], m.m[3], m.m[7],   m.m[11]);
-  printf("%f %f %f %f\n", m.m[1], m.m[4], m.m[8],   m.m[12]);
-  printf("%f %f %f %f\n", m.m[2], m.m[5], m.m[9],   m.m[13]);
-  printf("%f %f %f %f\n", m.m[3], m.m[6], m.m[10],  m.m[14]);
+  printf("mat4x4_t(%f %f %f %f\n",  m.m[0], m.m[4], m.m[8],   m.m[12]);
+  printf("         %f %f %f %f\n",  m.m[1], m.m[5], m.m[9],   m.m[13]);
+  printf("         %f %f %f %f\n",  m.m[2], m.m[6], m.m[10],  m.m[14]);
+  printf("         %f %f %f %f)\n", m.m[3], m.m[7], m.m[11],  m.m[15]);
 }
 
 

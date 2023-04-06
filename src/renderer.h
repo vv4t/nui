@@ -5,7 +5,7 @@
 #include "game.h"
 #include "material.h"
 #include "skybox.h"
-#include "main_shader.h"
+#include "lights.h"
 
 typedef struct {
   mat4x4_t  mvp;
@@ -16,17 +16,15 @@ typedef struct {
 
 typedef struct {
   vertex_buffer_t vertex_buffer;
+  GLuint          ubo_matrices;
   
   mat4x4_t        projection_matrix;
   mat4x4_t        view_projection_matrix;
   
   skybox_t        skybox;
-  lighting_t      lighting;
+  lights_t        lights;
   
   material_t      mtl_ground;
-  
-  GLuint          ubo_matrices;
-  
   mesh_t          scene_mesh;
 } renderer_t;
 

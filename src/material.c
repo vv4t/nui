@@ -12,11 +12,3 @@ bool material_init(material_t *material, const char *src_color, const char *src_
   
   return true;
 }
-
-void material_bind(material_t *material)
-{
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, material->color);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, material->normal);
-}

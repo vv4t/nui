@@ -24,7 +24,7 @@ bool renderer_init(renderer_t *renderer)
   if (!skybox_init(&renderer->skybox, &renderer->vertex_buffer))
     return false;
   
-  if (!lighting_init(&renderer->lighting))
+  if (!lights_init(&renderer->lights))
     return false;
   
   if (!renderer_init_mesh(renderer))
@@ -36,16 +36,13 @@ bool renderer_init(renderer_t *renderer)
   renderer_init_matrices(renderer);
   renderer_init_projection_matrix(renderer);
   
-  lighting_set_light(
-    &renderer->lighting,
+  lights_set_light(
+    &renderer->lights,
     0,
-    vec3_init(0.0, 0.0, 4.0),
-    10.0,
-    vec4_init(1.0, 1.0, 1.0, 1.0)
+    vec3_init(0.0, 0.0, 0.0),
+    40.0,
+    vec4_init(1.0, 0.0, 1.0, 1.0)
   );
-  
-  while (lighting_shadow_pass(&renderer->lighting, 0))
-    mesh_draw(renderer->scene_mesh);
   
   return true;
 }
@@ -56,15 +53,11 @@ void renderer_render(renderer_t *renderer, const game_t *game)
   
   renderer_setup_view_projection_matrix(renderer, game);
   skybox_render(&renderer->skybox, renderer->projection_matrix, game->rotation);
-  renderer_game_render(renderer);
+  renderer_game_render(renderer, game);
 }
 
-static void renderer_game_render(renderer_t *renderer) {
-  lighitng_bind(&renderer->lighting);
-  material_bind(&renderer->mtl_ground);
-  
-  glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
-  
+static void renderer_game_render(renderer_t *renderer, const game_t *game)
+{
   mat4x4_t model_matrix = mat4x4_init_identity();
   mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, renderer->view_projection_matrix);
   
@@ -74,8 +67,11 @@ static void renderer_game_render(renderer_t *renderer) {
     .view_pos = game->position
   };
   
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ubo_matrices_t), &ubo_matrices);
+  lights_bind(&renderer->lights);
   
+  glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ubo_matrices_t), &ubo_matrices);
+  lights_bind_material(&renderer->mtl_ground);
   mesh_draw(renderer->scene_mesh);
 }
 
