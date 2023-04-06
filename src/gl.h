@@ -9,5 +9,7 @@
 #include <SDL2/SDL_opengl.h>
 
 bool gl_init();
+bool texture_load(GLuint *texture, const char *path);
+bool shader_load(GLuint *shader, const char *src_vertex, const char *src_fragment);
 
 #endif

@@ -1,7 +1,6 @@
 #include "renderer.h"
 
 #include "gl.h"
-#include "shader.h"
 #include "file.h"
 #include "mesh_file.h"
 
@@ -99,7 +98,7 @@ static void renderer_setup_view_projection_matrix(renderer_t *renderer, const ga
 
 static bool renderer_init_material(renderer_t *renderer)
 {
-  if (!material_init(
+  if (!material_load(
     &renderer->mtl_ground,
     "res/texture/ground/ground_color.jpg",
     "res/texture/ground/ground_normal.jpg")
@@ -149,4 +148,15 @@ static void renderer_init_matrices(renderer_t *renderer)
   glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_matrices_t), NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, renderer->ubo_matrices); 
+}
+
+bool material_load(material_t *material, const char *src_color, const char *src_normal)
+{
+  if (!texture_load(&material->color, src_color))
+    return false;
+  
+  if (!texture_load(&material->normal, src_normal))
+    return false;
+  
+  return true;
 }

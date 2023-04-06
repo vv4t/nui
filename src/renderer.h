@@ -1,9 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "renderer_api.h"
+
 #include "mesh.h"
 #include "game.h"
-#include "material.h"
 #include "skybox.h"
 #include "lights.h"
 

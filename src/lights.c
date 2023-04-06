@@ -1,7 +1,6 @@
 #include "lights.h"
 
 #include "file.h"
-#include "shader.h"
 
 static bool lights_init_light_shader(lights_t *lights);
 static bool lights_init_shadow_shader(lights_t *lights);
@@ -127,7 +126,7 @@ static bool lights_init_light_shader(lights_t *lights)
   char *src_vertex = file_read_all("res/shader/lights.vert");
   char *src_fragment = file_read_all("res/shader/lights.frag");
   
-  if (!shader_load(&lights->light_shader, src_vertex, NULL, src_fragment))
+  if (!shader_load(&lights->light_shader, src_vertex, src_fragment))
     return false;
   
   free(src_vertex);
@@ -156,7 +155,7 @@ static bool lights_init_shadow_shader(lights_t *lights)
   char *src_vertex = file_read_all("res/shader/shadow.vert");
   char *src_fragment = file_read_all("res/shader/shadow.frag");
   
-  if (!shader_load(&lights->shadow_shader, src_vertex, NULL, src_fragment))
+  if (!shader_load(&lights->shadow_shader, src_vertex, src_fragment))
     return false;
   
   free(src_vertex);

@@ -3,7 +3,7 @@
 
 #include "gl.h"
 #include "nui_math.h"
-#include "material.h"
+#include "renderer_api.h"
 
 #define MAX_LIGHTS 8
 

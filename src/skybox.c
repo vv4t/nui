@@ -2,7 +2,6 @@
 
 #include "log.h"
 #include "file.h"
-#include "shader.h"
 #include <SDL2/SDL_image.h>
 
 static const vertex_t cube_vertices[] = {
@@ -93,7 +92,7 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   char *src_vertex = file_read_all("res/shader/skybox.vert");
   char *src_fragment = file_read_all("res/shader/skybox.frag");
 
-  if (!shader_load(&skybox->shader, src_vertex, NULL, src_fragment)) {
+  if (!shader_load(&skybox->shader, src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");
     return false;
   }
