@@ -3,17 +3,10 @@
 
 #include "renderer_api.h"
 
-#include "mesh.h"
+#include "vertex_buffer.h"
 #include "game.h"
 #include "skybox.h"
 #include "lights.h"
-
-typedef struct {
-  mat4x4_t  mvp;
-  mat4x4_t  model;
-  vec3_t    view_pos;
-  float     pad[1];
-} ub_matrices_t;
 
 typedef struct {
   vertex_buffer_t vertex_buffer;
@@ -24,6 +17,8 @@ typedef struct {
   
   skybox_t        skybox;
   lights_t        lights;
+  
+  draw_call_t     scene_draw;
   
   material_t      mtl_ground;
   mesh_t          scene_mesh;

@@ -12,11 +12,7 @@ static void renderer_init_projection_matrix(renderer_t *renderer);
 
 static void renderer_setup_view_projection_matrix(renderer_t *renderer, const game_t *game);
 static void renderer_game_render(renderer_t *renderer, const game_t *game);
-
-static void game_draw_scene(void *ctx)
-{
-  mesh_draw((*(renderer_t*) ctx).scene_mesh);
-}
+static void renderer_game_draw(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos);
 
 bool renderer_init(renderer_t *renderer)
 {
@@ -25,13 +21,13 @@ bool renderer_init(renderer_t *renderer)
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
   
+  if (!renderer_init_mesh(renderer))
+    return false;
+  
   if (!skybox_init(&renderer->skybox, &renderer->vertex_buffer))
     return false;
   
   if (!lights_init(&renderer->lights))
-    return false;
-  
-  if (!renderer_init_mesh(renderer))
     return false;
   
   if (!renderer_init_material(renderer))
@@ -40,12 +36,16 @@ bool renderer_init(renderer_t *renderer)
   renderer_init_matrices(renderer);
   renderer_init_projection_matrix(renderer);
   
+  renderer->scene_draw = (draw_call_t) {
+    .ubo_matrices = renderer->ubo_matrices,
+    .data = renderer,
+    .draw = renderer_game_draw
+  };
+  
   lights_set_light(
     &renderer->lights,
     0,
-    renderer,
-    game_draw_scene,
-    renderer->ubo_matrices,
+    &renderer->scene_draw,
     vec3_init(0.0, 0.0, 0.0),
     40.0,
     vec4_init(1.0, 0.0, 1.0, 1.0)
@@ -64,6 +64,23 @@ void renderer_render(renderer_t *renderer, const game_t *game)
   renderer_game_render(renderer, game);
 }
 
+static void renderer_game_draw(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos)
+{
+  mat4x4_t model_matrix = mat4x4_init_identity();
+  mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, view_projection_matrix);
+  
+  ub_matrices_t ub_matrices = {
+    .model = model_matrix,
+    .mvp = mvp_matrix,
+    .view_pos = view_pos
+  };
+  
+  glBindBuffer(GL_UNIFORM_BUFFER, draw_call->ubo_matrices);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
+  
+  draw_mesh((*(renderer_t*) draw_call->data).scene_mesh);
+}
+
 static void renderer_game_render(renderer_t *renderer, const game_t *game)
 {
   mat4x4_t model_matrix = mat4x4_init_identity();
@@ -80,7 +97,7 @@ static void renderer_game_render(renderer_t *renderer, const game_t *game)
   glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
   lights_bind_material(&renderer->mtl_ground);
-  mesh_draw(renderer->scene_mesh);
+  draw_mesh(renderer->scene_mesh);
 }
 
 static void renderer_setup_view_projection_matrix(renderer_t *renderer, const game_t *game)
@@ -148,15 +165,4 @@ static void renderer_init_matrices(renderer_t *renderer)
   glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_matrices_t), NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, renderer->ubo_matrices); 
-}
-
-bool material_load(material_t *material, const char *src_color, const char *src_normal)
-{
-  if (!texture_load(&material->color, src_color))
-    return false;
-  
-  if (!texture_load(&material->normal, src_normal))
-    return false;
-  
-  return true;
 }

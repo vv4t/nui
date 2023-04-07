@@ -8,7 +8,7 @@
 #define MAX_LIGHTS 8
 
 typedef struct {
-  mat4x4_t  light_matrix;
+  mat4x4_t  light_matrices[6];
   vec3_t    pos;
   float     intensity;
   vec4_t    color;
@@ -33,13 +33,11 @@ void lights_bind(lights_t *lights);
 void lights_bind_material(material_t *material);
 
 void lights_set_light(
-  lights_t  *lights,
-  int       light_id,
-  void      *ctx,
-  void      (*draw_scene)(void *ctx),
-  GLuint    ubo_matrices,
-  vec3_t    pos,
-  float     intensity,
-  vec4_t    color);
+  lights_t    *lights,
+  int         light_id,
+  draw_call_t *draw_call,
+  vec3_t       pos,
+  float       intensity,
+  vec4_t      color);
 
 #endif

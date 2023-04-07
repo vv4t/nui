@@ -7,13 +7,6 @@ static bool lights_init_shadow_shader(lights_t *lights);
 static bool lights_init_lights(lights_t *lights);
 static bool lights_init_shadow(lights_t *lights);
 
-typedef struct {
-  mat4x4_t  mvp;
-  mat4x4_t  model;
-  vec3_t    view_pos;
-  float     pad[1];
-} ub_matrices_t;
-
 bool lights_init(lights_t *lights)
 {
   if (!lights_init_light_shader(lights))
@@ -46,44 +39,54 @@ void lights_bind_material(material_t *material)
 }
 
 void lights_set_light(
-  lights_t  *lights,
-  int       light_id,
-  void      *ctx,
-  void      (*draw_scene)(void *ctx),
-  GLuint    ubo_matrices,
-  vec3_t    pos,
-  float     intensity,
-  vec4_t    color)
+  lights_t    *lights,
+  int         light_id,
+  draw_call_t *draw_call,
+  vec3_t      pos,
+  float       intensity,
+  vec4_t      color)
 {
   mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
-  mat4x4_t view_matrix = mat4x4_init_look_at(vec3_init(0.0, 0.0, 1.0), pos);
-  mat4x4_t view_projection_matrix = mat4x4_mul(view_matrix, projection_matrix);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
+  glUseProgram(lights->shadow_shader);
+  
+  glClear(GL_DEPTH_BUFFER_BIT);
+  
+  mat4x4_t view_matrices[] = {
+    mat4x4_init_look_at(vec3_init(1.0, 0.0, 0.0), pos, vec3_init(0.0, 1.0, 0.0)),
+    mat4x4_init_look_at(vec3_init(0.0, 1.0, 0.0), pos, vec3_init(0.0, 0.0, -1.0)),
+    mat4x4_init_look_at(vec3_init(0.0, 0.0, 1.0), pos, vec3_init(0.0, 1.0, 0.0)),
+    mat4x4_init_look_at(vec3_init(-1.0, 0.0, 0.0), pos, vec3_init(0.0, 1.0, 0.0)),
+    mat4x4_init_look_at(vec3_init(0.0, -1.0, 0.0), pos, vec3_init(0.0, 0.0, 1.0)),
+    mat4x4_init_look_at(vec3_init(0.0, 0.0, -1.0), pos, vec3_init(0.0, 1.0, 0.0))
+  };
   
   light_t light = {
-    .light_matrix = view_projection_matrix,
     .pos = pos,
     .intensity = intensity,
     .color = color
   };
   
+  for (int i = 0; i < 6; i++) {
+    mat4x4_t bias_matrix = mat4x4_init(
+      vec4_init(0.5 / 6.0, 0.0, 0.0, 0.5 / 6.0),
+      vec4_init(0.0, 0.5, 0.0, 0.5),
+      vec4_init(0.0, 0.0, 0.5, 0.5),
+      vec4_init(0.0, 0.0, 0.0, 1.0)
+    );
+    
+    mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
+    mat4x4_t bias_mvp = mat4x4_mul(view_projection_matrix, bias_matrix);
+    
+    light.light_matrices[i] = bias_mvp;
+    
+    glViewport(i * 1024, 0, 1024, 1024);
+    do_draw_call(draw_call, view_projection_matrix, pos);
+  }
+  
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);
   glBufferSubData(GL_UNIFORM_BUFFER, light_id * sizeof(light_t), sizeof(light_t), &light);
-  
-  ub_matrices_t ub_matrices = {
-    .model = mat4x4_init_identity(),
-    .mvp = view_projection_matrix,
-    .view_pos = pos
-  };
-  
-  glViewport(0, 0, 1024, 1024);
-  glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
-  glUseProgram(lights->shadow_shader);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  
-  glBindBuffer(GL_UNIFORM_BUFFER, ubo_matrices);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
-  
-  draw_scene(ctx);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -92,7 +95,7 @@ static bool lights_init_shadow(lights_t *lights)
 {
   glGenTextures(1, &lights->depth_map);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

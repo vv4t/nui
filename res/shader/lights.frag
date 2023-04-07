@@ -3,7 +3,7 @@ precision mediump float;
 
 layout (location = 0) out vec4 frag_color;
 
-in vec4 vs_light_pos;
+in vec4 vs_light_pos[6];
 in vec3 vs_pos;
 in vec3 vs_normal;
 in vec2 vs_uv;
@@ -14,7 +14,7 @@ uniform sampler2D u_normal;
 uniform sampler2D u_depth_map;
 
 struct light_t {
-  mat4  light_matrix;
+  mat4  light_matrices[6];
   vec3  pos;
   float intensity;
   vec4  color;
@@ -38,25 +38,34 @@ void main() {
   normal = normal * 2.0 - 1.0;
   normal = normalize(vs_TBN * normal);
   
-  vec3 proj_coords = vs_light_pos.xyz / vs_light_pos.w;
-  proj_coords = proj_coords * 0.5 + 0.5; 
+  float shadow = 1.0;
+  float x_tex = 0.0;
   
-  float closest_depth = texture2D(u_depth_map, proj_coords.xy).r;
-  float current_depth = proj_coords.z;
-  
-  // float cos_theta = dot(vs_normal, normalize(-l));
-  float bias = 0.005; // clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
-  float shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
-  
-  if (
-    proj_coords.x > 1.0 || 
-    proj_coords.x < 0.0 || 
-    proj_coords.y > 1.0 || 
-    proj_coords.y < 0.0 || 
-    proj_coords.z > 1.0 ||
-    proj_coords.z < 0.0
-  )
-    shadow = 1.0;
+  for (int i = 0; i < 6; i++) {
+    vec3 proj_coords = vs_light_pos[i].xyz / vs_light_pos[i].w;
+    
+    if (
+      proj_coords.x < 1.0 / 6.0 &&
+      proj_coords.x > 0.0 &&
+      proj_coords.y < 1.0 && 
+      proj_coords.y > 0.0 && 
+      proj_coords.z < 1.0 &&
+      proj_coords.z > 0.0
+    ) {
+      proj_coords.x = proj_coords.x + x_tex;
+      
+      float closest_depth = texture2D(u_depth_map, proj_coords.xy).r;
+      float current_depth = proj_coords.z;
+      
+      // float cos_theta = dot(vs_normal, normalize(-l));
+      float bias = 0.005; // clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
+      
+      if (current_depth - bias < closest_depth)
+        shadow = 0.0;
+    }
+    
+    x_tex += 1.0 / 6.0;
+  }
   
   for (int i = 0; i < 8; i++) {
     if (lights[i].intensity <= 0.0)

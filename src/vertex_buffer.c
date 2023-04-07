@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "vertex_buffer.h"
 
 void vertex_buffer_init(vertex_buffer_t *vertex_buffer, int max_vertices)
 {
@@ -53,9 +53,4 @@ bool vertex_buffer_new_mesh(
   );
   
   return true;
-}
-
-void mesh_draw(mesh_t mesh)
-{
-  glDrawArrays(GL_TRIANGLES, mesh.ptr, mesh.num_vertices);
 }

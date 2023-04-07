@@ -15,7 +15,7 @@ layout (std140) uniform ubo_matrices {
 };
 
 struct light_t {
-  mat4  light_matrix;
+  mat4  light_matrices[6];
   vec3  pos;
   float intensity;
   vec4  color;
@@ -25,7 +25,7 @@ layout (std140) uniform ubo_lights {
   light_t lights[8];
 };
 
-out vec4 vs_light_pos;
+out vec4 vs_light_pos[6];
 out vec2 vs_uv;
 out vec3 vs_pos;
 out vec3 vs_normal;
@@ -38,7 +38,9 @@ void main() {
   
   vs_TBN = mat3(tangent, bitangent, normal);
   
-  vs_light_pos = lights[0].light_matrix * vec4(v_pos, 1.0);
+  for (int i = 0; i < 6; i++) 
+    vs_light_pos[i] = lights[0].light_matrices[i] * vec4(v_pos, 1.0);
+  
   vs_pos = vec3(model * vec4(v_pos, 1.0));
   vs_uv = v_uv;
   vs_normal = normal;

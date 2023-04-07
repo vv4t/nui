@@ -211,6 +211,16 @@ inline static vec3_t vec3_rotate(vec3_t v, quat_t q)
   return vec3_init(full_rot.x, full_rot.y, full_rot.z);
 }
 
+inline static mat4x4_t mat4x4_init(vec4_t a, vec4_t b, vec4_t c, vec4_t d)
+{
+  mat4x4_t m;
+  m.m[0]  = a.x;  m.m[4]  = a.y;  m.m[8]  = a.z;  m.m[12] = a.w;
+  m.m[1]  = b.x;  m.m[5]  = b.y;  m.m[9]  = b.z;  m.m[13] = b.w;
+  m.m[2]  = c.x;  m.m[6]  = c.y;  m.m[10] = c.z;  m.m[14] = c.w;
+  m.m[3]  = d.x;  m.m[7]  = d.y;  m.m[11] = d.z;  m.m[15] = d.w;
+  return m;
+}
+
 inline static mat4x4_t mat4x4_init_identity()
 {
   mat4x4_t m;
@@ -268,20 +278,20 @@ inline static mat4x4_t mat4x4_init_rotation(quat_t q)
   return m;
 }
 
-inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from)
+inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from, vec3_t up)
 {
   vec3_t z_axis = vec3_normalize(vec3_sub(from, at));
-  vec3_t x_axis = vec3_cross(z_axis, vec3_init(0.0, 1.0, 0.0));
-  vec3_t y_axis = vec3_cross(z_axis, x_axis);
+  vec3_t x_axis = vec3_normalize(vec3_cross(up, z_axis));
+  vec3_t y_axis = vec3_normalize(vec3_cross(z_axis, x_axis));
   
   float x_eye = vec3_dot(x_axis, from);
   float y_eye = vec3_dot(y_axis, from);
   float z_eye = vec3_dot(z_axis, from);
   
   mat4x4_t m;
-  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = x_eye;
-  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = y_eye;
-  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = z_eye;
+  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = 0;
+  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = 0;
+  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = 0;
   m.m[3]  = 0;        m.m[7]  = 0;        m.m[11] = 0;        m.m[15] = 1;
   return m;
 }
