@@ -32,11 +32,21 @@ typedef struct {
 typedef struct draw_call {
   GLuint  ubo_matrices;
   void    *data;
-  void    (*draw)(struct draw_call *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos);
+  void    (*draw)(
+    void      *data,
+    GLuint    ubo_matrices,
+    mat4x4_t  view_projection_matrix,
+    vec3_t    view_pos);
 } draw_call_t;
 
 bool material_load(material_t *material, const char *src_color, const char *src_normal);
 void do_draw_call(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos); 
 void draw_mesh(mesh_t mesh);
+
+void set_matrices(
+  GLuint    ubo_matrices,
+  mat4x4_t  model_matrix,
+  mat4x4_t  view_projection_matrix,
+  vec3_t    view_pos);
 
 #endif

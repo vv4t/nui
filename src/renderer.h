@@ -7,6 +7,7 @@
 #include "game.h"
 #include "skybox.h"
 #include "lights.h"
+#include "colors.h"
 
 typedef struct {
   vertex_buffer_t vertex_buffer;
@@ -17,11 +18,13 @@ typedef struct {
   
   skybox_t        skybox;
   lights_t        lights;
+  colors_t        colors;
   
   draw_call_t     scene_draw;
   
   material_t      mtl_ground;
   mesh_t          scene_mesh;
+  mesh_t          cube_mesh;
 } renderer_t;
 
 bool renderer_init(renderer_t *renderer);

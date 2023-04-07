@@ -25,11 +25,12 @@ layout (std140) uniform ubo_lights {
   light_t lights[8];
 };
 
-out vec4 vs_light_pos[6];
 out vec2 vs_uv;
 out vec3 vs_pos;
 out vec3 vs_normal;
 out mat3 vs_TBN;
+
+out vec4 vs_light_pos[3 * 6];
 
 void main() {
   vec3 tangent = vec3(model * vec4(v_tangent, 1.0));
@@ -37,13 +38,15 @@ void main() {
   vec3 normal = vec3(model * vec4(v_normal, 1.0));
   
   vs_TBN = mat3(tangent, bitangent, normal);
-  
-  for (int i = 0; i < 6; i++) 
-    vs_light_pos[i] = lights[0].light_matrices[i] * vec4(v_pos, 1.0);
-  
   vs_pos = vec3(model * vec4(v_pos, 1.0));
   vs_uv = v_uv;
   vs_normal = normal;
+  
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 6; j++) {
+      vs_light_pos[i * 6 + j] = lights[i].light_matrices[j] * vec4(v_pos, 1.0);
+    }
+  }
   
   gl_Position = mvp * vec4(v_pos, 1.0);
 }

@@ -12,7 +12,12 @@ static void renderer_init_projection_matrix(renderer_t *renderer);
 
 static void renderer_setup_view_projection_matrix(renderer_t *renderer, const game_t *game);
 static void renderer_game_render(renderer_t *renderer, const game_t *game);
-static void renderer_game_draw(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos);
+
+static void renderer_game_draw(
+  void      *data,
+  GLuint    ubo_matrices,
+  mat4x4_t  view_projection_matrix,
+  vec3_t    view_pos);
 
 bool renderer_init(renderer_t *renderer)
 {
@@ -24,13 +29,16 @@ bool renderer_init(renderer_t *renderer)
   if (!renderer_init_mesh(renderer))
     return false;
   
+  if (!renderer_init_material(renderer))
+    return false;
+  
   if (!skybox_init(&renderer->skybox, &renderer->vertex_buffer))
     return false;
   
   if (!lights_init(&renderer->lights))
     return false;
   
-  if (!renderer_init_material(renderer))
+  if (!colors_init(&renderer->colors))
     return false;
   
   renderer_init_matrices(renderer);
@@ -44,11 +52,11 @@ bool renderer_init(renderer_t *renderer)
   
   lights_set_light(
     &renderer->lights,
-    0,
+    2,
     &renderer->scene_draw,
-    vec3_init(0.0, 0.0, 0.0),
-    40.0,
-    vec4_init(1.0, 0.0, 1.0, 1.0)
+    vec3_init(5.0, 5.0, 5.0),
+    10.0,
+    vec4_init(0.0, 1.0, 0.5, 1.0)
   );
   
   return true;
@@ -56,52 +64,102 @@ bool renderer_init(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
+  vec3_t light_pos_0 = vec3_init(
+    cos(2 * game->time) * 1.0,
+    cos(0.5 * game->time) * 4.0,
+    sin(2 * game->time) * 1.0
+  );
+  
+  lights_set_light(
+    &renderer->lights,
+    0,
+    &renderer->scene_draw,
+    light_pos_0,
+    10.0,
+    vec4_init(0.0, 1.0, 1.0, 1.0)
+  );
+  
+  vec3_t light_pos_1 = vec3_init(
+    0.0,
+    sin(0.5 * game->time) * 4.0,
+    0.0 
+  );
+  
+  lights_set_light(
+    &renderer->lights,
+    1,
+    &renderer->scene_draw,
+    light_pos_1,
+    10.0,
+    vec4_init(1.0, 0.0, 1.0, 1.0)
+  );
+  
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
   renderer_setup_view_projection_matrix(renderer, game);
   skybox_render(&renderer->skybox, renderer->projection_matrix, game->rotation);
   renderer_game_render(renderer, game);
+  
+  colors_bind(&renderer->colors);
+  
+  set_matrices(
+    renderer->ubo_matrices,
+    mat4x4_init_translation(light_pos_0),
+    renderer->view_projection_matrix,
+    game->position);
+  colors_set_color(&renderer->colors, vec4_init(0.9, 1.0, 1.0, 1.0));
+  draw_mesh(renderer->cube_mesh);
+  
+  set_matrices(
+    renderer->ubo_matrices,
+    mat4x4_init_translation(light_pos_1),
+    renderer->view_projection_matrix,
+    game->position);
+  colors_set_color(&renderer->colors, vec4_init(1.0, 0.9, 1.0, 1.0));
+  draw_mesh(renderer->cube_mesh);
+  
+  set_matrices(
+    renderer->ubo_matrices,
+    mat4x4_init_translation(vec3_init(5.0, 5.0, 5.0)),
+    renderer->view_projection_matrix,
+    game->position);
+  colors_set_color(&renderer->colors, vec4_init(1.0, 1.0, 1.0, 1.0));
+  draw_mesh(renderer->cube_mesh);
 }
 
-static void renderer_game_draw(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos)
+static void renderer_game_draw(
+  void      *data,
+  GLuint    ubo_matrices,
+  mat4x4_t  view_projection_matrix,
+  vec3_t    view_pos)
 {
-  mat4x4_t model_matrix = mat4x4_init_identity();
-  mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, view_projection_matrix);
+  set_matrices(
+    ubo_matrices,
+    mat4x4_init_identity(),
+    view_projection_matrix,
+    view_pos);
   
-  ub_matrices_t ub_matrices = {
-    .model = model_matrix,
-    .mvp = mvp_matrix,
-    .view_pos = view_pos
-  };
-  
-  glBindBuffer(GL_UNIFORM_BUFFER, draw_call->ubo_matrices);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
-  
-  draw_mesh((*(renderer_t*) draw_call->data).scene_mesh);
+  draw_mesh((*(renderer_t*) data).scene_mesh);
 }
 
 static void renderer_game_render(renderer_t *renderer, const game_t *game)
 {
-  mat4x4_t model_matrix = mat4x4_init_identity();
-  mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, renderer->view_projection_matrix);
-  
-  ub_matrices_t ub_matrices = {
-    .model = model_matrix,
-    .mvp = mvp_matrix,
-    .view_pos = game->position
-  };
-  
   lights_bind(&renderer->lights);
   
-  glBindBuffer(GL_UNIFORM_BUFFER, renderer->ubo_matrices);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices_t), &ub_matrices);
+  set_matrices(
+    renderer->ubo_matrices,
+    mat4x4_init_identity(),
+    renderer->view_projection_matrix,
+    game->position);
+  
   lights_bind_material(&renderer->mtl_ground);
   draw_mesh(renderer->scene_mesh);
 }
 
 static void renderer_setup_view_projection_matrix(renderer_t *renderer, const game_t *game)
 {
+  /*
   vec3_t view_origin = vec3_mulf(game->position, -1);
   quat_t view_rotation = quat_conjugate(game->rotation);
   
@@ -111,14 +169,25 @@ static void renderer_setup_view_projection_matrix(renderer_t *renderer, const ga
   mat4x4_t view_matrix = mat4x4_mul(translation_matrix, rotation_matrix);
   
   renderer->view_projection_matrix = mat4x4_mul(view_matrix, renderer->projection_matrix);
+  */
+  
+  vec3_t view_pos = vec3_init(cos(0.5 * game->time) * 6.9, 2.0 + cos(game->time), sin(0.5 * game->time) * 6.9);
+  
+  mat4x4_t view_matrix = mat4x4_init_look_at(
+    vec3_init(0.0, 2.0, 0.0),
+    view_pos,
+    vec3_init(0.0, 1.0, 0.0)
+  );
+  
+  renderer->view_projection_matrix = mat4x4_mul(view_matrix, renderer->projection_matrix);
 }
 
 static bool renderer_init_material(renderer_t *renderer)
 {
   if (!material_load(
     &renderer->mtl_ground,
-    "res/texture/ground/ground_color.jpg",
-    "res/texture/ground/ground_normal.jpg")
+    "res/texture/tile/tile_color.jpg",
+    "res/texture/tile/tile_normal.jpg")
   ) {
     return false;
   }
@@ -142,12 +211,30 @@ static bool renderer_init_mesh(renderer_t *renderer)
   
   mesh_file_t mesh_file;
   
+  /*--- scene.mesh ---*/
+  
   if (!mesh_file_load(&mesh_file, "res/mesh/scene.mesh"))
     return false;
   
   if (!vertex_buffer_new_mesh(
     &renderer->vertex_buffer,
     &renderer->scene_mesh,
+    mesh_file.vertices,
+    mesh_file.num_vertices)
+  ) {
+    return false;
+  }
+  
+  mesh_file_free(&mesh_file);
+  
+  /*--- cube.mesh ---*/
+  
+  if (!mesh_file_load(&mesh_file, "res/mesh/cube.mesh"))
+    return false;
+  
+  if (!vertex_buffer_new_mesh(
+    &renderer->vertex_buffer,
+    &renderer->cube_mesh,
     mesh_file.vertices,
     mesh_file.num_vertices)
   ) {

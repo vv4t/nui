@@ -46,20 +46,24 @@ void lights_set_light(
   float       intensity,
   vec4_t      color)
 {
-  mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
-  
   glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
+  
+  glViewport(0, light_id * 1024, 6 * 1024, 1024);
+  glScissor(0, light_id * 1024, 6 * 1024, 1024);
+  glEnable(GL_SCISSOR_TEST);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_SCISSOR_TEST);
+  
   glUseProgram(lights->shadow_shader);
   
-  glClear(GL_DEPTH_BUFFER_BIT);
-  
+  mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
   mat4x4_t view_matrices[] = {
-    mat4x4_init_look_at(vec3_init(1.0, 0.0, 0.0), pos, vec3_init(0.0, 1.0, 0.0)),
-    mat4x4_init_look_at(vec3_init(0.0, 1.0, 0.0), pos, vec3_init(0.0, 0.0, -1.0)),
-    mat4x4_init_look_at(vec3_init(0.0, 0.0, 1.0), pos, vec3_init(0.0, 1.0, 0.0)),
-    mat4x4_init_look_at(vec3_init(-1.0, 0.0, 0.0), pos, vec3_init(0.0, 1.0, 0.0)),
-    mat4x4_init_look_at(vec3_init(0.0, -1.0, 0.0), pos, vec3_init(0.0, 0.0, 1.0)),
-    mat4x4_init_look_at(vec3_init(0.0, 0.0, -1.0), pos, vec3_init(0.0, 1.0, 0.0))
+    mat4x4_init_look_at(vec3_add(vec3_init( 1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init(-1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  1.0,  0.0), pos), pos, vec3_init(0.0,  0.0,  1.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0, -1.0,  0.0), pos), pos, vec3_init(0.0,  0.0, -1.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0,  1.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0, -1.0), pos), pos, vec3_init(0.0, -1.0,  0.0))
   };
   
   light_t light = {
@@ -70,10 +74,10 @@ void lights_set_light(
   
   for (int i = 0; i < 6; i++) {
     mat4x4_t bias_matrix = mat4x4_init(
-      vec4_init(0.5 / 6.0, 0.0, 0.0, 0.5 / 6.0),
-      vec4_init(0.0, 0.5, 0.0, 0.5),
-      vec4_init(0.0, 0.0, 0.5, 0.5),
-      vec4_init(0.0, 0.0, 0.0, 1.0)
+      vec4_init(0.5 / 6.0,  0.0,        0.0, 0.5 / 6.0),
+      vec4_init(0.0,        0.5 / 3.0,  0.0, 0.5 / 3.0),
+      vec4_init(0.0,        0.0,        0.5, 0.5),
+      vec4_init(0.0,        0.0,        0.0, 1.0)
     );
     
     mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
@@ -81,7 +85,7 @@ void lights_set_light(
     
     light.light_matrices[i] = bias_mvp;
     
-    glViewport(i * 1024, 0, 1024, 1024);
+    glViewport(i * 1024, light_id * 1024, 1024, 1024);
     do_draw_call(draw_call, view_projection_matrix, pos);
   }
   
@@ -95,7 +99,7 @@ static bool lights_init_shadow(lights_t *lights)
 {
   glGenTextures(1, &lights->depth_map);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, 3 * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

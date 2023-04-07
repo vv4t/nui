@@ -280,18 +280,18 @@ inline static mat4x4_t mat4x4_init_rotation(quat_t q)
 
 inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from, vec3_t up)
 {
-  vec3_t z_axis = vec3_normalize(vec3_sub(from, at));
+  vec3_t z_axis = vec3_normalize(vec3_sub(at, from));
   vec3_t x_axis = vec3_normalize(vec3_cross(up, z_axis));
   vec3_t y_axis = vec3_normalize(vec3_cross(z_axis, x_axis));
   
-  float x_eye = vec3_dot(x_axis, from);
-  float y_eye = vec3_dot(y_axis, from);
-  float z_eye = vec3_dot(z_axis, from);
+  float x_eye = -vec3_dot(x_axis, from);
+  float y_eye = -vec3_dot(y_axis, from);
+  float z_eye = -vec3_dot(z_axis, from);
   
   mat4x4_t m;
-  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = 0;
-  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = 0;
-  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = 0;
+  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = x_eye;
+  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = y_eye;
+  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = z_eye;
   m.m[3]  = 0;        m.m[7]  = 0;        m.m[11] = 0;        m.m[15] = 1;
   return m;
 }
