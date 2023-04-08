@@ -1,5 +1,3 @@
-#version 300 es
-
 layout (location = 0) in vec3 v_pos;
 
 layout (std140) uniform ubo_matrices {

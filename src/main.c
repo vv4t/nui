@@ -22,7 +22,7 @@ int main()
   sdl_t sdl;
   if (!sdl_init(&sdl, 1280, 720, "nui"))
     return 0;
-  // sdl_lock(true);
+  sdl_lock(true);
   
   if (!gl_init())
     return 0;

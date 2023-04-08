@@ -23,6 +23,7 @@ typedef struct {
   draw_call_t     scene_draw;
   
   material_t      mtl_ground;
+  material_t      mtl_tile;
   mesh_t          scene_mesh;
   mesh_t          cube_mesh;
 } renderer_t;

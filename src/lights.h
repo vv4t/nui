@@ -5,7 +5,7 @@
 #include "nui_math.h"
 #include "renderer_api.h"
 
-#define MAX_LIGHTS 8
+#define MAX_LIGHTS 4
 
 typedef struct {
   mat4x4_t  light_matrices[6];

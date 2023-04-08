@@ -2,6 +2,11 @@
 
 #include "log.h"
 
+static bool shader_compile(GLuint *shader, GLuint type, const char *define, const char *src);
+
+const char *glsl_version    = "#version 300 es";
+const char *glsl_precision  = "precision mediump float;";
+
 bool gl_init()
 {
   glewExperimental = true;
@@ -37,11 +42,9 @@ bool texture_load(GLuint *texture, const char *path)
   return true;
 }
 
-static bool shader_compile(GLuint *shader, GLuint type, const char *src);
-static bool shader_link(GLuint *shader, GLuint vertex_shader, GLuint fragment_shader);
-
 bool shader_load(
   GLuint      *shader,
+  const char  *define,
   const char  *src_vertex,
   const char  *src_fragment)
 {
@@ -52,7 +55,7 @@ bool shader_load(
   
   GLuint vertex_shader;
   if (src_vertex) {
-    if (!shader_compile(&vertex_shader, GL_VERTEX_SHADER, src_vertex))
+    if (!shader_compile(&vertex_shader, GL_VERTEX_SHADER, define, src_vertex))
       return false;
     
     glAttachShader(*shader, vertex_shader);
@@ -60,7 +63,7 @@ bool shader_load(
   
   GLuint fragment_shader;
   if (src_fragment) {
-    if (!shader_compile(&fragment_shader, GL_FRAGMENT_SHADER, src_fragment))
+    if (!shader_compile(&fragment_shader, GL_FRAGMENT_SHADER, define, src_fragment))
       return false;
     
     glAttachShader(*shader, fragment_shader);
@@ -88,13 +91,20 @@ bool shader_load(
   return true;
 }
 
-static bool shader_compile(GLuint *shader, GLuint type, const char *src)
+static bool shader_compile(GLuint *shader, GLuint type, const char *define, const char *src)
 {
   int success;
   static GLchar info[1024];
   
+  const char *full_src[] = {
+    glsl_version, "\n",
+    glsl_precision, "\n",
+    define, "\n",
+    src
+  };
+  
   *shader = glCreateShader(type);
-  glShaderSource(*shader, 1, &src, NULL);
+  glShaderSource(*shader, 7, full_src, NULL);
   
   glCompileShader(*shader);
   glGetShaderiv(*shader, GL_COMPILE_STATUS, &success);
@@ -104,10 +114,5 @@ static bool shader_compile(GLuint *shader, GLuint type, const char *src)
     return false;
   }
   
-  return true;
-}
-
-static bool shader_link(GLuint *shader, GLuint vertex_shader, GLuint fragment_shader)
-{
   return true;
 }

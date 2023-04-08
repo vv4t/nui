@@ -74,10 +74,10 @@ void lights_set_light(
   
   for (int i = 0; i < 6; i++) {
     mat4x4_t bias_matrix = mat4x4_init(
-      vec4_init(0.5 / 6.0,  0.0,        0.0, 0.5 / 6.0),
-      vec4_init(0.0,        0.5 / 3.0,  0.0, 0.5 / 3.0),
-      vec4_init(0.0,        0.0,        0.5, 0.5),
-      vec4_init(0.0,        0.0,        0.0, 1.0)
+      vec4_init(0.5 / 6.0,  0.0,              0.0, 0.5 / 6.0),
+      vec4_init(0.0,        0.5 / MAX_LIGHTS, 0.0, 0.5 / MAX_LIGHTS),
+      vec4_init(0.0,        0.0,              0.5, 0.5),
+      vec4_init(0.0,        0.0,              0.0, 1.0)
     );
     
     mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
@@ -99,7 +99,7 @@ static bool lights_init_shadow(lights_t *lights)
 {
   glGenTextures(1, &lights->depth_map);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, 3 * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, MAX_LIGHTS * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -130,10 +130,13 @@ static bool lights_init_lights(lights_t *lights)
 
 static bool lights_init_light_shader(lights_t *lights)
 {
+  char define[64];
+  sprintf(define, "#define MAX_LIGHTS %i", MAX_LIGHTS);
+  
   char *src_vertex = file_read_all("res/shader/lights.vert");
   char *src_fragment = file_read_all("res/shader/lights.frag");
   
-  if (!shader_load(&lights->light_shader, src_vertex, src_fragment))
+  if (!shader_load(&lights->light_shader, define, src_vertex, src_fragment))
     return false;
   
   free(src_vertex);
@@ -162,7 +165,7 @@ static bool lights_init_shadow_shader(lights_t *lights)
   char *src_vertex = file_read_all("res/shader/shadow.vert");
   char *src_fragment = file_read_all("res/shader/shadow.frag");
   
-  if (!shader_load(&lights->shadow_shader, src_vertex, src_fragment))
+  if (!shader_load(&lights->shadow_shader, "", src_vertex, src_fragment))
     return false;
   
   free(src_vertex);

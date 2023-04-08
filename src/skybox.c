@@ -92,7 +92,7 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   char *src_vertex = file_read_all("res/shader/skybox.vert");
   char *src_fragment = file_read_all("res/shader/skybox.frag");
 
-  if (!shader_load(&skybox->shader, src_vertex, src_fragment)) {
+  if (!shader_load(&skybox->shader, "", src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");
     return false;
   }
@@ -101,10 +101,12 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   free(src_fragment);
   
   GLuint ul_skybox = glGetUniformLocation(skybox->shader, "u_skybox");
-  skybox->ul_mvp = glGetUniformLocation(skybox->shader, "u_mvp");
+  
+  GLuint ubl_matrices = glGetUniformBlockIndex(skybox->shader, "ubo_matrices");
+  glUniformBlockBinding(skybox->shader, ubl_matrices, 0);
   
   glUseProgram(skybox->shader);
-  glUniform1i(ul_skybox, 2);
+  glUniform1i(ul_skybox, 0);
   
   if (!vertex_buffer_new_mesh(
     vertex_buffer,
@@ -118,7 +120,7 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   return true;
 }
 
-void skybox_render(skybox_t *skybox, mat4x4_t projection_matrix, quat_t view_angle)
+void skybox_render(skybox_t *skybox, GLuint ubo_matrices, mat4x4_t projection_matrix, quat_t view_angle)
 {
   glDepthMask(GL_FALSE);
   
@@ -128,9 +130,13 @@ void skybox_render(skybox_t *skybox, mat4x4_t projection_matrix, quat_t view_ang
   mat4x4_t rotation_matrix = mat4x4_init_rotation(inverse_view_angle);
   mat4x4_t view_projection_matrix = mat4x4_mul(rotation_matrix, projection_matrix);
   
-  glUniformMatrix4fv(skybox->ul_mvp, 1, GL_FALSE, view_projection_matrix.m);
+  set_matrices(
+    ubo_matrices,
+    mat4x4_init_identity(),
+    view_projection_matrix,
+    vec3_init(0.0, 0.0, 0.0));
   
-  glActiveTexture(GL_TEXTURE2);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
   
   glDrawArrays(GL_TRIANGLES, skybox->mesh.ptr, skybox->mesh.num_vertices);

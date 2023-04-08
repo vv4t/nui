@@ -1,6 +1,3 @@
-#version 300 es
-precision mediump float;
-
 layout (location = 0) out vec4 frag_color;
 
 in vec3 vs_pos;
@@ -8,7 +5,7 @@ in vec3 vs_normal;
 in vec2 vs_uv;
 in mat3 vs_TBN;
 
-in vec4 vs_light_pos[3 * 6];
+in vec4 vs_light_pos[MAX_LIGHTS * 6];
 
 uniform sampler2D u_color;
 uniform sampler2D u_normal;
@@ -22,7 +19,7 @@ struct light_t {
 };
 
 layout (std140) uniform ubo_lights {
-  light_t lights[8];
+  light_t lights[MAX_LIGHTS];
 };
 
 layout (std140) uniform ubo_matrices {
@@ -41,7 +38,7 @@ void main() {
   
   float v_map = 0.0;
   
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < MAX_LIGHTS; i++) {
     if (lights[i].intensity <= 0.0)
       continue;
   
@@ -53,7 +50,7 @@ void main() {
       
       if (
         proj_coords.x < 1.0 / 6.0 && proj_coords.x > 0.0 &&
-        proj_coords.y < 1.0 / 3.0 && proj_coords.y > 0.0 && 
+        proj_coords.y < 1.0 / float(MAX_LIGHTS) && proj_coords.y > 0.0 && 
         proj_coords.z < 1.0 && proj_coords.z > 0.0
       ) {
         proj_coords.x = proj_coords.x + u_map;
@@ -72,7 +69,7 @@ void main() {
       u_map += 1.0 / 6.0;
     }
     
-    v_map += 1.0 / 3.0;
+    v_map += 1.0 / float(MAX_LIGHTS);
     
     vec3 delta_pos = lights[i].pos - vs_pos;
     vec3 view_dir = normalize(view_pos - vs_pos);
