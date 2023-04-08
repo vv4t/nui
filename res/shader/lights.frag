@@ -41,6 +41,9 @@ void main() {
   for (int i = 0; i < MAX_LIGHTS; i++) {
     if (lights[i].intensity <= 0.0)
       continue;
+    
+    vec3 delta_pos = lights[i].pos - vs_pos;
+    vec3 light_dir = normalize(delta_pos);
   
     float shadow = 1.0;
     float u_map = 0.0;
@@ -59,8 +62,8 @@ void main() {
         float closest_depth = texture2D(u_depth_map, proj_coords.xy).r;
         float current_depth = proj_coords.z;
         
-        // float cos_theta = dot(vs_normal, normalize(-l));
-        float bias = 0.005; // clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
+        float cos_theta = dot(vs_normal, -light_dir);
+        float bias = clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
         
         if (current_depth - bias < closest_depth)
           shadow = 0.0;
@@ -71,9 +74,7 @@ void main() {
     
     v_map += 1.0 / float(MAX_LIGHTS);
     
-    vec3 delta_pos = lights[i].pos - vs_pos;
     vec3 view_dir = normalize(view_pos - vs_pos);
-    vec3 light_dir = normalize(delta_pos);
     vec3 reflect_dir = reflect(-light_dir, normal);
     
     float specular = 0.4 * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
