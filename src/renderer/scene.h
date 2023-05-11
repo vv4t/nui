@@ -1,5 +1,5 @@
-#ifndef RENDERER_API_H
-#define RENDERER_API_H
+#ifndef SCENE_H
+#define SCENE_H
 
 #include "gl.h"
 #include "view.h"
@@ -14,14 +14,14 @@ typedef struct {
 } vertex_t;
 
 typedef struct {
-  GLuint  color;
-  GLuint  normal;
-} material_t;
-
-typedef struct {
   GLuint    ptr;
   int       num_vertices;
 } mesh_t;
+
+typedef struct {
+  GLuint  color;
+  GLuint  normal;
+} material_t;
 
 typedef struct {
   void    *data;

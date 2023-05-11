@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "renderer_api.h"
+#include "scene.h"
 #include "gl.h"
 #include "../common/nui_math.h"
 

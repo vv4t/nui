@@ -107,7 +107,7 @@ static bool lights_init_shadow(lights_t *lights)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   
-  float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+  float border_color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
   glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
   
   glGenFramebuffers(1, &lights->depth_fbo);

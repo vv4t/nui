@@ -3,7 +3,7 @@
 
 #include "../renderer/gl.h"
 #include "../renderer/view.h"
-#include "../renderer/renderer_api.h"
+#include "../renderer/scene.h"
 #include "../common/nui_math.h"
 
 #define MAX_LIGHTS 4

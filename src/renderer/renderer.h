@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include "view.h"
-#include "renderer_api.h"
+#include "scene.h"
 #include "skybox.h"
 #include "vertex_buffer.h"
 

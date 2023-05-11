@@ -1,4 +1,4 @@
-#include "renderer_api.h"
+#include "scene.h"
 
 bool material_load(material_t *material, const char *src_color, const char *src_normal)
 {

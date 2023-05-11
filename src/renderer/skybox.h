@@ -3,7 +3,7 @@
 
 #include "gl.h"
 #include "view.h"
-#include "renderer_api.h"
+#include "scene.h"
 #include "vertex_buffer.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>
