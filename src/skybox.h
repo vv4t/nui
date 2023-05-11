@@ -14,6 +14,6 @@ typedef struct {
 } skybox_t;
 
 bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer);
-void skybox_render(skybox_t *skybox, GLuint ubo_matrices, mat4x4_t projection_matrix, quat_t view_angle);
+void skybox_render(skybox_t *skybox, view_t *view, quat_t view_angle);
 
 #endif

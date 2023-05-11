@@ -41,7 +41,7 @@ void lights_bind_material(material_t *material)
 void lights_set_light(
   lights_t    *lights,
   int         light_id,
-  draw_call_t *draw_call,
+  scene_t     *scene,
   vec3_t      pos,
   float       intensity,
   vec4_t      color)
@@ -57,6 +57,7 @@ void lights_set_light(
   glUseProgram(lights->shadow_shader);
   
   mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
+  
   mat4x4_t view_matrices[] = {
     mat4x4_init_look_at(vec3_add(vec3_init( 1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
     mat4x4_init_look_at(vec3_add(vec3_init(-1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
@@ -66,6 +67,13 @@ void lights_set_light(
     mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0, -1.0), pos), pos, vec3_init(0.0, -1.0,  0.0))
   };
   
+  mat4x4_t bias_matrix = mat4x4_init(
+    vec4_init(0.5 / 6.0,  0.0,              0.0, 0.5 / 6.0),
+    vec4_init(0.0,        0.5 / MAX_LIGHTS, 0.0, 0.5 / MAX_LIGHTS),
+    vec4_init(0.0,        0.0,              0.5, 0.5),
+    vec4_init(0.0,        0.0,              0.0, 1.0)
+  );
+  
   light_t light = {
     .pos = pos,
     .intensity = intensity,
@@ -73,20 +81,14 @@ void lights_set_light(
   };
   
   for (int i = 0; i < 6; i++) {
-    mat4x4_t bias_matrix = mat4x4_init(
-      vec4_init(0.5 / 6.0,  0.0,              0.0, 0.5 / 6.0),
-      vec4_init(0.0,        0.5 / MAX_LIGHTS, 0.0, 0.5 / MAX_LIGHTS),
-      vec4_init(0.0,        0.0,              0.5, 0.5),
-      vec4_init(0.0,        0.0,              0.0, 1.0)
-    );
-    
     mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
     mat4x4_t bias_mvp = mat4x4_mul(view_projection_matrix, bias_matrix);
     
     light.light_matrices[i] = bias_mvp;
     
     glViewport(i * 1024, light_id * 1024, 1024, 1024);
-    do_draw_call(draw_call, view_projection_matrix, pos);
+    view_set(scene->view, view_projection_matrix, pos);
+    draw_scene(scene);
   }
   
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);

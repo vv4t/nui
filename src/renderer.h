@@ -11,16 +11,13 @@
 
 typedef struct {
   vertex_buffer_t vertex_buffer;
-  GLuint          ubo_matrices;
-  
-  mat4x4_t        projection_matrix;
-  mat4x4_t        view_projection_matrix;
+  view_t          view;
   
   skybox_t        skybox;
   lights_t        lights;
   colors_t        colors;
   
-  draw_call_t     scene_draw;
+  scene_t         scene;
   
   material_t      mtl_ground;
   material_t      mtl_tile;

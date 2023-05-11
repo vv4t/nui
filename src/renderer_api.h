@@ -22,31 +22,37 @@ typedef struct {
   mat4x4_t  model;
   vec3_t    view_pos;
   float     pad[1];
-} ub_matrices_t;
+} ubc_view_t;
 
 typedef struct {
-  GLuint  ptr;
-  int     num_vertices;
+  GLuint    ptr;
+  int       num_vertices;
 } mesh_t;
 
-typedef struct draw_call {
-  GLuint  ubo_matrices;
+typedef struct {
+  mat4x4_t  projection_matrix;
+  mat4x4_t  view_projection_matrix;
+  vec3_t    view_pos;
+  GLuint    ubo_view;
+} view_t;
+
+typedef struct {
   void    *data;
-  void    (*draw)(
-    void      *data,
-    GLuint    ubo_matrices,
-    mat4x4_t  view_projection_matrix,
-    vec3_t    view_pos);
-} draw_call_t;
+  view_t  *view;
+  void    (*draw)(void *data, view_t *view);
+} scene_t;
 
 bool material_load(material_t *material, const char *src_color, const char *src_normal);
-void do_draw_call(draw_call_t *draw_call, mat4x4_t view_projection_matrix, vec3_t view_pos); 
+
+void draw_scene(scene_t *scene); 
 void draw_mesh(mesh_t mesh);
 
-void set_matrices(
-  GLuint    ubo_matrices,
-  mat4x4_t  model_matrix,
-  mat4x4_t  view_projection_matrix,
-  vec3_t    view_pos);
+void view_init(view_t *view);
+
+void view_perspective(view_t *view, float aspect_ratio, float fov, float near, float far);
+void view_move(view_t *view, vec3_t view_offset, quat_t view_angle);
+void view_set(view_t *view, mat4x4_t view_projection_matrix, vec3_t view_pos);
+
+void view_sub_data(view_t *view, mat4x4_t model_matrix);
 
 #endif

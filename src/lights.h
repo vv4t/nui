@@ -35,7 +35,7 @@ void lights_bind_material(material_t *material);
 void lights_set_light(
   lights_t    *lights,
   int         light_id,
-  draw_call_t *draw_call,
+  scene_t     *scene,
   vec3_t       pos,
   float       intensity,
   vec4_t      color);

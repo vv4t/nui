@@ -120,21 +120,14 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   return true;
 }
 
-void skybox_render(skybox_t *skybox, GLuint ubo_matrices, mat4x4_t projection_matrix, quat_t view_angle)
+void skybox_render(skybox_t *skybox, view_t *view, quat_t view_angle)
 {
   glDepthMask(GL_FALSE);
   
   glUseProgram(skybox->shader);
   
-  quat_t inverse_view_angle = quat_conjugate(view_angle);
-  mat4x4_t rotation_matrix = mat4x4_init_rotation(inverse_view_angle);
-  mat4x4_t view_projection_matrix = mat4x4_mul(rotation_matrix, projection_matrix);
-  
-  set_matrices(
-    ubo_matrices,
-    mat4x4_init_identity(),
-    view_projection_matrix,
-    vec3_init(0.0, 0.0, 0.0));
+  view_move(view, vec3_init(0.0f, 0.0f, 0.0f), view_angle);
+  view_sub_data(view, mat4x4_init_identity());
   
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
