@@ -1,6 +1,6 @@
 #include "gl.h"
 
-#include "log.h"
+#include "../common/log.h"
 
 static bool shader_compile(GLuint *shader, GLuint type, const char *define, const char *src);
 

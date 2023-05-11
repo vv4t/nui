@@ -1,7 +1,7 @@
 #include "skybox.h"
 
-#include "log.h"
-#include "file.h"
+#include "../common/log.h"
+#include "../common/file.h"
 #include <SDL2/SDL_image.h>
 
 static const vertex_t cube_vertices[] = {

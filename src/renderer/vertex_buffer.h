@@ -3,7 +3,7 @@
 
 #include "renderer_api.h"
 #include "gl.h"
-#include "nui_math.h"
+#include "../common/nui_math.h"
 
 typedef struct {
   GLuint  vbo;

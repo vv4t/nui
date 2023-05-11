@@ -1,9 +1,9 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include "gl.h"
-#include "nui_math.h"
-#include "renderer_api.h"
+#include "../renderer/gl.h"
+#include "../renderer/renderer_api.h"
+#include "../common/nui_math.h"
 
 #define MAX_LIGHTS 4
 

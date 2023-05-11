@@ -1,10 +1,10 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
 
+#include "gl.h"
 #include "renderer_api.h"
 #include "vertex_buffer.h"
-#include "gl.h"
-#include "nui_math.h"
+#include "../common/nui_math.h"
 #include <stdbool.h>
 
 typedef struct {

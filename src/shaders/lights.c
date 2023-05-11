@@ -1,6 +1,6 @@
 #include "lights.h"
 
-#include "file.h"
+#include "../common/file.h"
 
 static bool lights_init_light_shader(lights_t *lights);
 static bool lights_init_shadow_shader(lights_t *lights);

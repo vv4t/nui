@@ -1,6 +1,6 @@
 #include "colors.h"
 
-#include "file.h"
+#include "../common/file.h"
 
 bool colors_init(colors_t *colors)
 {

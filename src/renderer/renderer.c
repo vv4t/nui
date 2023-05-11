@@ -1,8 +1,8 @@
 #include "renderer.h"
 
 #include "gl.h"
-#include "file.h"
 #include "mesh_file.h"
+#include "../common/file.h"
 
 static void renderer_init_gl(renderer_t *renderer);
 static bool renderer_init_scene(renderer_t *renderer);

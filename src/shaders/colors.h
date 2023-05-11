@@ -1,8 +1,8 @@
 #ifndef COLORS_H
 #define COLORS_H
 
-#include "gl.h"
-#include "nui_math.h"
+#include "../renderer/gl.h"
+#include "../common/nui_math.h"
 
 typedef struct {
   GLuint  shader;

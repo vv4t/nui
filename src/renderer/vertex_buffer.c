@@ -1,5 +1,7 @@
 #include "vertex_buffer.h"
 
+#include "../common/log.h"
+
 void vertex_buffer_init(vertex_buffer_t *vertex_buffer, int max_vertices)
 {
   glGenBuffers(1, &vertex_buffer->vbo);

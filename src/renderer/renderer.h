@@ -2,12 +2,13 @@
 #define RENDERER_H
 
 #include "renderer_api.h"
-
-#include "vertex_buffer.h"
-#include "game.h"
 #include "skybox.h"
-#include "lights.h"
-#include "colors.h"
+#include "vertex_buffer.h"
+
+#include "../shaders/lights.h"
+#include "../shaders/colors.h"
+
+#include "../game/game.h"
 
 typedef struct {
   vertex_buffer_t vertex_buffer;

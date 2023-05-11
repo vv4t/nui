@@ -2,7 +2,7 @@
 #define RENDERER_API_H
 
 #include "gl.h"
-#include "nui_math.h"
+#include "../common/nui_math.h"
 
 typedef struct {
   vec3_t  pos;

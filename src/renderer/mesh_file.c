@@ -1,6 +1,6 @@
 #include "mesh_file.h"
 
-#include "log.h"
+#include "../common/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 

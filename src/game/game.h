@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "nui_math.h"
+#include "../common/nui_math.h"
 
 #define GAME_SENSITIVITY 0.01
 

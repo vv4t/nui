@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "log.h"
-#include "game.h"
-#include "gl.h"
-#include "renderer.h"
+#include "common/log.h"
+#include "game/game.h"
+#include "renderer/gl.h"
+#include "renderer/renderer.h"
 
 typedef struct {
   SDL_Window    *window;
@@ -22,6 +22,7 @@ int main()
   sdl_t sdl;
   if (!sdl_init(&sdl, 1280, 720, "nui"))
     return 0;
+  
   sdl_lock(true);
   
   if (!gl_init())
