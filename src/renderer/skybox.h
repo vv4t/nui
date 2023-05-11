@@ -2,6 +2,7 @@
 #define SKYBOX_H
 
 #include "gl.h"
+#include "view.h"
 #include "renderer_api.h"
 #include "vertex_buffer.h"
 #include "../common/nui_math.h"

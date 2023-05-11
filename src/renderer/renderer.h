@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "view.h"
 #include "renderer_api.h"
 #include "skybox.h"
 #include "vertex_buffer.h"

@@ -2,6 +2,7 @@
 #define LIGHT_H
 
 #include "../renderer/gl.h"
+#include "../renderer/view.h"
 #include "../renderer/renderer_api.h"
 #include "../common/nui_math.h"
 
