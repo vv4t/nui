@@ -33,9 +33,14 @@ bool renderer_init(renderer_t *renderer)
 static void renderer_init_gl(renderer_t *renderer)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  
   glEnable(GL_DEPTH_TEST);
+  
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
+  
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
   
   vertex_buffer_init(&renderer->vertex_buffer, 4096);
   
@@ -78,13 +83,13 @@ static bool renderer_init_scene(renderer_t *renderer)
   
   lights_new_light(&renderer->lights, &renderer->light1);
     renderer->light1.pos = vec3_init(-3.0, 4.0, -3.0);
-    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 1.0);
+    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 0.2);
     renderer->light1.intensity = 10.0;
   lights_sub_light(&renderer->lights, &renderer->light1);
   
   lights_new_light(&renderer->lights, &renderer->light2);
     renderer->light2.pos = vec3_init(3.0, 1.3, 3.0);
-    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 1.0);
+    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 0.2);
     renderer->light2.intensity = 10.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
@@ -109,6 +114,11 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
   
   view_move(&renderer->view, game->position, game->rotation);
   
+  lights_bind(&renderer->lights);
+    lights_set_material(&renderer->mtl_tile);
+    view_sub_data(&renderer->view, mat4x4_init_identity());
+    draw_mesh(renderer->scene_mesh);
+  
   colors_bind(&renderer->colors);
     mat4x4_t light1_matrix = mat4x4_mul(
       mat4x4_init_scale(vec3_init(0.5, 0.5, 0.5)),
@@ -127,11 +137,6 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
     colors_set_color(&renderer->colors, renderer->light2.color);
     view_sub_data(&renderer->view, light2_matrix);
     draw_mesh(renderer->cube_mesh);
-  
-  lights_bind(&renderer->lights);
-    lights_set_material(&renderer->mtl_tile);
-    view_sub_data(&renderer->view, mat4x4_init_identity());
-    draw_mesh(renderer->scene_mesh);
 }
 
 static void renderer_draw_scene(void *data, view_t *view)
