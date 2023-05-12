@@ -62,12 +62,12 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
   
   static const char *faces[] = {
-    "res/skybox/night/right.png",
-    "res/skybox/night/left.png",
-    "res/skybox/night/up.png",
-    "res/skybox/night/down.png",
-    "res/skybox/night/back.png",
-    "res/skybox/night/front.png",
+    "res/skybox/night/right.jpg",
+    "res/skybox/night/left.jpg",
+    "res/skybox/night/up.jpg",
+    "res/skybox/night/down.jpg",
+    "res/skybox/night/back.jpg",
+    "res/skybox/night/front.jpg",
   };
   
   for (int i = 0; i < 6; i++) {
@@ -78,7 +78,7 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
       return false;
     }
     
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, bitmap->w, bitmap->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, bitmap->w, bitmap->h, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap->pixels);
     
     SDL_FreeSurface(bitmap);
   }
