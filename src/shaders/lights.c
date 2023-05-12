@@ -39,7 +39,7 @@ void lights_set_scene(lights_t *lights, scene_t *scene)
 void lights_set_material(material_t *material)
 {
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, material->color);
+  glBindTexture(GL_TEXTURE_2D, material->diffuse);
   
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, material->normal);

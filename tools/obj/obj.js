@@ -36,7 +36,7 @@ class face_t {
 
 function main()
 {
-  const face_buf = obj_parse("saves/scene.obj");
+  const face_buf = obj_parse("saves/cube.obj");
   
   const write = new write_t();
   
@@ -48,7 +48,7 @@ function main()
     write.write_vertex(face.v3);
   }
   
-  fs.writeFileSync("../../res/mesh/scene.mesh", Buffer.from(write.data()));
+  fs.writeFileSync("../../res/mesh/cube.mesh", Buffer.from(write.data()));
 }
 
 function obj_parse(str_path)

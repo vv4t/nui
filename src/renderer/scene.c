@@ -1,8 +1,8 @@
 #include "scene.h"
 
-bool material_load(material_t *material, const char *src_color, const char *src_normal)
+bool material_load(material_t *material, const char *src_diffuse, const char *src_normal)
 {
-  if (!texture_load(&material->color, src_color))
+  if (!texture_load(&material->diffuse, src_diffuse))
     return false;
   
   if (!texture_load(&material->normal, src_normal))

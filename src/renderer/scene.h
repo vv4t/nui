@@ -19,7 +19,7 @@ typedef struct {
 } mesh_t;
 
 typedef struct {
-  GLuint  color;
+  GLuint  diffuse;
   GLuint  normal;
 } material_t;
 
@@ -29,7 +29,7 @@ typedef struct {
   void    (*draw)(void *data, view_t *view);
 } scene_t;
 
-bool material_load(material_t *material, const char *src_color, const char *src_normal);
+bool material_load(material_t *material, const char *src_diffuse, const char *src_normal);
 
 void draw_scene(scene_t *scene); 
 void draw_mesh(mesh_t mesh);

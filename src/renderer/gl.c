@@ -35,7 +35,17 @@ bool texture_load(GLuint *texture, const char *path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmap->w, bitmap->h, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap->pixels);
+  GLuint internal_format = GL_RGB;
+  switch (bitmap->format->BytesPerPixel) {
+  case 3:
+    internal_format = GL_RGB;
+    break;
+  case 4:
+    internal_format = GL_RGBA;
+    break;
+  }
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, bitmap->w, bitmap->h, 0, internal_format, GL_UNSIGNED_BYTE, bitmap->pixels);
   
   SDL_FreeSurface(bitmap);
   

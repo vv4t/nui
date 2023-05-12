@@ -82,7 +82,7 @@ static bool renderer_init_scene(renderer_t *renderer)
   lights_set_scene(&renderer->lights, &renderer->scene);
   
   lights_new_light(&renderer->lights, &renderer->light1);
-    renderer->light1.pos = vec3_init(-3.0, 4.0, -3.0);
+    renderer->light1.pos = vec3_init(0.0, 4.0, 0.0);
     renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 0.2);
     renderer->light1.intensity = 10.0;
   lights_sub_light(&renderer->lights, &renderer->light1);
@@ -115,9 +115,18 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
   view_move(&renderer->view, game->position, game->rotation);
   
   lights_bind(&renderer->lights);
-    lights_set_material(&renderer->mtl_tile);
+    lights_set_material(&renderer->tile_mtl);
     view_sub_data(&renderer->view, mat4x4_init_identity());
     draw_mesh(renderer->scene_mesh);
+    
+    mat4x4_t model_water = mat4x4_mul(
+      mat4x4_init_scale(vec3_init(1.0, 1.0, 1.0)),
+      mat4x4_init_translation(vec3_init(0.0, 0.0, 0.0))
+    );
+    
+    lights_set_material(&renderer->water_mtl);
+    view_sub_data(&renderer->view, model_water);
+    draw_mesh(renderer->cube_mesh);
   
   colors_bind(&renderer->colors);
     mat4x4_t light1_matrix = mat4x4_mul(
@@ -149,9 +158,9 @@ static bool renderer_init_material(renderer_t *renderer)
 {
   if (
     !material_load(
-      &renderer->mtl_ground,
-      "res/texture/ground/ground_color.jpg",
-      "res/texture/ground/ground_normal.jpg"
+      &renderer->stone_mtl,
+      "res/mtl/stone/color.jpg",
+      "res/mtl/stone/normal.jpg"
     )
   ) {
     return false;
@@ -159,9 +168,19 @@ static bool renderer_init_material(renderer_t *renderer)
   
   if (
     !material_load(
-      &renderer->mtl_tile,
-      "res/texture/tile/tile_color.jpg",
-      "res/texture/tile/tile_normal.jpg"
+      &renderer->tile_mtl,
+      "res/mtl/tile/color.jpg",
+      "res/mtl/tile/normal.jpg"
+    )
+  ) {
+    return false;
+  }
+  
+  if (
+    !material_load(
+      &renderer->water_mtl,
+      "res/mtl/water/color.png",
+      "res/mtl/water/normal.jpg"
     )
   ) {
     return false;
