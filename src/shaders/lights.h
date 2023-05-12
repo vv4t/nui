@@ -12,8 +12,7 @@ typedef struct {
   mat4x4_t  light_matrices[6];
   vec3_t    pos;
   float     intensity;
-  vec3_t    color;
-  float     pad[1];
+  vec4_t    color;
 } ubc_light_t;
 
 typedef struct {
@@ -23,7 +22,7 @@ typedef struct {
 typedef struct {
   int     id;
   vec3_t  pos;
-  vec3_t  color;
+  vec4_t  color;
   float   intensity;
 } light_t;
 

@@ -15,8 +15,7 @@ struct light_t {
   mat4  light_matrices[6];
   vec3  pos;
   float intensity;
-  vec3  color;
-  float pad[1];
+  vec4  color;
 };
 
 layout (std140) uniform ubo_lights {

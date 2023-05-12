@@ -76,11 +76,17 @@ static bool renderer_init_scene(renderer_t *renderer)
   
   lights_set_scene(&renderer->lights, &renderer->scene);
   
-  lights_new_light(&renderer->lights, &renderer->scene_light);
-    renderer->scene_light.pos = vec3_init(0.0,2.0, 0.0);
-    renderer->scene_light.color = vec3_init(0.0, 1.0, 0.5);
-    renderer->scene_light.intensity = 4.0;
-  lights_sub_light(&renderer->lights, &renderer->scene_light);
+  lights_new_light(&renderer->lights, &renderer->light1);
+    renderer->light1.pos = vec3_init(-3.0, 4.0, -3.0);
+    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 1.0);
+    renderer->light1.intensity = 10.0;
+  lights_sub_light(&renderer->lights, &renderer->light1);
+  
+  lights_new_light(&renderer->lights, &renderer->light2);
+    renderer->light2.pos = vec3_init(3.0, 1.3, 3.0);
+    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 1.0);
+    renderer->light2.intensity = 10.0;
+  lights_sub_light(&renderer->lights, &renderer->light2);
   
   return true;
 }
@@ -104,13 +110,22 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
   view_move(&renderer->view, game->position, game->rotation);
   
   colors_bind(&renderer->colors);
-    mat4x4_t model_matrix = mat4x4_mul(
+    mat4x4_t light1_matrix = mat4x4_mul(
       mat4x4_init_scale(vec3_init(0.5, 0.5, 0.5)),
-      mat4x4_init_translation(vec3_init(0.0, 2.0, 0.0))
+      mat4x4_init_translation(renderer->light1.pos)
     );
     
-    colors_set_color(&renderer->colors, vec4_init(0.3, 1.0, 0.8, 1.0));
-    view_sub_data(&renderer->view, model_matrix);
+    colors_set_color(&renderer->colors, renderer->light1.color);
+    view_sub_data(&renderer->view, light1_matrix);
+    draw_mesh(renderer->cube_mesh);
+    
+    mat4x4_t light2_matrix = mat4x4_mul(
+      mat4x4_init_scale(vec3_init(0.5, 0.5, 0.5)),
+      mat4x4_init_translation(renderer->light2.pos)
+    );
+    
+    colors_set_color(&renderer->colors, renderer->light2.color);
+    view_sub_data(&renderer->view, light2_matrix);
     draw_mesh(renderer->cube_mesh);
   
   lights_bind(&renderer->lights);

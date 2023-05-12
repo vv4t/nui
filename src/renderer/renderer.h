@@ -23,7 +23,9 @@ typedef struct {
   
   scene_t         scene;
   
-  light_t         scene_light;
+  light_t         light1;
+  light_t         light2;
+  
   material_t      mtl_ground;
   material_t      mtl_tile;
   mesh_t          scene_mesh;

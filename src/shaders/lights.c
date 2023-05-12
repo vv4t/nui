@@ -50,7 +50,7 @@ bool lights_new_light(lights_t *lights, light_t *light)
   *light = (light_t) {
     .id = lights->light_count,
     .pos = vec3_init(0.0, 0.0, 0.0),
-    .color = vec3_init(1.0, 1.0, 1.0),
+    .color = vec4_init(1.0, 1.0, 1.0, 1.0),
     .intensity = 5.0
   };
   
@@ -92,8 +92,7 @@ void lights_sub_light(lights_t *lights, light_t *light)
   ubc_light_t ubc_light = {
     .pos = light->pos,
     .intensity = light->intensity,
-    .color = light->color,
-    .pad = {0}
+    .color = light->color
   };
   
   for (int i = 0; i < 6; i++) {
@@ -107,10 +106,10 @@ void lights_sub_light(lights_t *lights, light_t *light)
     draw_scene(lights->scene);
   }
   
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);
   glBufferSubData(GL_UNIFORM_BUFFER, light->id * sizeof(ubc_light_t), sizeof(ubc_light_t), &ubc_light);
-  
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 static bool lights_init_shadow(lights_t *lights)

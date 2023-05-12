@@ -324,7 +324,7 @@ inline static mat4x4_t mat4x4_init_orthogonal(float l, float r, float t, float b
   return m;
 }
 
-inline static mat4x4_t mat4x4_print(mat4x4_t m)
+inline static void mat4x4_print(mat4x4_t m)
 {
   printf("mat4x4_t(%f %f %f %f\n",  m.m[0], m.m[4], m.m[8],   m.m[12]);
   printf("         %f %f %f %f\n",  m.m[1], m.m[5], m.m[9],   m.m[13]);
@@ -332,6 +332,10 @@ inline static mat4x4_t mat4x4_print(mat4x4_t m)
   printf("         %f %f %f %f)\n", m.m[3], m.m[7], m.m[11],  m.m[15]);
 }
 
+inline static void vec3_print(vec3_t v)
+{
+  printf("vec3_t(%f %f %f)\n", v.x, v.y, v.z);
+}
 
 inline static float to_radians(float x)
 {

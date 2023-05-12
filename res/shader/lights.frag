@@ -15,8 +15,7 @@ struct light_t {
   mat4  light_matrices[6];
   vec3  pos;
   float intensity;
-  vec3  color;
-  float pad[1];
+  vec4  color;
 };
 
 layout (std140) uniform ubo_lights {
@@ -84,7 +83,7 @@ void main() {
     
     float attentuation = lights[i].intensity / (1.0 + 4.0 * delta_dist + 0.4 * delta_dist * delta_dist);
     float intensity = (diffuse + specular) * attentuation;
-    light += lights[i].color * intensity * (1.0 - shadow);
+    light += lights[i].color.xyz * intensity * (1.0 - shadow);
   }
   
   light += vec3(0.1, 0.1, 0.1);
