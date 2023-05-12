@@ -62,12 +62,12 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
   
   static const char *faces[] = {
-    "res/skybox/right.png",
-    "res/skybox/left.png",
-    "res/skybox/up.png",
-    "res/skybox/down.png",
-    "res/skybox/back.png",
-    "res/skybox/front.png",
+    "res/skybox/night/right.png",
+    "res/skybox/night/left.png",
+    "res/skybox/night/up.png",
+    "res/skybox/night/down.png",
+    "res/skybox/night/back.png",
+    "res/skybox/night/front.png",
   };
   
   for (int i = 0; i < 6; i++) {
