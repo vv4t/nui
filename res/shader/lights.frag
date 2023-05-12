@@ -63,7 +63,7 @@ void main() {
         float current_depth = proj_coords.z;
         
         float cos_theta = dot(vs_normal, -light_dir);
-        float bias = clamp(0.05 * (1.0 - cos_theta), 0.0, 0.005);
+        float bias = clamp(0.0005 * (1.0 - cos_theta), 0.0, 0.0001);
         
         if (current_depth - bias < closest_depth)
           shadow = 0.0;
@@ -86,7 +86,7 @@ void main() {
     light += lights[i].color.xyz * intensity * (1.0 - shadow);
   }
   
-  light += vec3(0.3, 0.3, 0.3);
+  light += vec3(0.1, 0.1, 0.1);
   
   frag_color = texture(u_color, vs_uv) * vec4(light, 1.0);
 }
