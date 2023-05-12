@@ -6,6 +6,7 @@
 #include "skybox.h"
 #include "vertex_buffer.h"
 
+#include "../shaders/hdr.h"
 #include "../shaders/lights.h"
 #include "../shaders/colors.h"
 
@@ -15,6 +16,7 @@ typedef struct {
   vertex_buffer_t vertex_buffer;
   view_t          view;
   
+  hdr_t           hdr;
   skybox_t        skybox;
   lights_t        lights;
   colors_t        colors;

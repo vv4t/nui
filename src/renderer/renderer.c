@@ -35,6 +35,8 @@ static void renderer_init_gl(renderer_t *renderer)
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
   
+  vertex_buffer_init(&renderer->vertex_buffer, 4096);
+  
   view_init(&renderer->view);
   view_perspective(&renderer->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
 }
@@ -45,6 +47,9 @@ static bool renderer_init_shaders(renderer_t *renderer)
     return false;
   
   if (!colors_init(&renderer->colors))
+    return false;
+  
+  if (!hdr_init(&renderer->hdr, &renderer->vertex_buffer))
     return false;
   
   return true;
@@ -81,13 +86,16 @@ void renderer_render(renderer_t *renderer, const game_t *game)
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
-  skybox_render(&renderer->skybox, &renderer->view, game->rotation);
+  hdr_begin(&renderer->hdr);
+    skybox_render(&renderer->skybox, &renderer->view, game->rotation);
+    lights_bind(&renderer->lights);
+    view_move(&renderer->view, game->position, game->rotation);
+    view_sub_data(&renderer->view, mat4x4_init_identity());
+    lights_bind_material(&renderer->mtl_tile);
+    draw_mesh(renderer->scene_mesh);
+  hdr_end(&renderer->hdr);
   
-  lights_bind(&renderer->lights);
-  view_move(&renderer->view, game->position, game->rotation);
-  view_sub_data(&renderer->view, mat4x4_init_identity());
-  lights_bind_material(&renderer->mtl_tile);
-  draw_mesh(renderer->scene_mesh);
+  hdr_draw(&renderer->hdr);
 }
 
 static void renderer_draw_scene(void *data, view_t *view)
@@ -123,8 +131,6 @@ static bool renderer_init_material(renderer_t *renderer)
 
 static bool renderer_init_mesh(renderer_t *renderer)
 {
-  vertex_buffer_init(&renderer->vertex_buffer, 4096);
-  
   struct {
     const char  *path;
     mesh_t      *mesh;
