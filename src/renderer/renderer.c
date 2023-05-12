@@ -78,18 +78,6 @@ static bool renderer_init_scene(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
-  lights_set_light(
-    &renderer->lights, 0,
-    &renderer->scene,
-    vec3_init(cos(game->time) * 9, 1.0, sin(game->time) * 9), 20.0, vec4_init(0.0, 1.0, 0.5, 1.0)
-  );
-  
-  lights_set_light(
-    &renderer->lights, 1,
-    &renderer->scene,
-    vec3_init(sin(game->time) * 9, 1, cos(game->time) * 9), 20.0, vec4_init(1.0, 0.0, 0.5, 1.0)
-  );
-  
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
