@@ -18,6 +18,8 @@ bool lights_init(lights_t *lights)
   lights_init_lights(lights);
   lights_init_shadow(lights);
   
+  lights->light_count = 0;
+  
   return true;
 }
 
@@ -29,7 +31,12 @@ void lights_bind(lights_t *lights)
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
 }
 
-void lights_bind_material(material_t *material)
+void lights_set_scene(lights_t *lights, scene_t *scene)
+{
+  lights->scene = scene;
+}
+
+void lights_set_material(material_t *material)
 {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, material->color);
@@ -38,18 +45,26 @@ void lights_bind_material(material_t *material)
   glBindTexture(GL_TEXTURE_2D, material->normal);
 }
 
-void lights_set_light(
-  lights_t    *lights,
-  int         light_id,
-  scene_t     *scene,
-  vec3_t      pos,
-  float       intensity,
-  vec4_t      color)
+bool lights_new_light(lights_t *lights, light_t *light)
+{
+  *light = (light_t) {
+    .id = lights->light_count,
+    .pos = vec3_init(0.0, 0.0, 0.0),
+    .color = vec3_init(1.0, 1.0, 1.0),
+    .intensity = 5.0
+  };
+  
+  lights->light_count++;
+  
+  return true;
+}
+
+void lights_sub_light(lights_t *lights, light_t *light)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
   
-  glViewport(0, light_id * 1024, 6 * 1024, 1024);
-  glScissor(0, light_id * 1024, 6 * 1024, 1024);
+  glViewport(0, light->id * 1024, 6 * 1024, 1024);
+  glScissor(0, light->id * 1024, 6 * 1024, 1024);
   glEnable(GL_SCISSOR_TEST);
   glClear(GL_DEPTH_BUFFER_BIT);
   glDisable(GL_SCISSOR_TEST);
@@ -59,12 +74,12 @@ void lights_set_light(
   mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
   
   mat4x4_t view_matrices[] = {
-    mat4x4_init_look_at(vec3_add(vec3_init( 1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init(-1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  1.0,  0.0), pos), pos, vec3_init(0.0,  0.0,  1.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0, -1.0,  0.0), pos), pos, vec3_init(0.0,  0.0, -1.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0,  1.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0, -1.0), pos), pos, vec3_init(0.0, -1.0,  0.0))
+    mat4x4_init_look_at(vec3_add(vec3_init( 1.0,  0.0,  0.0), light->pos), light->pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init(-1.0,  0.0,  0.0), light->pos), light->pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  1.0,  0.0), light->pos), light->pos, vec3_init(0.0,  0.0,  1.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0, -1.0,  0.0), light->pos), light->pos, vec3_init(0.0,  0.0, -1.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0,  1.0), light->pos), light->pos, vec3_init(0.0, -1.0,  0.0)),
+    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0, -1.0), light->pos), light->pos, vec3_init(0.0, -1.0,  0.0))
   };
   
   mat4x4_t bias_matrix = mat4x4_init(
@@ -74,25 +89,26 @@ void lights_set_light(
     vec4_init(0.0,        0.0,              0.0, 1.0)
   );
   
-  light_t light = {
-    .pos = pos,
-    .intensity = intensity,
-    .color = color
+  ubc_light_t ubc_light = {
+    .pos = light->pos,
+    .intensity = light->intensity,
+    .color = light->color,
+    .pad = {0}
   };
   
   for (int i = 0; i < 6; i++) {
     mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
     mat4x4_t bias_mvp = mat4x4_mul(view_projection_matrix, bias_matrix);
     
-    light.light_matrices[i] = bias_mvp;
+    ubc_light.light_matrices[i] = bias_mvp;
     
-    glViewport(i * 1024, light_id * 1024, 1024, 1024);
-    view_set(scene->view, view_projection_matrix, pos);
-    draw_scene(scene);
+    glViewport(i * 1024, light->id * 1024, 1024, 1024);
+    view_set(lights->scene->view, view_projection_matrix, light->pos);
+    draw_scene(lights->scene);
   }
   
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);
-  glBufferSubData(GL_UNIFORM_BUFFER, light_id * sizeof(light_t), sizeof(light_t), &light);
+  glBufferSubData(GL_UNIFORM_BUFFER, light->id * sizeof(ubc_light_t), sizeof(ubc_light_t), &ubc_light);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -122,12 +138,12 @@ static bool lights_init_lights(lights_t *lights)
 {
   glGenBuffers(1, &lights->ubo_lights);
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_lights_t), NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(ubc_lights_t), NULL, GL_DYNAMIC_DRAW);
   
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, lights->ubo_lights); 
   
-  ub_lights_t ub_lights = {0};
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_lights_t), &ub_lights);
+  ubc_lights_t ubc_lights = {0};
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ubc_lights_t), &ubc_lights);
 }
 
 static bool lights_init_light_shader(lights_t *lights)

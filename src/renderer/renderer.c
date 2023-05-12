@@ -74,11 +74,13 @@ static bool renderer_init_scene(renderer_t *renderer)
     .draw = renderer_draw_scene
   };
   
-  lights_set_light(
-    &renderer->lights, 0,
-    &renderer->scene,
-    vec3_init(0.0, 2.0, 0.0), 20.0, vec4_init(0.0, 1.0, 0.5, 1.0)
-  );
+  lights_set_scene(&renderer->lights, &renderer->scene);
+  
+  lights_new_light(&renderer->lights, &renderer->scene_light);
+    renderer->scene_light.pos = vec3_init(0.0,2.0, 0.0);
+    renderer->scene_light.color = vec3_init(0.0, 1.0, 0.5);
+    renderer->scene_light.intensity = 4.0;
+  lights_sub_light(&renderer->lights, &renderer->scene_light);
   
   return true;
 }
@@ -112,7 +114,7 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
     draw_mesh(renderer->cube_mesh);
   
   lights_bind(&renderer->lights);
-    lights_bind_material(&renderer->mtl_tile);
+    lights_set_material(&renderer->mtl_tile);
     view_sub_data(&renderer->view, mat4x4_init_identity());
     draw_mesh(renderer->scene_mesh);
 }
