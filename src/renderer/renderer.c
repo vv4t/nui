@@ -118,15 +118,6 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
     lights_set_material(&renderer->tile_mtl);
     view_sub_data(&renderer->view, mat4x4_init_identity());
     draw_mesh(renderer->scene_mesh);
-    
-    mat4x4_t model_water = mat4x4_mul(
-      mat4x4_init_scale(vec3_init(1.0, 1.0, 1.0)),
-      mat4x4_init_translation(vec3_init(0.0, 0.0, 0.0))
-    );
-    
-    lights_set_material(&renderer->water_mtl);
-    view_sub_data(&renderer->view, model_water);
-    draw_mesh(renderer->cube_mesh);
   
   colors_bind(&renderer->colors);
     mat4x4_t light1_matrix = mat4x4_mul(
@@ -171,16 +162,6 @@ static bool renderer_init_material(renderer_t *renderer)
       &renderer->tile_mtl,
       "res/mtl/tile/color.jpg",
       "res/mtl/tile/normal.jpg"
-    )
-  ) {
-    return false;
-  }
-  
-  if (
-    !material_load(
-      &renderer->water_mtl,
-      "res/mtl/water/color.png",
-      "res/mtl/water/normal.jpg"
     )
   ) {
     return false;
