@@ -6,7 +6,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-bool hdr_init(hdr_t *hdr, vertex_buffer_t *vertex_buffer)
+bool hdr_init(hdr_t *hdr, mesh_t quad_mesh)
 {
   glGenFramebuffers(1, &hdr->fbo);
   glBindFramebuffer(GL_FRAMEBUFFER, hdr->fbo);
@@ -51,23 +51,7 @@ bool hdr_init(hdr_t *hdr, vertex_buffer_t *vertex_buffer)
   free(src_vertex);
   free(src_fragment);
   
-  vertex_t quad_vertices[] = {
-    { .pos = { -1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 0.0f } },
-    { .pos = { -1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 1.0f } },
-    { .pos = { +1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 0.0f } },
-    { .pos = { -1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 1.0f } },
-    { .pos = { +1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 1.0f } },
-    { .pos = { +1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 0.0f } }
-  };
-  
-  if (!vertex_buffer_new_mesh(
-    vertex_buffer,
-    &hdr->screen_mesh,
-    quad_vertices,
-    6
-  )) {
-    return false;
-  }
+  hdr->quad_mesh = quad_mesh;
   
   return true;
 }
@@ -92,7 +76,7 @@ void hdr_draw(hdr_t *hdr)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, hdr->color_buffer);
   
-  draw_mesh(hdr->screen_mesh);
+  draw_mesh(hdr->quad_mesh);
   
   glEnable(GL_DEPTH_TEST);
 }

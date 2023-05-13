@@ -4,7 +4,7 @@
 #include "mesh_file.h"
 #include "../common/file.h"
 
-static void renderer_init_gl(renderer_t *renderer);
+static bool renderer_init_gl(renderer_t *renderer);
 static bool renderer_init_scene(renderer_t *renderer);
 static bool renderer_init_shaders(renderer_t *renderer);
 
@@ -19,7 +19,8 @@ static void renderer_draw_scene(void *data, view_t *view);
 
 bool renderer_init(renderer_t *renderer)
 {
-  renderer_init_gl(renderer);
+  if (!renderer_init_gl(renderer))
+    return false;
   
   if (!renderer_init_shaders(renderer))
     return false;
@@ -30,7 +31,7 @@ bool renderer_init(renderer_t *renderer)
   return true;
 }
 
-static void renderer_init_gl(renderer_t *renderer)
+static bool renderer_init_gl(renderer_t *renderer)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   
@@ -46,6 +47,26 @@ static void renderer_init_gl(renderer_t *renderer)
   
   view_init(&renderer->view);
   view_perspective(&renderer->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
+  
+  vertex_t quad_vertices[] = {
+    { .pos = { -1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 0.0f } },
+    { .pos = { -1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 1.0f } },
+    { .pos = { +1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 0.0f } },
+    { .pos = { -1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 0.0f, 1.0f } },
+    { .pos = { +1.0f, +1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 1.0f } },
+    { .pos = { +1.0f, -1.0f, 0.0f }, .normal = { 0.0f, 0.0f, -1.0f }, .uv = { 1.0f, 0.0f } }
+  };
+  
+  if (!vertex_buffer_new_mesh(
+    &renderer->vertex_buffer,
+    &renderer->quad_mesh,
+    quad_vertices,
+    6
+  )) {
+    return false;
+  }
+  
+  return true;
 }
 
 static bool renderer_init_shaders(renderer_t *renderer)
@@ -56,7 +77,7 @@ static bool renderer_init_shaders(renderer_t *renderer)
   if (!colors_init(&renderer->colors))
     return false;
   
-  if (!hdr_init(&renderer->hdr, &renderer->vertex_buffer))
+  if (!hdr_init(&renderer->hdr, renderer->quad_mesh))
     return false;
   
   return true;
