@@ -3,9 +3,9 @@
 
 #include "view.h"
 #include "scene.h"
-#include "skybox.h"
 #include "vertex_buffer.h"
 
+#include "../shaders/skybox.h"
 #include "../shaders/hdr.h"
 #include "../shaders/lights.h"
 #include "../shaders/colors.h"

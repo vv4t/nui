@@ -1,10 +1,10 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
 
-#include "gl.h"
-#include "view.h"
-#include "scene.h"
-#include "vertex_buffer.h"
+#include "../renderer/gl.h"
+#include "../renderer/view.h"
+#include "../renderer/scene.h"
+#include "../renderer/vertex_buffer.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>
 
