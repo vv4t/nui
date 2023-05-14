@@ -12,12 +12,13 @@
 typedef struct {
   mesh_t  quad_mesh;
   GLuint  shader;
-  GLuint  fbo[2];
-  GLuint  wave[2];
+  GLuint  out_shader;
+  GLuint  fbo[3];
+  GLuint  wave[3];
 } waves_t;
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh);
-void waves_setup(waves_t *waves, colors_t *colors, view_t *view);
+void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view);
 void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view);
 void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view);
 

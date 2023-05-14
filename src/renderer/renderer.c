@@ -120,7 +120,7 @@ static bool renderer_init_scene(renderer_t *renderer)
     renderer->light2.intensity = 10.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
-  waves_setup(&renderer->waves, &renderer->colors, &renderer->view);
+  waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
   
   return true;
 }
