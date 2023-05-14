@@ -20,7 +20,7 @@ void mouse_move(usercmd_t *usercmd, int d_x, int d_y);
 int main()
 {
   sdl_t sdl;
-  if (!sdl_init(&sdl, 800, 800, "nui"))
+  if (!sdl_init(&sdl, 1280, 720, "nui"))
     return 0;
   
   sdl_lock(true);

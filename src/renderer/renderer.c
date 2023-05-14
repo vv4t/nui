@@ -109,18 +109,21 @@ static bool renderer_init_scene(renderer_t *renderer)
   lights_set_scene(&renderer->lights, &renderer->scene);
   
   lights_new_light(&renderer->lights, &renderer->light1);
-    renderer->light1.pos = vec3_init(0.0, 4.0, 0.0);
-    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 0.2);
-    renderer->light1.intensity = 10.0;
+    renderer->light1.pos = vec3_init(1.0, 4.0, -3.0);
+    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 1.0);
+    renderer->light1.intensity = 30.0;
   lights_sub_light(&renderer->lights, &renderer->light1);
   
   lights_new_light(&renderer->lights, &renderer->light2);
-    renderer->light2.pos = vec3_init(3.0, 1.3, 3.0);
-    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 0.2);
+    renderer->light2.pos = vec3_init(3.0, 2.3, 3.0);
+    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 1.0);
     renderer->light2.intensity = 10.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
   waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
+  
+  texture_load(&renderer->water_mtl.diffuse, "res/mtl/water/color.png");
+  renderer->water_mtl.normal = renderer->waves.wave[2];
   
   return true;
 }
@@ -129,16 +132,13 @@ void renderer_render(renderer_t *renderer, const game_t *game)
 {
   waves_move(&renderer->waves, &renderer->full_bright, &renderer->view);
   
-  glViewport(0, 0, 800, 800);
-  waves_show(&renderer->waves, &renderer->full_bright, &renderer->view);
+  glViewport(0, 0, 1280, 720);
   
-  /*
   hdr_begin(&renderer->hdr);
     renderer_render_scene(renderer, game);
   hdr_end(&renderer->hdr);
   
   hdr_draw(&renderer->hdr);
-  */
 }
 
 static void renderer_render_scene(renderer_t *renderer, const game_t *game)
@@ -154,6 +154,15 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
     lights_set_material(&renderer->tile_mtl);
     view_sub_data(&renderer->view, mat4x4_init_identity());
     draw_mesh(renderer->scene_mesh);
+    
+    mat4x4_t water_model = mat4x4_mul(
+      mat4x4_init_scale(vec3_init(1.5, 0.5, 1.5)),
+      mat4x4_init_translation(vec3_init(4.0, 0.2, -3.0))
+    );
+    
+    lights_set_material(&renderer->water_mtl);
+    view_sub_data(&renderer->view, water_model);
+    draw_mesh(renderer->cube_mesh);
   
   colors_bind(&renderer->colors);
     mat4x4_t light1_matrix = mat4x4_mul(

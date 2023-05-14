@@ -32,6 +32,7 @@ typedef struct {
   
   material_t      stone_mtl;
   material_t      tile_mtl;
+  material_t      water_mtl;
   
   mesh_t          quad_mesh;
   mesh_t          scene_mesh;

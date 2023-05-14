@@ -15,8 +15,8 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
     
     glBindTexture(GL_TEXTURE_2D, waves->wave[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WAVES_SIZE, WAVES_SIZE, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     
@@ -56,6 +56,8 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   
+  glDisable(GL_DEPTH_TEST);
+  
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
     glUseProgram(waves->shader);
     glActiveTexture(GL_TEXTURE0);
@@ -65,13 +67,11 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
     material_t material = { .diffuse = waves->wave[0] };
-    glDisable(GL_DEPTH_TEST);
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     view_sub_data(view, mat4x4_init_identity());
     full_bright_set_material(&material);
     draw_mesh(waves->quad_mesh);
-    glEnable(GL_DEPTH_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[2]);
@@ -80,11 +80,13 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
     glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
     draw_mesh(waves->quad_mesh);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  
+  glEnable(GL_DEPTH_TEST);
 }
 
 void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
-  char data[64 * 64 * 4];
+  char data[64 * 64 * 3];
   for (int i = 0; i < 64; i++) {
     for (int j = 0; j < 64; j++) {
       float x = i - 32.0;
@@ -93,17 +95,15 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
       float t = sqrt(x*x + y*y);
       
       if (t > 32) {
-        data[(i * 64 + j) * 4 + 0] = 128;
-        data[(i * 64 + j) * 4 + 1] = 128;
-        data[(i * 64 + j) * 4 + 2] = 0;
-        data[(i * 64 + j) * 4 + 3] = 255;
+        data[(i * 64 + j) * 3 + 0] = 128;
+        data[(i * 64 + j) * 3 + 1] = 128;
+        data[(i * 64 + j) * 3 + 3] = 255;
       } else {
         float theta = t / 32.0 * M_PI;
         
-        data[(i * 64 + j) * 4 + 0] = sin(theta) * 0.2 * 128 + 128;
-        data[(i * 64 + j) * 4 + 1] = cos(theta) * 0.2 * 128 + 128;
-        data[(i * 64 + j) * 4 + 2] = 0;
-        data[(i * 64 + j) * 4 + 3] = 255;
+        data[(i * 64 + j) * 3 + 0] = sin(theta) * 0.9 * 128 + 128;
+        data[(i * 64 + j) * 3 + 1] = cos(theta) * 0.9 * 128 + 128;
+        data[(i * 64 + j) * 3 + 3] = 255;
       }
     }
   }
@@ -117,7 +117,7 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
   
   material_t material = { .diffuse = wave_pattern };
   
@@ -128,16 +128,17 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 64; i++) {
       float x = (rand() % 256) / 256.0 - 0.5;
       float y = (rand() % 256) / 256.0 - 0.5;
-      float t = 0.3 + (rand() % 256) / 1024.0;
+      float u = 0.2 + (rand() % 256) / 256.0 * 0.2;
+      float t = 0.2 + (rand() % 256) / 256.0 * 0.2;
       
       view_sub_data(
         view,
         mat4x4_init_transform(
           vec3_init(x, y, 1.0f),
-          vec3_init(t, t, 1.0f)
+          vec3_init(u, t, 1.0f)
         )
       );
       full_bright_set_material(&material);
@@ -150,6 +151,8 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
 
 void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
+  glViewport(0, 0, 800, 800);
+  
   material_t material = { .diffuse = waves->wave[2] };
   
   glDisable(GL_DEPTH_TEST);
