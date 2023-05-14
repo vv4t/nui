@@ -9,6 +9,8 @@
 #include "../shaders/hdr.h"
 #include "../shaders/lights.h"
 #include "../shaders/colors.h"
+#include "../shaders/waves.h"
+#include "../shaders/full_bright.h"
 
 #include "../game/game.h"
 
@@ -20,6 +22,8 @@ typedef struct {
   skybox_t        skybox;
   lights_t        lights;
   colors_t        colors;
+  waves_t         waves;
+  full_bright_t   full_bright;
   
   scene_t         scene;
   

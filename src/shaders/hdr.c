@@ -59,7 +59,6 @@ bool hdr_init(hdr_t *hdr, mesh_t quad_mesh)
 void hdr_begin(hdr_t *hdr)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, hdr->fbo);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void hdr_end(hdr_t *hdr)

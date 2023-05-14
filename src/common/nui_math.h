@@ -251,6 +251,17 @@ inline static mat4x4_t mat4x4_init_scale(vec3_t v)
   return m;
 }
 
+inline static mat4x4_t mat4x4_init_rotation(quat_t q)
+{
+  mat4x4_t m;
+  m.m[0]  = 1-2*q.y*q.y - 2*q.z*q.z;  m.m[4]  = 2*q.x*q.y - 2*q.z*q.w;    m.m[8]  = 2*q.x*q.z + 2*q.y*q.w;    m.m[12] = 0;
+  m.m[1]  = 2*q.x*q.y + 2*q.z*q.w;    m.m[5]  = 1-2*q.x*q.x - 2*q.z*q.z;  m.m[9]  = 2*q.y*q.z - 2*q.x*q.w;    m.m[13] = 0;
+  m.m[2]  = 2*q.x*q.z - 2*q.y*q.w;    m.m[6]  = 2*q.y*q.z + 2*q.x*q.w;    m.m[10] = 1-2*q.x*q.x - 2 *q.y*q.y; m.m[14] = 0;
+  m.m[3]  = 0;                        m.m[7]  = 0;                        m.m[11] = 0;                        m.m[15] = 1;
+  
+  return m;
+}
+
 inline static mat4x4_t mat4x4_mul(mat4x4_t a, mat4x4_t b)
 {
   mat4x4_t m;
@@ -267,15 +278,12 @@ inline static mat4x4_t mat4x4_mul(mat4x4_t a, mat4x4_t b)
   return m;
 }
 
-inline static mat4x4_t mat4x4_init_rotation(quat_t q)
+inline static mat4x4_t mat4x4_init_transform(vec3_t translate, vec3_t scale)
 {
-  mat4x4_t m;
-  m.m[0]  = 1-2*q.y*q.y - 2*q.z*q.z;  m.m[4]  = 2*q.x*q.y - 2*q.z*q.w;    m.m[8]  = 2*q.x*q.z + 2*q.y*q.w;    m.m[12] = 0;
-  m.m[1]  = 2*q.x*q.y + 2*q.z*q.w;    m.m[5]  = 1-2*q.x*q.x - 2*q.z*q.z;  m.m[9]  = 2*q.y*q.z - 2*q.x*q.w;    m.m[13] = 0;
-  m.m[2]  = 2*q.x*q.z - 2*q.y*q.w;    m.m[6]  = 2*q.y*q.z + 2*q.x*q.w;    m.m[10] = 1-2*q.x*q.x - 2 *q.y*q.y; m.m[14] = 0;
-  m.m[3]  = 0;                        m.m[7]  = 0;                        m.m[11] = 0;                        m.m[15] = 1;
+  mat4x4_t translation_matrix = mat4x4_init_translation(translate);
+  mat4x4_t scale_matrix = mat4x4_init_scale(scale);
   
-  return m;
+  return mat4x4_mul(scale_matrix, translation_matrix);
 }
 
 inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from, vec3_t up)

@@ -120,7 +120,7 @@ static bool shader_compile(GLuint *shader, GLuint type, const char *define, cons
   glGetShaderiv(*shader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(*shader, 1024, NULL, info);
-    LOG_ERROR("failed to compiler shader\n%s\n%s", info, src);
+    LOG_ERROR("failed to compiler shader\n%s", info);
     return false;
   }
   
