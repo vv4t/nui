@@ -109,15 +109,15 @@ static bool renderer_init_scene(renderer_t *renderer)
   lights_set_scene(&renderer->lights, &renderer->scene);
   
   lights_new_light(&renderer->lights, &renderer->light1);
-    renderer->light1.pos = vec3_init(1.0, 4.0, -3.0);
-    renderer->light1.color = vec4_init(0.0, 1.0, 0.5, 1.0);
+    renderer->light1.pos = vec3_init(4.0, 6.0, 4.0);
+    renderer->light1.color = vec4_init(0.5, 1.0, 1.0, 1.0);
     renderer->light1.intensity = 30.0;
   lights_sub_light(&renderer->lights, &renderer->light1);
   
   lights_new_light(&renderer->lights, &renderer->light2);
-    renderer->light2.pos = vec3_init(3.0, 2.3, 3.0);
-    renderer->light2.color = vec4_init(1.0, 0.0, 0.5, 1.0);
-    renderer->light2.intensity = 10.0;
+    renderer->light2.pos = vec3_init(-4.0, 6.0, 4.0);
+    renderer->light2.color = vec4_init(1.0, 0.5, 1.0, 1.0);
+    renderer->light2.intensity = 20.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
   waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
@@ -131,8 +131,6 @@ static bool renderer_init_scene(renderer_t *renderer)
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
   waves_move(&renderer->waves, &renderer->full_bright, &renderer->view);
-  
-  glViewport(0, 0, 1280, 720);
   
   hdr_begin(&renderer->hdr);
     renderer_render_scene(renderer, game);
@@ -156,8 +154,8 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
     draw_mesh(renderer->scene_mesh);
     
     mat4x4_t water_model = mat4x4_mul(
-      mat4x4_init_scale(vec3_init(1.5, 0.5, 1.5)),
-      mat4x4_init_translation(vec3_init(4.0, 0.2, -3.0))
+      mat4x4_init_scale(vec3_init(10.0, 0.5, 10.0)),
+      mat4x4_init_translation(vec3_init(0.0, 0.2, 0.0))
     );
     
     lights_set_material(&renderer->water_mtl);

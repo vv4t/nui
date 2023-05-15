@@ -3,7 +3,7 @@
 #include "../common/log.h"
 #include "../common/file.h"
 
-#define WAVES_SIZE 256
+#define WAVES_SIZE 512
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh)
 {
@@ -101,8 +101,8 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
       } else {
         float theta = t / 32.0 * M_PI;
         
-        data[(i * 64 + j) * 3 + 0] = sin(theta) * 0.9 * 128 + 128;
-        data[(i * 64 + j) * 3 + 1] = cos(theta) * 0.9 * 128 + 128;
+        data[(i * 64 + j) * 3 + 0] = sin(theta) * 0.5 * 128 + 128;
+        data[(i * 64 + j) * 3 + 1] = cos(theta) * 0.5 * 128 + 128;
         data[(i * 64 + j) * 3 + 3] = 255;
       }
     }
@@ -129,10 +129,10 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     
     for (int i = 0; i < 64; i++) {
-      float x = (rand() % 256) / 256.0 - 0.5;
-      float y = (rand() % 256) / 256.0 - 0.5;
-      float u = 0.2 + (rand() % 256) / 256.0 * 0.2;
-      float t = 0.2 + (rand() % 256) / 256.0 * 0.2;
+      float x = (rand() % 256) / 128.0 - 1.0;
+      float y = (rand() % 256) / 128.0 - 1.0;
+      float u = 0.05 + (rand() % 256) / 256.0 * 0.1;
+      float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
       
       view_sub_data(
         view,

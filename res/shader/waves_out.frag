@@ -6,7 +6,7 @@ uniform sampler2D u_wave;
 
 float u_at(vec2 x)
 {
-  return (texture(u_wave, x).r - 0.5) * 1.0;
+  return (texture(u_wave, x).r - 0.5) * 4.0;
 }
 
 void main()
