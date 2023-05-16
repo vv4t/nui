@@ -15,13 +15,10 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
     
     glBindTexture(GL_TEXTURE_2D, waves->wave[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WAVES_SIZE, WAVES_SIZE, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    
-    float border_color[] = { 0.5f, 0.5f, 0.0f, 0.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, waves->wave[i], 0);
 
@@ -54,16 +51,19 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
 
 void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
-  glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
-  
   glDisable(GL_DEPTH_TEST);
   
+  glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
+  
+  glScissor(1, 1, WAVES_SIZE - 2, WAVES_SIZE - 2);
+  glEnable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
     glUseProgram(waves->shader);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
     draw_mesh(waves->quad_mesh);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDisable(GL_SCISSOR_TEST);
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
     material_t material = { .diffuse = waves->wave[0] };
@@ -130,11 +130,11 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     
-    for (int i = 0; i < 64; i++) {
-      float x = (rand() % 256) / 128.0 - 1.0;
-      float y = (rand() % 256) / 128.0 - 1.0;
-      float u = 0.05 + (rand() % 256) / 256.0 * 0.1;
-      float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
+    for (int i = 0; i < 1; i++) {
+      float x = 0.0;//(rand() % 256) / 128.0 - 1.0;
+      float y = 0.0;//(rand() % 256) / 128.0 - 1.0;
+      float u = 0.2;// 0.05 + (rand() % 256) / 256.0 * 0.1;
+      float t = 0.2;// 0.05 + (rand() % 256) / 256.0 * 0.1;
       
       view_sub_data(
         view,
