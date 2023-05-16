@@ -33,5 +33,5 @@ void main()
   
   float u_0 = u * 2.0 - u_t + d2u_dt2 * d_t * d_t;
   
-  frag_color = vec4(u_0 * 0.995 + 0.5, u + 0.5, 0.0, 1.0);
+  frag_color = vec4(u_0 * 0.9999 + 0.5, u + 0.5, 0.0, 1.0);
 }

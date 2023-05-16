@@ -55,7 +55,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   
-  glScissor(1, 1, WAVES_SIZE - 2, WAVES_SIZE - 2);
+  glScissor(20, 20, WAVES_SIZE - 40, WAVES_SIZE - 40);
   glEnable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
     glUseProgram(waves->shader);
@@ -127,6 +127,8 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
     glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
     glClearColor(0.5f, 0.5f, 0.0f, 1.0f);
+    glScissor(20, 20, WAVES_SIZE - 40, WAVES_SIZE - 40);
+    glEnable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
@@ -134,19 +136,19 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
     for (int i = 0; i < 64; i++) {
       float x = (rand() % 256) / 128.0 - 1.0;
       float y = (rand() % 256) / 128.0 - 1.0;
-      float u = 0.05 + (rand() % 256) / 256.0 * 0.1;
       float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
       
       view_sub_data(
         view,
         mat4x4_init_transform(
           vec3_init(x, y, 1.0f),
-          vec3_init(u, t, 1.0f)
+          vec3_init(t, t, 1.0f)
         )
       );
       full_bright_set_material(&material);
       draw_mesh(waves->quad_mesh);
     }
+    glDisable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   glDeleteTextures(1, &wave_pattern);
@@ -154,7 +156,7 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
 
 void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
-  glViewport(0, 0, 800, 800);
+  glViewport(50, 50, 600, 600);
   
   material_t material = { .diffuse = waves->wave[2] };
   
