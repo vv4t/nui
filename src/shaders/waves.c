@@ -55,7 +55,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   
-  glScissor(20, 20, WAVES_SIZE - 40, WAVES_SIZE - 40);
+  glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
   glEnable(GL_SCISSOR_TEST);
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
     glUseProgram(waves->shader);
@@ -127,7 +127,7 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
     glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
     glClearColor(0.5f, 0.5f, 0.0f, 1.0f);
-    glScissor(20, 20, WAVES_SIZE - 40, WAVES_SIZE - 40);
+    glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
     glEnable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     full_bright_bind(full_bright);
