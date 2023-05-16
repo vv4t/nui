@@ -27,8 +27,8 @@ void main()
   float d2u_dx2 = du_dx_2 - du_dx_1;
   float d2u_dy2 = du_dy_2 - du_dy_1;
   
-  float u_t_1 = u_t + 40.0 * (d2u_dx2 + d2u_dy2) * 0.08;
-  float u_1 = u + u_t_1 * 0.08;
+  float u_t_1 = clamp(u_t + 400.0 * (d2u_dx2 + d2u_dy2) * 0.015, -0.5, 0.5);
+  float u_1 = clamp(u + u_t_1 * 0.015, -0.5, 0.5);
   
   frag_color = vec4(u_1 + 0.5, u_t_1 + 0.5, 0.0, 1.0);
 }
