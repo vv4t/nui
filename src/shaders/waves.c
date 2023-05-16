@@ -51,6 +51,7 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
 
 void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
+  glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
   
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
@@ -63,7 +64,6 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
     glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
     draw_mesh(waves->quad_mesh);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glDisable(GL_SCISSOR_TEST);
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
     material_t material = { .diffuse = waves->wave[0] };
@@ -73,6 +73,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
     full_bright_set_material(&material);
     draw_mesh(waves->quad_mesh);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDisable(GL_SCISSOR_TEST);
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[2]);
     glUseProgram(waves->out_shader);
@@ -81,6 +82,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
     draw_mesh(waves->quad_mesh);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
+  glEnable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
 }
 
@@ -125,11 +127,15 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   material_t material = { .diffuse = wave_pattern };
   
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
+    glDisable(GL_BLEND);
+    
     glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
-    glClearColor(0.5f, 0.5f, 0.0f, 1.0f);
-    glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
-    glEnable(GL_SCISSOR_TEST);
+    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
+    
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     
@@ -148,7 +154,9 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
       full_bright_set_material(&material);
       draw_mesh(waves->quad_mesh);
     }
+    
     glDisable(GL_SCISSOR_TEST);
+    glEnable(GL_BLEND);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   glDeleteTextures(1, &wave_pattern);
