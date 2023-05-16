@@ -86,26 +86,27 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
 
 void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
-  float data[64 * 64 * 4];
+  char data[64 * 64 * 3];
   for (int i = 0; i < 64; i++) {
     for (int j = 0; j < 64; j++) {
       float x = i - 32.0;
       float y = j - 32.0;
       
       float t = sqrt(x*x + y*y);
-        
+      
       if (t > 32) {
-        data[(i * 64 + j) * 4 + 0] = 0.5;
-        data[(i * 64 + j) * 4 + 1] = 0.5;
-        data[(i * 64 + j) * 4 + 2] = 0;
-        data[(i * 64 + j) * 4 + 3] = 1.0;
+        data[(i * 64 + j) * 3 + 0] = 128;
+        data[(i * 64 + j) * 3 + 1] = 128;
+        data[(i * 64 + j) * 3 + 2] = 255;
       } else {
         float theta = t / 32.0 * M_PI;
         
-        data[(i * 64 + j) * 4 + 0] = sin(theta) * 0.5 * 0.5 + 0.5;
-        data[(i * 64 + j) * 4 + 1] = cos(theta) * 0.5 * 0.5 + 0.5;
-        data[(i * 64 + j) * 4 + 2] = 0;
-        data[(i * 64 + j) * 4 + 3] = 1.0;
+        float u = sin(theta) * 0.5;
+        float u_t = cos(theta) * 0.5;
+        
+        data[(i * 64 + j) * 3 + 0] = u * 128 + 128;
+        data[(i * 64 + j) * 3 + 1] = (u + u_t) * 128 + 128;
+        data[(i * 64 + j) * 3 + 2] = 255;
       }
     }
   }
@@ -114,12 +115,12 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glGenTextures(1, &wave_pattern);
   glBindTexture(GL_TEXTURE_2D, wave_pattern);
   
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 64, 64, 0, GL_RGBA, GL_FLOAT, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
   
   material_t material = { .diffuse = wave_pattern };
   
@@ -130,11 +131,11 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
     full_bright_bind(full_bright);
     view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
     
-    for (int i = 0; i < 1; i++) {
-      float x = 0.0;//(rand() % 256) / 128.0 - 1.0;
-      float y = 0.0;//(rand() % 256) / 128.0 - 1.0;
-      float u = 0.2;// 0.05 + (rand() % 256) / 256.0 * 0.1;
-      float t = 0.2;// 0.05 + (rand() % 256) / 256.0 * 0.1;
+    for (int i = 0; i < 64; i++) {
+      float x = (rand() % 256) / 128.0 - 1.0;
+      float y = (rand() % 256) / 128.0 - 1.0;
+      float u = 0.05 + (rand() % 256) / 256.0 * 0.1;
+      float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
       
       view_sub_data(
         view,

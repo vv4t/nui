@@ -6,7 +6,7 @@ uniform sampler2D u_wave;
 
 float u_at(vec2 x)
 {
-  return (texture(u_wave, x).r - 0.5) * 4.0;
+  return (texture(u_wave, x).r - 0.5) * 1.0;
 }
 
 void main()
@@ -22,6 +22,6 @@ void main()
   
   vec3 n = (normalize(cross(u1, u2)) + 1.0) * 0.5;
   
-  // frag_color = vec4(n, 1.0);
-  frag_color = vec4(u + 0.5, u + 0.5, u + 0.5, 1.0);
+  frag_color = vec4(n, 1.0);
+  // frag_color = vec4(u + 0.5, u + 0.5, u + 0.5, 1.0);
 }

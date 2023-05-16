@@ -10,7 +10,7 @@ float u_at(vec2 x)
 }
 
 void main()
-{       
+{
   vec2 d = 1.0 / vec2(textureSize(u_wave, 0));
   
   vec2 b = texture(u_wave, vs_uv).rg;
@@ -27,8 +27,11 @@ void main()
   float d2u_dx2 = du_dx_2 - du_dx_1;
   float d2u_dy2 = du_dy_2 - du_dy_1;
   
-  float u_t_1 = u_t + 200.0 * (d2u_dx2 + d2u_dy2) * 0.05;
-  float u_1 = u + u_t_1 * 0.05;
+  float d_t = 0.015;
   
-  frag_color = vec4(u_1 + 0.5, u_t_1 + 0.5, 0.0, 1.0);
+  float d2u_dt2 = 400.5 * (d2u_dx2 + d2u_dy2);
+  
+  float u_0 = u * 2.0 - u_t + d2u_dt2 * d_t * d_t;
+  
+  frag_color = vec4(u_0 * 0.995 + 0.5, u + 0.5, 0.0, 1.0);
 }
