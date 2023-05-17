@@ -3,7 +3,7 @@
 #include "../common/log.h"
 #include "../common/file.h"
 
-#define WAVES_SIZE 512
+#define WAVES_SIZE 1024
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh)
 {
