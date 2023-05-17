@@ -7,7 +7,7 @@
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh)
 {
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 2; i++) {
     glGenFramebuffers(1, &waves->fbo[i]);
     glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[i]);
     
@@ -75,7 +75,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
   
-  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[2]);
+  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
     glUseProgram(waves->out_shader);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, waves->wave[1]);

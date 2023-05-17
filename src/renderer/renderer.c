@@ -123,7 +123,7 @@ static bool renderer_init_scene(renderer_t *renderer)
   waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
   
   texture_load(&renderer->water_mtl.diffuse, "res/mtl/water/color.png");
-  renderer->water_mtl.normal = renderer->waves.wave[2];
+  renderer->water_mtl.normal = renderer->waves.wave[0];
   
   return true;
 }
