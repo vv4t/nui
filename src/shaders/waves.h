@@ -11,8 +11,10 @@
 
 typedef struct {
   mesh_t  quad_mesh;
+  
   GLuint  shader;
   GLuint  out_shader;
+  
   GLuint  fbo[2];
   GLuint  wave[2];
 } waves_t;

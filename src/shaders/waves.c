@@ -3,9 +3,29 @@
 #include "../common/log.h"
 #include "../common/file.h"
 
-#define WAVES_SIZE 1024
+#define WAVES_SIZE  1024
+#define BORDER_SIZE 2
+
+static void waves_render_waves_map(waves_t *waves);
+static void waves_copy(waves_t *waves, full_bright_t *full_bright, view_t *view);
+static void waves_render_normal_map(waves_t *waves);
+static void waves_init_pattern(waves_t *waves);
+static void waves_init_maps(waves_t *waves);
+static bool waves_init_shaders(waves_t *waves);
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh)
+{
+  if (!waves_init_shaders(waves))
+    return false;
+  
+  waves_init_maps(waves);
+  
+  waves->quad_mesh = quad_mesh;
+  
+  return true;
+}
+
+static void waves_init_maps(waves_t *waves)
 {
   for (int i = 0; i < 2; i++) {
     glGenFramebuffers(1, &waves->fbo[i]);
@@ -24,7 +44,10 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
-  
+}
+
+static bool waves_init_shaders(waves_t *waves)
+{
   char *src_vertex = file_read_all("res/shader/hdr.vert");
   char *src_fragment = file_read_all("res/shader/waves.frag");
 
@@ -44,8 +67,6 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
   free(src_fragment);
   free(src_out);
   
-  waves->quad_mesh = quad_mesh;
-  
   return true;
 }
 
@@ -56,34 +77,56 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   
-  glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
+  glScissor(BORDER_SIZE, BORDER_SIZE, WAVES_SIZE - BORDER_SIZE * 2, WAVES_SIZE - BORDER_SIZE * 2);
   glEnable(GL_SCISSOR_TEST);
-  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
-    glUseProgram(waves->shader);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
-    draw_mesh(waves->quad_mesh);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
-  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
-    material_t material = { .diffuse = waves->wave[0] };
-    full_bright_bind(full_bright);
-    view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
-    view_sub_data(view, mat4x4_init_identity());
-    full_bright_set_material(&material);
-    draw_mesh(waves->quad_mesh);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  waves_render_waves_map(waves);
+  waves_copy(waves, full_bright, view);
   glDisable(GL_SCISSOR_TEST);
   
-  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
-    glUseProgram(waves->out_shader);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
-    draw_mesh(waves->quad_mesh);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  waves_render_normal_map(waves);
   
   glEnable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
+}
+
+static void waves_render_waves_map(waves_t *waves)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
+  
+  glUseProgram(waves->shader);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
+  draw_mesh(waves->quad_mesh);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+static void waves_copy(waves_t *waves, full_bright_t *full_bright, view_t *view)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
+  
+  full_bright_bind(full_bright);
+  
+  view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
+  view_sub_data(view, mat4x4_init_identity());
+  
+  material_t material = { .diffuse = waves->wave[0] };
+  full_bright_set_material(&material);
+  draw_mesh(waves->quad_mesh);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+static void waves_render_normal_map(waves_t *waves)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
+  
+  glUseProgram(waves->out_shader);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
+  draw_mesh(waves->quad_mesh);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
