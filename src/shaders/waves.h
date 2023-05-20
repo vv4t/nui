@@ -15,8 +15,11 @@ typedef struct {
   GLuint  shader;
   GLuint  out_shader;
   
-  GLuint  fbo[2];
+  GLuint  pattern;
+  GLuint  normal_map;
+  
   GLuint  wave[2];
+  GLuint  fbo[2];
 } waves_t;
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh);

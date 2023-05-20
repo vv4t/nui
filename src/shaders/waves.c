@@ -3,8 +3,9 @@
 #include "../common/log.h"
 #include "../common/file.h"
 
-#define WAVES_SIZE  1024
-#define BORDER_SIZE 2
+#define WAVES_SIZE    1024
+#define PATTERN_SIZE  64
+#define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
 static void waves_copy(waves_t *waves, full_bright_t *full_bright, view_t *view);
@@ -18,11 +19,53 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
   if (!waves_init_shaders(waves))
     return false;
   
+  waves_init_pattern(waves);
   waves_init_maps(waves);
   
+  waves->normal_map = waves->wave[0];
   waves->quad_mesh = quad_mesh;
   
   return true;
+}
+
+static void waves_init_pattern(waves_t *waves)
+{
+  unsigned char data[PATTERN_SIZE * PATTERN_SIZE * 3];
+  
+  for (int i = 0; i < PATTERN_SIZE; i++) {
+    for (int j = 0; j < PATTERN_SIZE; j++) {
+      float x = i - (float) PATTERN_SIZE / 2.0;
+      float y = j - (float) PATTERN_SIZE / 2.0;
+      
+      float t = sqrt(x*x + y*y);
+      
+      if (t > PATTERN_SIZE / 2) {
+        data[(i * 64 + j) * 3 + 0] = 128;
+        data[(i * 64 + j) * 3 + 1] = 128;
+        data[(i * 64 + j) * 3 + 2] = 255;
+      } else {
+        float theta = 2 * t / PATTERN_SIZE * M_PI;
+        
+        float u = sin(theta) * 0.5;
+        float u_t = cos(theta) * 0.5;
+        float d_t = 0.15;
+        
+        data[(i * 64 + j) * 3 + 0] = u * 128 + 128;
+        data[(i * 64 + j) * 3 + 1] = (u + u_t * d_t) * 128 + 128;
+        data[(i * 64 + j) * 3 + 2] = 255;
+      }
+    }
+  }
+  
+  glGenTextures(1, &waves->pattern);
+  glBindTexture(GL_TEXTURE_2D, waves->pattern);
+  
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PATTERN_SIZE, PATTERN_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 }
 
 static void waves_init_maps(waves_t *waves)
@@ -131,85 +174,48 @@ static void waves_render_normal_map(waves_t *waves)
 
 void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
-  char data[64 * 64 * 3];
+  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
+  
+  glDisable(GL_BLEND);
+  
+  glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
+  glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  glEnable(GL_SCISSOR_TEST);
+  glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
+  
+  full_bright_bind(full_bright);
+  view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
+  
+  material_t material = { .diffuse = waves->pattern };
+  
   for (int i = 0; i < 64; i++) {
-    for (int j = 0; j < 64; j++) {
-      float x = i - 32.0;
-      float y = j - 32.0;
-      
-      float t = sqrt(x*x + y*y);
-      
-      if (t > 32) {
-        data[(i * 64 + j) * 3 + 0] = 128;
-        data[(i * 64 + j) * 3 + 1] = 128;
-        data[(i * 64 + j) * 3 + 2] = 255;
-      } else {
-        float theta = t / 32.0 * M_PI;
-        
-        float u = sin(theta) * 0.5;
-        float u_t = cos(theta) * 0.5;
-        
-        data[(i * 64 + j) * 3 + 0] = u * 128 + 128;
-        data[(i * 64 + j) * 3 + 1] = (u + u_t) * 128 + 128;
-        data[(i * 64 + j) * 3 + 2] = 255;
-      }
-    }
+    float x = (rand() % 256) / 128.0 - 1.0;
+    float y = (rand() % 256) / 128.0 - 1.0;
+    float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
+    
+    view_sub_data(
+      view,
+      mat4x4_init_transform(
+        vec3_init(x, y, 1.0f),
+        vec3_init(t, t, 1.0f)
+      )
+    );
+  
+    full_bright_set_material(&material);
+    draw_mesh(waves->quad_mesh);
   }
   
-  GLuint wave_pattern;
-  glGenTextures(1, &wave_pattern);
-  glBindTexture(GL_TEXTURE_2D, wave_pattern);
+  glDisable(GL_SCISSOR_TEST);
+  glEnable(GL_BLEND);
   
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-  
-  material_t material = { .diffuse = wave_pattern };
-  
-  glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
-    glDisable(GL_BLEND);
-    
-    glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
-    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
-    
-    full_bright_bind(full_bright);
-    view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
-    
-    for (int i = 0; i < 64; i++) {
-      float x = (rand() % 256) / 128.0 - 1.0;
-      float y = (rand() % 256) / 128.0 - 1.0;
-      float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
-      
-      view_sub_data(
-        view,
-        mat4x4_init_transform(
-          vec3_init(x, y, 1.0f),
-          vec3_init(t, t, 1.0f)
-        )
-      );
-      full_bright_set_material(&material);
-      draw_mesh(waves->quad_mesh);
-    }
-    
-    glDisable(GL_SCISSOR_TEST);
-    glEnable(GL_BLEND);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
-  glDeleteTextures(1, &wave_pattern);
 }
 
 void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
 {
   glViewport(50, 50, 600, 600);
-  
-  material_t material = { .diffuse = waves->wave[2] };
   
   glDisable(GL_DEPTH_TEST);
   
@@ -218,6 +224,7 @@ void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
   view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
   view_sub_data(view, mat4x4_init_identity());
   
+  material_t material = { .diffuse = waves->wave[2] };
   full_bright_set_material(&material);
   draw_mesh(waves->quad_mesh);
   

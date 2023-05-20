@@ -109,21 +109,21 @@ static bool renderer_init_scene(renderer_t *renderer)
   lights_set_scene(&renderer->lights, &renderer->scene);
   
   lights_new_light(&renderer->lights, &renderer->light1);
-    renderer->light1.pos = vec3_init(4.0, 6.0, 4.0);
-    renderer->light1.color = vec4_init(0.5, 1.0, 1.0, 1.0);
-    renderer->light1.intensity = 30.0;
+  renderer->light1.pos = vec3_init(4.0, 6.0, 4.0);
+  renderer->light1.color = vec4_init(0.5, 1.0, 1.0, 1.0);
+  renderer->light1.intensity = 30.0;
   lights_sub_light(&renderer->lights, &renderer->light1);
   
   lights_new_light(&renderer->lights, &renderer->light2);
-    renderer->light2.pos = vec3_init(-4.0, 6.0, 4.0);
-    renderer->light2.color = vec4_init(1.0, 0.5, 1.0, 1.0);
-    renderer->light2.intensity = 20.0;
+  renderer->light2.pos = vec3_init(-4.0, 6.0, 4.0);
+  renderer->light2.color = vec4_init(1.0, 0.5, 1.0, 1.0);
+  renderer->light2.intensity = 20.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
   waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
   
   texture_load(&renderer->water_mtl.diffuse, "res/mtl/water/color.png");
-  renderer->water_mtl.normal = renderer->waves.wave[0];
+  renderer->water_mtl.normal = renderer->waves.normal_map;
   
   return true;
 }
