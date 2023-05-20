@@ -77,8 +77,22 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
       LOG_ERROR("could not load %s", faces[i]);
       return false;
     }
-    
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, bitmap->w, bitmap->h, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap->pixels);
+
+#ifdef __EMSCRIPTEN__
+    glTexImage2D(
+      GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+      GL_RGBA,
+      bitmap->w, bitmap->h,
+      0, GL_RGB, GL_UNSIGNED_BYTE, bitmap->pixels
+    );
+#else
+    glTexImage2D(
+      GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+      GL_RGB,
+      bitmap->w, bitmap->h,
+      0, GL_RGB, GL_UNSIGNED_BYTE, bitmap->pixels
+    );
+#endif
     
     SDL_FreeSurface(bitmap);
   }

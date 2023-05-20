@@ -4,7 +4,11 @@ void view_init(view_t *view)
 {
   glGenBuffers(1, &view->ubo_view);
   glBindBuffer(GL_UNIFORM_BUFFER, view->ubo_view);
+#ifdef __EMSCRIPTEN__
+  glBufferData(GL_UNIFORM_BUFFER, 256, NULL, GL_DYNAMIC_DRAW);
+#else
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ubc_view_t), NULL, GL_DYNAMIC_DRAW);
+#endif
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, view->ubo_view); 
 }
 

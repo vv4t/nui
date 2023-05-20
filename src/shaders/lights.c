@@ -4,8 +4,8 @@
 
 static bool lights_init_light_shader(lights_t *lights);
 static bool lights_init_shadow_shader(lights_t *lights);
-static bool lights_init_lights(lights_t *lights);
-static bool lights_init_shadow(lights_t *lights);
+static void lights_init_lights(lights_t *lights);
+static void lights_init_shadow(lights_t *lights);
 
 bool lights_init(lights_t *lights)
 {
@@ -112,28 +112,28 @@ void lights_sub_light(lights_t *lights, light_t *light)
   glBufferSubData(GL_UNIFORM_BUFFER, light->id * sizeof(ubc_light_t), sizeof(ubc_light_t), &ubc_light);
 }
 
-static bool lights_init_shadow(lights_t *lights)
+static void lights_init_shadow(lights_t *lights)
 {
   glGenTextures(1, &lights->depth_map);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, MAX_LIGHTS * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, MAX_LIGHTS * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, 6 * 1024, MAX_LIGHTS * 1024);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  
-  float border_color[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   
   glGenFramebuffers(1, &lights->depth_fbo);
   glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, lights->depth_map, 0);
+#ifndef __EMSCRIPTEN__
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
+#endif
   glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 }
 
-static bool lights_init_lights(lights_t *lights)
+static void lights_init_lights(lights_t *lights)
 {
   glGenBuffers(1, &lights->ubo_lights);
   glBindBuffer(GL_UNIFORM_BUFFER, lights->ubo_lights);

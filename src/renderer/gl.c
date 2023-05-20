@@ -9,6 +9,9 @@ const char *glsl_precision  = "precision mediump float;";
 
 bool gl_init()
 {
+#ifdef __EMSCRIPTEN__
+  return true;
+#else
   glewExperimental = true;
   
   GLenum status = glewInit();
@@ -16,6 +19,7 @@ bool gl_init()
     LOG_ERROR("failed to initialize GLEW: %s", glewGetErrorString(status));
   
   return status == GLEW_OK;
+#endif
 }
 
 bool texture_load(GLuint *texture, const char *path)
@@ -35,7 +39,8 @@ bool texture_load(GLuint *texture, const char *path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   
-  GLuint internal_format = GL_RGB;
+  GLuint internal_format = GL_RGBA;
+#ifndef __EMSCRIPTEN__
   switch (bitmap->format->BytesPerPixel) {
   case 3:
     internal_format = GL_RGB;
@@ -44,8 +49,9 @@ bool texture_load(GLuint *texture, const char *path)
     internal_format = GL_RGBA;
     break;
   }
+#endif
   
-  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, bitmap->w, bitmap->h, 0, internal_format, GL_UNSIGNED_BYTE, bitmap->pixels);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap->w, bitmap->h, 0, internal_format, GL_UNSIGNED_BYTE, bitmap->pixels);
   glGenerateMipmap(GL_TEXTURE_2D);
   
   SDL_FreeSurface(bitmap);

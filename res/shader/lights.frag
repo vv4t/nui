@@ -59,7 +59,7 @@ void main() {
         proj_coords.x = proj_coords.x + u_map;
         proj_coords.y = proj_coords.y + v_map;
         
-        float closest_depth = texture2D(u_depth_map, proj_coords.xy).r;
+        float closest_depth = texture(u_depth_map, proj_coords.xy).r;
         float current_depth = proj_coords.z;
         
         float cos_theta = dot(vs_normal, -light_dir);

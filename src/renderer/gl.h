@@ -1,7 +1,13 @@
 #ifndef GL_H
 #define GL_H
 
-#include <GL/glew.h>
+#ifdef __EMSCRIPTEN__
+  #include <SDL_opengles2.h>
+  #include <GLES3/gl3.h>
+  #include <GLES3/gl2ext.h>
+#else
+  #include <GL/glew.h>
+#endif
 
 #include <stdbool.h>
 #include <SDL2/SDL_image.h>
