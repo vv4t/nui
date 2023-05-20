@@ -7,7 +7,7 @@ ASSETS_SHADERS=$(wildcard res/*/*.frag) $(wildcard res/*/*.vert)
 ASSETS_SRC=$(ASSETS_PNG) $(ASSETS_JPG) $(ASSETS_MESH) $(ASSETS_SHADERS)
 ASSETS=$(patsubst %, --preload-file %, $(ASSETS_SRC)) --use-preload-plugins
 
-OUT=bin/index.html
+OUT=bin/web/index.html
 CFLAGS=-s WASM=1 -O3
 LDFLAGS=-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_WEBGL2=1
 SRC=src/*.c src/*/*.c
