@@ -4,8 +4,12 @@
 
 ### Linux
 
-> make -f linux.mk
+```
+make -f linux.mk
+```
 
 ### Web
 
-> make -f web.mk
+```
+make -f web.mk
+```
