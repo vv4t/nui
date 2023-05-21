@@ -4,8 +4,8 @@
 #include "../common/file.h"
 
 #define WAVES_SIZE    1024
-#define NUM_WAVES     1
-#define PATTERN_SIZE  256
+#define NUM_WAVES     10
+#define PATTERN_SIZE  64
 #define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
@@ -33,26 +33,28 @@ static void waves_init_pattern(waves_t *waves)
 {
   float data[PATTERN_SIZE * PATTERN_SIZE * 3];
   
+  int n = PATTERN_SIZE / 2;
+  
   for (int i = 0; i < PATTERN_SIZE; i++) {
     for (int j = 0; j < PATTERN_SIZE; j++) {
-      float x = i - (float) PATTERN_SIZE / 2.0;
-      float y = j - (float) PATTERN_SIZE / 2.0;
+      float x = i - (float) n;
+      float y = j - (float) n;
       
       float t = sqrt(x*x + y*y);
       
-      if (t > PATTERN_SIZE / 2) {
+      if (t > n) {
         data[(i * PATTERN_SIZE + j) * 3 + 0] = 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 1] = 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       } else {
-        float theta = 2 * t / PATTERN_SIZE * M_PI;
+        float theta = t / n * M_PI;
         
         float u = sin(theta) * 0.2;
-        float u_t = cos(theta) * 0.2;
-        float d_t = 1.0;
+        float u_t = cos(theta) * 0.2 / n * 49 * sqrt(4.0);
+        float k = 0.015;
         
         data[(i * PATTERN_SIZE + j) * 3 + 0] = u * 0.995 + 0.5;
-        data[(i * PATTERN_SIZE + j) * 3 + 1] = u + u_t * d_t + 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 1] = u + u_t * k + 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       }
     }
@@ -79,8 +81,8 @@ static void waves_init_maps(waves_t *waves)
     
     glBindTexture(GL_TEXTURE_2D, waves->wave[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WAVES_SIZE, WAVES_SIZE, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
@@ -192,8 +194,8 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   material_t material = { .diffuse = waves->pattern };
   
   for (int i = 0; i < NUM_WAVES; i++) {
-    float x = 0.0;//(rand() % 256) / 128.0 - 1.0;
-    float y = 0.0;//(rand() % 256) / 128.0 - 1.0;
+    float x = (rand() % 256) / 128.0 - 1.0;
+    float y = (rand() % 256) / 128.0 - 1.0;
     float t = (float) PATTERN_SIZE / (float) WAVES_SIZE;// 0.2 + (rand() % 256) / 256.0 * 0.2;
     
     view_sub_data(

@@ -27,16 +27,15 @@ void main()
   float d2u_dx2 = du_dx_2 - du_dx_1;
   float d2u_dy2 = du_dy_2 - du_dy_1;
   
-  float h = 1.0;
-  float k = 1.0;
+  float d2u_dt2 = d2u_dx2 + d2u_dy2;
   
-  float c = 0.8;
+  float h = 0.1;
+  float k = 0.015;
+  float c = 4.0;
   
   float tau = pow(((c*k)/h), 2.0);
   
-  float d2u_dt2 = d2u_dx2 + d2u_dy2;
-  
   float u_0 = u * 2.0 - u_t + tau * d2u_dt2;
   
-  frag_color = vec4(u_0 * 0.995 + 0.5, u + 0.5, du_dx_2 + 0.5, du_dy_2 + 0.5);
+  frag_color = vec4(u_0 + 0.5, u + 0.5, du_dx_2 + 0.5, du_dy_2 + 0.5);
 }
