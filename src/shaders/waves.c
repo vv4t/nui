@@ -4,7 +4,8 @@
 #include "../common/file.h"
 
 #define WAVES_SIZE    1024
-#define PATTERN_SIZE  64
+#define NUM_WAVES     1
+#define PATTERN_SIZE  256
 #define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
@@ -30,7 +31,7 @@ bool waves_init(waves_t *waves, mesh_t quad_mesh)
 
 static void waves_init_pattern(waves_t *waves)
 {
-  unsigned char data[PATTERN_SIZE * PATTERN_SIZE * 3];
+  float data[PATTERN_SIZE * PATTERN_SIZE * 3];
   
   for (int i = 0; i < PATTERN_SIZE; i++) {
     for (int j = 0; j < PATTERN_SIZE; j++) {
@@ -40,19 +41,19 @@ static void waves_init_pattern(waves_t *waves)
       float t = sqrt(x*x + y*y);
       
       if (t > PATTERN_SIZE / 2) {
-        data[(i * 64 + j) * 3 + 0] = 128;
-        data[(i * 64 + j) * 3 + 1] = 128;
-        data[(i * 64 + j) * 3 + 2] = 255;
+        data[(i * PATTERN_SIZE + j) * 3 + 0] = 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 1] = 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       } else {
         float theta = 2 * t / PATTERN_SIZE * M_PI;
         
-        float u = sin(theta) * 0.5;
-        float u_t = cos(theta) * 0.5;
-        float d_t = 0.15;
+        float u = sin(theta) * 0.2;
+        float u_t = cos(theta) * 0.2;
+        float d_t = 1.0;
         
-        data[(i * 64 + j) * 3 + 0] = u * 128 + 128;
-        data[(i * 64 + j) * 3 + 1] = (u + u_t * d_t) * 128 + 128;
-        data[(i * 64 + j) * 3 + 2] = 255;
+        data[(i * PATTERN_SIZE + j) * 3 + 0] = u * 0.995 + 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 1] = u + u_t * d_t + 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       }
     }
   }
@@ -65,7 +66,7 @@ static void waves_init_pattern(waves_t *waves)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PATTERN_SIZE, PATTERN_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, PATTERN_SIZE, PATTERN_SIZE, 0, GL_RGB, GL_FLOAT, data);
 }
 
 static void waves_init_maps(waves_t *waves)
@@ -190,10 +191,10 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   
   material_t material = { .diffuse = waves->pattern };
   
-  for (int i = 0; i < 64; i++) {
-    float x = (rand() % 256) / 128.0 - 1.0;
-    float y = (rand() % 256) / 128.0 - 1.0;
-    float t = 0.05 + (rand() % 256) / 256.0 * 0.1;
+  for (int i = 0; i < NUM_WAVES; i++) {
+    float x = 0.0;//(rand() % 256) / 128.0 - 1.0;
+    float y = 0.0;//(rand() % 256) / 128.0 - 1.0;
+    float t = (float) PATTERN_SIZE / (float) WAVES_SIZE;// 0.2 + (rand() % 256) / 256.0 * 0.2;
     
     view_sub_data(
       view,
@@ -224,7 +225,7 @@ void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
   view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
   view_sub_data(view, mat4x4_init_identity());
   
-  material_t material = { .diffuse = waves->wave[2] };
+  material_t material = { .diffuse = waves->normal_map };
   full_bright_set_material(&material);
   draw_mesh(waves->quad_mesh);
   

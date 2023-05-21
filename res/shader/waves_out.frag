@@ -17,5 +17,6 @@ void main()
   
   vec3 n = (normalize(cross(u1, u2)) + 1.0) * 0.5;
   
-  frag_color = vec4(n, 1.0);
+  float a = clamp(u.a, -0.5, 0.5);
+  frag_color = vec4(a+0.5, a+0.5, a+0.5, 1.0);//vec4(n, 1.0);
 }

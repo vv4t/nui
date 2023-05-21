@@ -1,4 +1,4 @@
-.PHONY=run
+.PHONY=nui run
 
 OUT=bin/linux/nui
 CFLAGS=-g
