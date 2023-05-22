@@ -4,7 +4,7 @@
 #include "../common/file.h"
 
 #define WAVES_SIZE    1024
-#define NUM_WAVES     10
+#define NUM_WAVES     8
 #define PATTERN_SIZE  64
 #define BORDER_SIZE   2
 
@@ -50,10 +50,10 @@ static void waves_init_pattern(waves_t *waves)
         float theta = t / n * M_PI;
         
         float u = sin(theta) * 0.2;
-        float u_t = cos(theta) * 0.2 / n * 49 * sqrt(4.0);
+        float u_t = cos(theta) * 0.2 / n * 4.0;
         float k = 0.015;
         
-        data[(i * PATTERN_SIZE + j) * 3 + 0] = u * 0.995 + 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 0] = u + 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 1] = u + u_t * k + 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       }

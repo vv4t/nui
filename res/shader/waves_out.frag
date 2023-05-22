@@ -11,9 +11,9 @@ void main()
   vec2 dx = vs_uv + vec2(d.x, 0);
   vec2 dy = vs_uv + vec2(0, d.y);
   
-  vec4 u = texture(u_wave, vs_uv) - 0.5;
-  vec3 u1 = vec3(d.x, 0, u.b);
-  vec3 u2 = vec3(0, d.y, u.a);
+  vec4 u = (texture(u_wave, vs_uv) - 0.5) * 3.0;
+  vec3 u1 = vec3(0.5, 0, u.b);
+  vec3 u2 = vec3(0, 0.5, u.a);
   
   vec3 n = (normalize(cross(u1, u2)) + 1.0) * 0.5;
   

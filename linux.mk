@@ -1,7 +1,7 @@
 .PHONY=nui run
 
 OUT=bin/linux/nui
-CFLAGS=-g
+CFLAGS=
 LDFLAGS=-lSDL2 -lSDL2_image -lm -lGL -lGLEW
 SRC=src/*.c src/*/*.c
 
