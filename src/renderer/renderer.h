@@ -18,23 +18,13 @@ typedef struct {
   vertex_buffer_t vertex_buffer;
   view_t          view;
   
-  hdr_t           hdr;
   skybox_t        skybox;
-  lights_t        lights;
-  colors_t        colors;
-  waves_t         waves;
-  flat_t   flat;
+  flat_t          flat;
   
   scene_t         scene;
   
-  light_t         light1;
-  light_t         light2;
-  
-  material_t      stone_mtl;
   material_t      tile_mtl;
-  material_t      water_mtl;
   
-  mesh_t          quad_mesh;
   mesh_t          scene_mesh;
   mesh_t          cube_mesh;
 } renderer_t;
