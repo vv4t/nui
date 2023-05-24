@@ -122,13 +122,12 @@ void waves_move(waves_t *waves, flat_t *flat, view_t *view)
   glDisable(GL_DEPTH_TEST);
   
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
-  
   glScissor(BORDER_SIZE, BORDER_SIZE, WAVES_SIZE - BORDER_SIZE * 2, WAVES_SIZE - BORDER_SIZE * 2);
+  
   glEnable(GL_SCISSOR_TEST);
   waves_render_waves_map(waves);
   waves_copy(waves, flat, view);
   glDisable(GL_SCISSOR_TEST);
-  
   waves_render_normal_map(waves);
   
   glEnable(GL_BLEND);
@@ -180,11 +179,9 @@ void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
   
   glDisable(GL_BLEND);
-  
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
   glEnable(GL_SCISSOR_TEST);
   glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
   
@@ -214,22 +211,4 @@ void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
   glEnable(GL_BLEND);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void waves_show(waves_t *waves, flat_t *flat, view_t *view)
-{
-  glViewport(50, 50, 600, 600);
-  
-  glDisable(GL_DEPTH_TEST);
-  
-  flat_bind(flat);
-  
-  view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
-  view_sub_data(view, mat4x4_init_identity());
-  
-  material_t material = { .diffuse = waves->normal_map };
-  flat_set_material(&material);
-  draw_mesh(waves->quad_mesh);
-  
-  glEnable(GL_DEPTH_TEST);
 }
