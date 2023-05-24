@@ -10,7 +10,7 @@
 #include "../shaders/lights.h"
 #include "../shaders/colors.h"
 #include "../shaders/waves.h"
-#include "../shaders/full_bright.h"
+#include "../shaders/flat.h"
 
 #include "../game/game.h"
 
@@ -23,7 +23,7 @@ typedef struct {
   lights_t        lights;
   colors_t        colors;
   waves_t         waves;
-  full_bright_t   full_bright;
+  flat_t   flat;
   
   scene_t         scene;
   

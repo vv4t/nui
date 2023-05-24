@@ -150,8 +150,8 @@ static bool lights_init_light_shader(lights_t *lights)
   char define[64];
   sprintf(define, "#define MAX_LIGHTS %i", MAX_LIGHTS);
   
-  char *src_vertex = file_read_all("res/shader/lights.vert");
-  char *src_fragment = file_read_all("res/shader/lights.frag");
+  char *src_vertex = file_read_all("res/shader/lights.vs");
+  char *src_fragment = file_read_all("res/shader/lights.fs");
   
   if (!shader_load(&lights->light_shader, define, src_vertex, src_fragment))
     return false;
@@ -179,14 +179,12 @@ static bool lights_init_light_shader(lights_t *lights)
 
 static bool lights_init_shadow_shader(lights_t *lights)
 {
-  char *src_vertex = file_read_all("res/shader/shadow.vert");
-  char *src_fragment = file_read_all("res/shader/shadow.frag");
+  char *src_vertex = file_read_all("res/shader/mvp_vert.vs");
   
-  if (!shader_load(&lights->shadow_shader, "", src_vertex, src_fragment))
+  if (!shader_load(&lights->shadow_shader, "", src_vertex, "void main(){}"))
     return false;
   
   free(src_vertex);
-  free(src_fragment);
   
   GLuint ubl_matrices = glGetUniformBlockIndex(lights->shadow_shader, "ubo_matrices");
   glUniformBlockBinding(lights->shadow_shader, ubl_matrices, 0);

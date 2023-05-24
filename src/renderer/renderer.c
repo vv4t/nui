@@ -34,12 +34,9 @@ bool renderer_init(renderer_t *renderer)
 static bool renderer_init_gl(renderer_t *renderer)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  
   glEnable(GL_DEPTH_TEST);
-  
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
-  
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
   
@@ -77,7 +74,7 @@ static bool renderer_init_shaders(renderer_t *renderer)
   if (!colors_init(&renderer->colors))
     return false;
   
-  if (!full_bright_init(&renderer->full_bright))
+  if (!flat_init(&renderer->flat))
     return false;
   
   if (!hdr_init(&renderer->hdr, renderer->quad_mesh))
@@ -120,7 +117,7 @@ static bool renderer_init_scene(renderer_t *renderer)
   renderer->light2.intensity = 20.0;
   lights_sub_light(&renderer->lights, &renderer->light2);
   
-  waves_setup(&renderer->waves, &renderer->full_bright, &renderer->view);
+  waves_setup(&renderer->waves, &renderer->flat, &renderer->view);
   
   texture_load(&renderer->water_mtl.diffuse, "res/mtl/water/color.png");
   renderer->water_mtl.normal = renderer->waves.normal_map;
@@ -130,8 +127,8 @@ static bool renderer_init_scene(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
-  waves_move(&renderer->waves, &renderer->full_bright, &renderer->view);
-  // waves_show(&renderer->waves, &renderer->full_bright, &renderer->view);
+  waves_move(&renderer->waves, &renderer->flat, &renderer->view);
+  // waves_show(&renderer->waves, &renderer->flat, &renderer->view);
   
   hdr_begin(&renderer->hdr);
     renderer_render_scene(renderer, game);

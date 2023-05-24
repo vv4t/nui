@@ -9,7 +9,7 @@
 #define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
-static void waves_copy(waves_t *waves, full_bright_t *full_bright, view_t *view);
+static void waves_copy(waves_t *waves, flat_t *flat, view_t *view);
 static void waves_render_normal_map(waves_t *waves);
 static void waves_init_pattern(waves_t *waves);
 static void waves_init_maps(waves_t *waves);
@@ -94,15 +94,15 @@ static void waves_init_maps(waves_t *waves)
 
 static bool waves_init_shaders(waves_t *waves)
 {
-  char *src_vertex = file_read_all("res/shader/hdr.vert");
-  char *src_fragment = file_read_all("res/shader/waves.frag");
+  char *src_vertex = file_read_all("res/shader/vert_uv.vs");
+  char *src_fragment = file_read_all("res/shader/waves.fs");
 
   if (!shader_load(&waves->shader, "", src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");
     return false;
   }
   
-  char *src_out = file_read_all("res/shader/waves_out.frag");
+  char *src_out = file_read_all("res/shader/waves_out.fs");
   
   if (!shader_load(&waves->out_shader, "", src_vertex, src_out)) {
     LOG_ERROR("failed to load shader");
@@ -116,7 +116,7 @@ static bool waves_init_shaders(waves_t *waves)
   return true;
 }
 
-void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
+void waves_move(waves_t *waves, flat_t *flat, view_t *view)
 {
   glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
@@ -126,7 +126,7 @@ void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glScissor(BORDER_SIZE, BORDER_SIZE, WAVES_SIZE - BORDER_SIZE * 2, WAVES_SIZE - BORDER_SIZE * 2);
   glEnable(GL_SCISSOR_TEST);
   waves_render_waves_map(waves);
-  waves_copy(waves, full_bright, view);
+  waves_copy(waves, flat, view);
   glDisable(GL_SCISSOR_TEST);
   
   waves_render_normal_map(waves);
@@ -147,17 +147,17 @@ static void waves_render_waves_map(waves_t *waves)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void waves_copy(waves_t *waves, full_bright_t *full_bright, view_t *view)
+static void waves_copy(waves_t *waves, flat_t *flat, view_t *view)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
   
-  full_bright_bind(full_bright);
+  flat_bind(flat);
   
   view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
   view_sub_data(view, mat4x4_init_identity());
   
   material_t material = { .diffuse = waves->wave[0] };
-  full_bright_set_material(&material);
+  flat_set_material(&material);
   draw_mesh(waves->quad_mesh);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -175,7 +175,7 @@ static void waves_render_normal_map(waves_t *waves)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
+void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
   
@@ -188,7 +188,7 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glEnable(GL_SCISSOR_TEST);
   glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
   
-  full_bright_bind(full_bright);
+  flat_bind(flat);
   view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
   
   material_t material = { .diffuse = waves->pattern };
@@ -206,7 +206,7 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
       )
     );
   
-    full_bright_set_material(&material);
+    flat_set_material(&material);
     draw_mesh(waves->quad_mesh);
   }
   
@@ -216,19 +216,19 @@ void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view)
+void waves_show(waves_t *waves, flat_t *flat, view_t *view)
 {
   glViewport(50, 50, 600, 600);
   
   glDisable(GL_DEPTH_TEST);
   
-  full_bright_bind(full_bright);
+  flat_bind(flat);
   
   view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
   view_sub_data(view, mat4x4_init_identity());
   
   material_t material = { .diffuse = waves->normal_map };
-  full_bright_set_material(&material);
+  flat_set_material(&material);
   draw_mesh(waves->quad_mesh);
   
   glEnable(GL_DEPTH_TEST);

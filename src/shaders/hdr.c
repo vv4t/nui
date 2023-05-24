@@ -40,8 +40,8 @@ bool hdr_init(hdr_t *hdr, mesh_t quad_mesh)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  char *src_vertex = file_read_all("res/shader/hdr.vert");
-  char *src_fragment = file_read_all("res/shader/hdr.frag");
+  char *src_vertex = file_read_all("res/shader/vert_uv.vs");
+  char *src_fragment = file_read_all("res/shader/hdr.fs");
 
   if (!shader_load(&hdr->shader, "", src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");

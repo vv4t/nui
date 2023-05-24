@@ -1,7 +1,7 @@
 #ifndef WAVE_H
 #define WAVE_H
 
-#include "full_bright.h"
+#include "flat.h"
 #include "colors.h"
 
 #include "../renderer/gl.h"
@@ -23,8 +23,8 @@ typedef struct {
 } waves_t;
 
 bool waves_init(waves_t *waves, mesh_t quad_mesh);
-void waves_setup(waves_t *waves, full_bright_t *full_bright, view_t *view);
-void waves_show(waves_t *waves, full_bright_t *full_bright, view_t *view);
-void waves_move(waves_t *waves, full_bright_t *full_bright, view_t *view);
+void waves_setup(waves_t *waves, flat_t *flat, view_t *view);
+void waves_show(waves_t *waves, flat_t *flat, view_t *view);
+void waves_move(waves_t *waves, flat_t *flat, view_t *view);
 
 #endif
