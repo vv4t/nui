@@ -11,10 +11,12 @@ layout (std140) uniform ubo_matrices {
   float pad[1];
 };
 
-out vec2 vs_uv;
+out vec2  vs_uv;
+out float vs_depth;
 
 void main()
 {
   vs_uv = v_uv;
   gl_Position = mvp * vec4(v_pos, 1.0);
+  vs_depth = gl_Position.z;
 }
