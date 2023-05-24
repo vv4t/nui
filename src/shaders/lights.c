@@ -150,8 +150,8 @@ static bool lights_init_light_shader(lights_t *lights)
   char define[64];
   sprintf(define, "#define MAX_LIGHTS %i", MAX_LIGHTS);
   
-  char *src_vertex = file_read_all("res/shader/lights.vs");
-  char *src_fragment = file_read_all("res/shader/lights.fs");
+  char *src_vertex = file_read_all("res/shader/lights.vsh");
+  char *src_fragment = file_read_all("res/shader/lights.fsh");
   
   if (!shader_load(&lights->light_shader, define, src_vertex, src_fragment))
     return false;
@@ -179,7 +179,7 @@ static bool lights_init_light_shader(lights_t *lights)
 
 static bool lights_init_shadow_shader(lights_t *lights)
 {
-  char *src_vertex = file_read_all("res/shader/mvp_vert.vs");
+  char *src_vertex = file_read_all("res/shader/shadow.vsh");
   
   if (!shader_load(&lights->shadow_shader, "", src_vertex, "void main(){}"))
     return false;

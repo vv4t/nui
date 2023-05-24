@@ -4,8 +4,8 @@
 
 bool flat_init(flat_t *flat)
 {
-  char *src_vertex = file_read_all("res/shader/mvp_vert_uv.vs");
-  char *src_fragment = file_read_all("res/shader/flat.fs");
+  char *src_vertex = file_read_all("res/shader/flat.vsh");
+  char *src_fragment = file_read_all("res/shader/flat.fsh");
   
   if (!shader_load(&flat->shader, "", src_vertex, src_fragment))
     return false;

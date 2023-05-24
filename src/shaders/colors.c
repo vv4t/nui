@@ -4,8 +4,8 @@
 
 bool colors_init(colors_t *colors)
 {
-  char *src_vertex = file_read_all("res/shader/mvp_vert.vs");
-  char *src_fragment = file_read_all("res/shader/colors.fs");
+  char *src_vertex = file_read_all("res/shader/colors.vsh");
+  char *src_fragment = file_read_all("res/shader/colors.fsh");
   
   if (!shader_load(&colors->shader, "", src_vertex, src_fragment))
     return false;

@@ -94,15 +94,15 @@ static void waves_init_maps(waves_t *waves)
 
 static bool waves_init_shaders(waves_t *waves)
 {
-  char *src_vertex = file_read_all("res/shader/vert_uv.vs");
-  char *src_fragment = file_read_all("res/shader/waves.fs");
+  char *src_vertex = file_read_all("res/shader/hdr.vsh");
+  char *src_fragment = file_read_all("res/shader/waves.fsh");
 
   if (!shader_load(&waves->shader, "", src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");
     return false;
   }
   
-  char *src_out = file_read_all("res/shader/waves_out.fs");
+  char *src_out = file_read_all("res/shader/waves_out.fsh");
   
   if (!shader_load(&waves->out_shader, "", src_vertex, src_out)) {
     LOG_ERROR("failed to load shader");

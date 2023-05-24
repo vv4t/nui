@@ -1,4 +1,4 @@
-layout (location = 0) in vec3 v_pos;
+layout(location = 0) in vec3 v_pos;
 
 layout (std140) uniform ubo_matrices {
   mat4  mvp;
@@ -7,10 +7,6 @@ layout (std140) uniform ubo_matrices {
   float pad[1];
 };
 
-out vec3 vs_uv;
-
-void main()
-{
-  vs_uv = v_pos;
+void main() {
   gl_Position = mvp * vec4(v_pos, 1.0);
 }

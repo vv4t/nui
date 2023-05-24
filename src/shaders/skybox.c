@@ -101,8 +101,8 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
   
-  char *src_vertex = file_read_all("res/shader/mvp_vert_uv_cube.vs");
-  char *src_fragment = file_read_all("res/shader/skybox.fs");
+  char *src_vertex = file_read_all("res/shader/skybox.vsh");
+  char *src_fragment = file_read_all("res/shader/skybox.fsh");
 
   if (!shader_load(&skybox->shader, "", src_vertex, src_fragment)) {
     LOG_ERROR("failed to load shader");
