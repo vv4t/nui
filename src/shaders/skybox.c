@@ -56,7 +56,7 @@ static const vertex_t cube_vertices[] = {
 
 static const int num_cube_vertices = sizeof(cube_vertices) / sizeof(vertex_t);
 
-bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
+bool skybox_init(skybox_t *skybox, buffer_t *buffer)
 {
   glGenTextures(1, &skybox->texture);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
@@ -120,8 +120,8 @@ bool skybox_init(skybox_t *skybox, vertex_buffer_t *vertex_buffer)
   glUseProgram(skybox->shader);
   glUniform1i(ul_skybox, 0);
   
-  if (!vertex_buffer_new_mesh(
-    vertex_buffer,
+  if (!buffer_new_mesh(
+    buffer,
     &skybox->mesh,
     cube_vertices,
     num_cube_vertices

@@ -3,7 +3,7 @@
 
 #include "view.h"
 #include "scene.h"
-#include "vertex_buffer.h"
+#include "mesh.h"
 
 #include "../shaders/skybox.h"
 #include "../shaders/hdr.h"
@@ -15,18 +15,18 @@
 #include "../game/game.h"
 
 typedef struct {
-  vertex_buffer_t vertex_buffer;
-  view_t          view;
+  buffer_t    buffer;
+  view_t      view;
   
-  skybox_t        skybox;
-  flat_t          flat;
+  skybox_t    skybox;
+  flat_t      flat;
   
-  scene_t         scene;
+  scene_t     scene;
   
-  material_t      tile_mtl;
+  material_t  tile_mtl;
   
-  mesh_t          scene_mesh;
-  mesh_t          cube_mesh;
+  mesh_t      scene_mesh;
+  mesh_t      cube_mesh;
 } renderer_t;
 
 bool renderer_init(renderer_t *renderer);

@@ -39,7 +39,7 @@ static void renderer_init_gl(renderer_t *renderer)
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
   
-  vertex_buffer_init(&renderer->vertex_buffer, 4096);
+  buffer_init(&renderer->buffer, 4096);
   
   view_init(&renderer->view);
   view_perspective(&renderer->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
@@ -50,7 +50,7 @@ static bool renderer_init_shaders(renderer_t *renderer)
   if (!flat_init(&renderer->flat))
     return false;
   
-  if (!skybox_init(&renderer->skybox, &renderer->vertex_buffer))
+  if (!skybox_init(&renderer->skybox, &renderer->buffer))
     return false;
   
   return true;
@@ -128,8 +128,8 @@ static bool renderer_init_mesh(renderer_t *renderer)
     if (!mesh_file_load(&mesh_file, meshes[i].path))
       return false;
     
-    if (!vertex_buffer_new_mesh(
-      &renderer->vertex_buffer,
+    if (!buffer_new_mesh(
+      &renderer->buffer,
       meshes[i].mesh,
       mesh_file.vertices,
       mesh_file.num_vertices)
