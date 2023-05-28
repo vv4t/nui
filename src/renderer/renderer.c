@@ -11,7 +11,6 @@ static bool renderer_init_shaders(renderer_t *renderer);
 static bool renderer_init_material(renderer_t *renderer);
 static bool renderer_init_texture(renderer_t *renderer);
 static bool renderer_init_mesh(renderer_t *renderer);
-static void renderer_init_lights(renderer_t *renderer);
 
 static void renderer_render_scene(renderer_t *renderer, const game_t *game);
 
@@ -19,6 +18,11 @@ static void renderer_draw_scene(void *data, view_t *view);
 
 bool renderer_init(renderer_t *renderer)
 {
+  buffer_init(&renderer->buffer, 4096);
+  
+  view_init(&renderer->view);
+  view_perspective(&renderer->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
+  
   renderer_init_gl(renderer);
   
   if (!renderer_init_shaders(renderer))
@@ -38,11 +42,6 @@ static void renderer_init_gl(renderer_t *renderer)
   glCullFace(GL_FRONT);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-  
-  buffer_init(&renderer->buffer, 4096);
-  
-  view_init(&renderer->view);
-  view_perspective(&renderer->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
 }
 
 static bool renderer_init_shaders(renderer_t *renderer)
