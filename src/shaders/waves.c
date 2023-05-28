@@ -152,7 +152,7 @@ static void waves_copy(waves_t *waves, flat_t *flat, view_t *view)
   
   flat_bind(flat);
   
-  view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
+  view_set(view, mat4x4_init_identity());
   view_sub_data(view, mat4x4_init_identity());
   
   material_t material = { .diffuse = waves->wave[0] };
@@ -186,7 +186,7 @@ void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
   glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
   
   flat_bind(flat);
-  view_set(view, mat4x4_init_identity(), vec3_init(0.0, 0.0, 0.0));
+  view_set(view, mat4x4_init_identity());
   
   material_t material = { .diffuse = waves->pattern };
   

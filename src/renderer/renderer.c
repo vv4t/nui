@@ -47,7 +47,7 @@ static void renderer_init_gl(renderer_t *renderer)
 
 static bool renderer_init_shaders(renderer_t *renderer)
 {
-  if (!flat_init(&renderer->flat))
+  if (!lights_init(&renderer->lights))
     return false;
   
   if (!skybox_init(&renderer->skybox, &renderer->buffer))
@@ -70,6 +70,14 @@ static bool renderer_init_scene(renderer_t *renderer)
     .draw = renderer_draw_scene
   };
   
+  lights_set_scene(&renderer->lights, &renderer->scene);
+  
+  light_t light;
+  lights_new_light(&renderer->lights, &light);
+  light.pos = vec3_init(0.0, 5.0, 0.0);
+  light.intensity = 40.0;
+  lights_sub_light(&renderer->lights, &light);
+  
   return true;
 }
 
@@ -84,9 +92,11 @@ static void renderer_render_scene(renderer_t *renderer, const game_t *game)
   glClear(GL_DEPTH_BUFFER_BIT);
   
   skybox_render(&renderer->skybox, &renderer->view, game->rotation);
+  
+  lights_bind(&renderer->lights);
   view_move(&renderer->view, game->position, game->rotation);
-  flat_bind(&renderer->flat);
-  flat_set_material(&renderer->tile_mtl);
+  lights_set_view_pos(&renderer->lights, game->position);
+  lights_set_material(&renderer->tile_mtl);
   view_sub_data(&renderer->view, mat4x4_init_identity());
   draw_mesh(renderer->scene_mesh);
 }

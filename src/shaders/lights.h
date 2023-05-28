@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
   GLuint      light_shader;
   GLuint      ubo_lights;
+  GLuint      ul_view_pos;
   
   GLuint      shadow_shader;
   
@@ -45,6 +46,7 @@ void lights_bind(lights_t *lights);
 
 void lights_set_scene(lights_t *lights, scene_t *scene);
 void lights_set_material(material_t *material);
+void lights_set_view_pos(lights_t *lights, vec3_t view_pos);
 
 bool lights_new_light(lights_t *lights, light_t *light);
 void lights_sub_light(lights_t *lights, light_t *light);

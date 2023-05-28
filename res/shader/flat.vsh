@@ -7,8 +7,6 @@ layout(location = 4) in vec2 v_uv;
 layout (std140) uniform ubo_matrices {
   mat4  mvp;
   mat4  model;
-  vec3  view_pos;
-  float pad[1];
 };
 
 out vec2  vs_uv;

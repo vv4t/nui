@@ -32,13 +32,11 @@ void view_move(view_t *view, vec3_t view_offset, quat_t view_angle)
   
   mat4x4_t view_matrix = mat4x4_mul(translation_matrix, rotation_matrix);
   
-  view->view_pos = view_offset;
   view->view_projection_matrix = mat4x4_mul(view_matrix, view->projection_matrix);
 }
 
-void view_set(view_t *view, mat4x4_t view_projection_matrix, vec3_t view_pos)
+void view_set(view_t *view, mat4x4_t view_projection_matrix)
 {
-  view->view_pos = view_pos;
   view->view_projection_matrix = view_projection_matrix;
 }
 
@@ -48,8 +46,7 @@ void view_sub_data(view_t *view, mat4x4_t model_matrix)
   
   ubc_view_t ubc_view = {
     .model = model_matrix,
-    .mvp = mvp_matrix,
-    .view_pos = view->view_pos
+    .mvp = mvp_matrix
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, view->ubo_view);

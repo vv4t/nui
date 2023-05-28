@@ -19,7 +19,7 @@ typedef struct {
   view_t      view;
   
   skybox_t    skybox;
-  flat_t      flat;
+  lights_t    lights;
   
   scene_t     scene;
   

@@ -10,6 +10,7 @@ in vec4 vs_light_pos[MAX_LIGHTS * 6];
 uniform sampler2D u_color;
 uniform sampler2D u_normal;
 uniform sampler2D u_depth_map;
+uniform vec3      u_view_pos;
 
 struct light_t {
   mat4  light_matrices[6];
@@ -25,8 +26,6 @@ layout (std140) uniform ubo_lights {
 layout (std140) uniform ubo_matrices {
   mat4  mvp;
   mat4  model;
-  vec3  view_pos;
-  float pad[1];
 };
 
 void main() {
@@ -74,7 +73,7 @@ void main() {
     
     v_map += 1.0 / float(MAX_LIGHTS);
     
-    vec3 view_dir = normalize(view_pos - vs_pos);
+    vec3 view_dir = normalize(u_view_pos - vs_pos);
     vec3 reflect_dir = reflect(-light_dir, normal);
     
     float specular = 0.4 * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);

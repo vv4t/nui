@@ -7,8 +7,6 @@
 typedef struct {
   mat4x4_t  mvp;
   mat4x4_t  model;
-  vec3_t    view_pos;
-  float     pad[1];
 } ubc_view_t;
 
 typedef struct {
@@ -22,7 +20,7 @@ void view_init(view_t *view);
 
 void view_perspective(view_t *view, float aspect_ratio, float fov, float near, float far);
 void view_move(view_t *view, vec3_t view_offset, quat_t view_angle);
-void view_set(view_t *view, mat4x4_t view_projection_matrix, vec3_t view_pos);
+void view_set(view_t *view, mat4x4_t view_projection_matrix);
 
 void view_sub_data(view_t *view, mat4x4_t model_matrix);
 
