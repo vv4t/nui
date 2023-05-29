@@ -1,7 +1,7 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-#include "ref_def.h"
+#include "renderer_def.h"
 #include "view.h"
 #include "skybox.h"
 #include "lights.h"

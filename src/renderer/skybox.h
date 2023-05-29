@@ -3,7 +3,7 @@
 
 #include "gl.h"
 #include "view.h"
-#include "ref_def.h"
+#include "renderer_def.h"
 #include "buffer.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>

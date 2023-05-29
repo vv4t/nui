@@ -1,6 +1,6 @@
 #include "main_pipeline.h"
 
-#include "../ref/mesh_file.h"
+#include "../renderer/mesh_file.h"
 
 static void init_gl();
 

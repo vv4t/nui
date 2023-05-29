@@ -3,7 +3,7 @@
 
 #include "view.h"
 #include "buffer.h"
-#include "ref_def.h"
+#include "renderer_def.h"
 #include "pipeline.h"
 #include "skybox.h"
 #include "hdr.h"
@@ -23,9 +23,9 @@ typedef struct {
   
   scene_t     scene;
   pipeline_t  pipeline;
-} ref_t;
+} renderer_t;
 
-bool ref_init(ref_t *ref);
-void ref_render(ref_t *ref, const game_t *game);
+bool renderer_init(renderer_t *renderer);
+void renderer_render(renderer_t *renderer, const game_t *game);
 
 #endif

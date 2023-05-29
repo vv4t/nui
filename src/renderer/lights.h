@@ -2,7 +2,7 @@
 #define LIGHT_H
 
 #include "gl.h"
-#include "ref_def.h"
+#include "renderer_def.h"
 #include "../common/nui_math.h"
 
 #define MAX_LIGHTS 4
