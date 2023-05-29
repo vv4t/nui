@@ -2,6 +2,7 @@
 #define RENDERER_DEF
 
 #include "gl.h"
+#include "view.h"
 #include "../common/nui_math.h"
 
 #define MAX_TEXTURES 4
@@ -33,6 +34,8 @@ typedef struct scene {
   mesh_t      meshes[MAX_MESHES];
   texture_t   textures[MAX_TEXTURES];
   material_t  materials[MAX_MATERIALS];
+  
+  void (*draw)(const struct scene *scene, const view_t *view);
 } scene_t;
 
 #endif

@@ -59,7 +59,7 @@ bool lights_new_light(lights_t *lights, light_t *light)
   return true;
 }
 
-void lights_sub_light(lights_t *lights, light_t *light)
+void lights_sub_light(lights_t *lights, const light_t *light, const scene_t *scene, view_t view)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
   
@@ -95,14 +95,13 @@ void lights_sub_light(lights_t *lights, light_t *light)
     .color = light->color
   };
   
+  view.projection_matrix = mat4x4_init_perspective(1.0, to_radians(90.0), 0.1, 100.0);
+  
   for (int i = 0; i < 6; i++) {
-    mat4x4_t view_projection_matrix = mat4x4_mul(view_matrices[i], projection_matrix);
-    mat4x4_t bias_mvp = mat4x4_mul(view_projection_matrix, bias_matrix);
-    
-    ubc_light.light_matrices[i] = bias_mvp;
-    
+    view_set_matrix(&view, view_matrices[i]);
+    ubc_light.light_matrices[i] = mat4x4_mul(view.view_projection_matrix, bias_matrix);
     glViewport(i * 1024, light->id * 1024, 1024, 1024);
-    lights->shadow_pass.draw(lights->shadow_pass.data, view_projection_matrix);
+    scene->draw(scene, &view);
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -115,7 +114,6 @@ static void lights_init_shadow(lights_t *lights)
 {
   glGenTextures(1, &lights->depth_map);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 6 * 1024, MAX_LIGHTS * 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, 6 * 1024, MAX_LIGHTS * 1024);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

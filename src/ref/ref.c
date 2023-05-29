@@ -20,7 +20,7 @@ bool ref_init(ref_t *ref)
   buffer_init(&ref->buffer, 4096);
   
   view_init(&ref->view);
-  view_perspective(&ref->view, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
+  ref->view.projection_matrix = mat4x4_init_perspective(720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
   
   if (!lights_init(&ref->lights))
     return false;
@@ -29,7 +29,6 @@ bool ref_init(ref_t *ref)
     return false;
   
   ref->ref_pipe = (ref_pipe_t) {
-    .view = &ref->view,
     .buffer = &ref->buffer,
     .lights = &ref->lights,
     .skybox = &ref->skybox,
@@ -37,7 +36,7 @@ bool ref_init(ref_t *ref)
     .render_scene = ref_pipe_main_render_scene
   };
   
-  if (!ref->ref_pipe.init_scene(&ref->ref_pipe, &ref->scene))
+  if (!ref->ref_pipe.init_scene(&ref->ref_pipe, &ref->scene, &ref->view))
     return false;
   
   return true;
@@ -45,5 +44,5 @@ bool ref_init(ref_t *ref)
 
 void ref_render(ref_t *ref, const game_t *game)
 {
-  ref->ref_pipe.render_scene(&ref->ref_pipe, &ref->scene, game);
+  ref->ref_pipe.render_scene(&ref->ref_pipe, &ref->scene, game, &ref->view);
 }

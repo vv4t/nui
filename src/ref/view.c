@@ -9,20 +9,13 @@ void view_init(view_t *view)
 #else
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ubc_view_t), NULL, GL_DYNAMIC_DRAW);
 #endif
-  glBindBufferBase(GL_UNIFORM_BUFFER, 0, view->ubo_view); 
+  glBindBufferBase(GL_UNIFORM_BUFFER, 0, view->ubo_view);
+  
+  view->projection_matrix = mat4x4_init_identity();
+  view->view_projection_matrix= mat4x4_init_identity();
 }
 
-void view_perspective(view_t *view, float aspect_ratio, float fov, float near, float far)
-{
-  view->projection_matrix = mat4x4_init_perspective(
-    aspect_ratio,
-    fov,
-    near,
-    far
-  );
-}
-
-void view_move(view_t *view, vec3_t view_offset, quat_t view_angle)
+void view_set_offset(view_t *view, vec3_t view_offset, quat_t view_angle)
 {
   vec3_t view_origin = vec3_mulf(view_offset, -1);
   quat_t view_rotation = quat_conjugate(view_angle);
@@ -32,12 +25,12 @@ void view_move(view_t *view, vec3_t view_offset, quat_t view_angle)
   
   mat4x4_t view_matrix = mat4x4_mul(translation_matrix, rotation_matrix);
   
-  view->view_projection_matrix = mat4x4_mul(view_matrix, view->projection_matrix);
+  view_set_matrix(view, view_matrix);
 }
 
-void view_set(view_t *view, mat4x4_t view_projection_matrix)
+void view_set_matrix(view_t *view, mat4x4_t view_matrix)
 {
-  view->view_projection_matrix = view_projection_matrix;
+  view->view_projection_matrix = mat4x4_mul(view_matrix, view->projection_matrix);
 }
 
 void view_sub_data(const view_t *view, mat4x4_t model_matrix)

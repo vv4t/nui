@@ -17,10 +17,8 @@ typedef struct {
 
 void view_init(view_t *view);
 
-void view_perspective(view_t *view, float aspect_ratio, float fov, float near, float far);
-
-void view_move(view_t *view, vec3_t view_offset, quat_t view_angle);
-void view_set(view_t *view, mat4x4_t view_projection_matrix);
+void view_set_offset(view_t *view, vec3_t view_offset, quat_t view_angle);
+void view_set_matrix(view_t *view, mat4x4_t view_matrix);
 
 void view_sub_data(const view_t *view, mat4x4_t model_matrix);
 

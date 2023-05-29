@@ -8,15 +8,12 @@
 #include "../game/game.h"
 
 typedef struct ref_pipe {
-  view_t    *view;
   buffer_t  *buffer;
   skybox_t  *skybox;
   lights_t  *lights;
   
-  scene_t   *scene; // FIX THIS
-  
-  bool (*init_scene)(struct ref_pipe *ref_pipe, scene_t *scene);
-  void (*render_scene)(struct ref_pipe *ref_pipe, const scene_t *scene, const game_t *game);
+  bool (*init_scene)(struct ref_pipe *ref_pipe, scene_t *scene, view_t *view);
+  void (*render_scene)(struct ref_pipe *ref_pipe, const scene_t *scene, const game_t *game, view_t *view);
 } ref_pipe_t;
 
 #endif

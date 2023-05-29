@@ -132,14 +132,14 @@ bool skybox_init(skybox_t *skybox, buffer_t *buffer)
   return true;
 }
 
-void skybox_render(skybox_t *skybox, view_t *view, quat_t view_angle)
+void skybox_render(skybox_t *skybox, view_t view, quat_t view_angle)
 {
   glDepthMask(GL_FALSE);
   
   glUseProgram(skybox->shader);
   
-  view_move(view, vec3_init(0.0f, 0.0f, 0.0f), view_angle);
-  view_sub_data(view, mat4x4_init_identity());
+  view_set_offset(&view, vec3_init(0.0f, 0.0f, 0.0f), view_angle);
+  view_sub_data(&view, mat4x4_init_identity());
   
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);

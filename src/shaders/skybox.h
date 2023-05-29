@@ -15,6 +15,6 @@ typedef struct {
 } skybox_t;
 
 bool skybox_init(skybox_t *skybox, buffer_t *buffer);
-void skybox_render(skybox_t *skybox, view_t *view, quat_t view_angle);
+void skybox_render(skybox_t *skybox, view_t view, quat_t view_angle);
 
 #endif

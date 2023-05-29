@@ -8,9 +8,9 @@ static bool init_meshes(ref_pipe_t *ref_pipe, scene_t *scene);
 static bool init_textures(ref_pipe_t *ref_pipe, scene_t *scene);
 static void init_materials(ref_pipe_t *ref_pipe, scene_t *scene);
 
-static void shadow_pass(void *data, mat4x4_t light_matrix);
+static void draw_scene(const scene_t *scene, const view_t *view);
 
-bool ref_pipe_main_init_scene(ref_pipe_t *ref_pipe, scene_t *scene)
+bool ref_pipe_main_init_scene(ref_pipe_t *ref_pipe, scene_t *scene, view_t *view)
 {
   init_gl();
   
@@ -22,44 +22,38 @@ bool ref_pipe_main_init_scene(ref_pipe_t *ref_pipe, scene_t *scene)
   
   init_materials(ref_pipe, scene);
   
-  ref_pipe->scene = scene;
-  
-  ref_pipe->lights->shadow_pass.data = ref_pipe;
-  ref_pipe->lights->shadow_pass.draw = shadow_pass;
+  scene->draw = draw_scene;
   
   light_t light;
   lights_new_light(ref_pipe->lights, &light);
   light.pos = vec3_init(0.0, 5.0, 0.0);
   light.intensity = 40.0;
-  lights_sub_light(ref_pipe->lights, &light);
+  lights_sub_light(ref_pipe->lights, &light, scene, *view);
   
   return true;
 }
 
-void ref_pipe_main_render_scene(ref_pipe_t *ref_pipe, const scene_t *scene, const game_t *game)
+void ref_pipe_main_render_scene(ref_pipe_t *ref_pipe, const scene_t *scene, const game_t *game, view_t *view)
 {
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
-  skybox_render(ref_pipe->skybox, ref_pipe->view, game->rotation);
+  skybox_render(ref_pipe->skybox, *view, game->rotation);
   
   lights_bind(ref_pipe->lights);
   
-  view_move(ref_pipe->view, game->position, game->rotation);
+  view_set_offset(view, game->position, game->rotation);
   lights_set_view_pos(ref_pipe->lights, game->position);
   lights_set_material(scene->materials[0]);
   
-  view_sub_data(ref_pipe->view, mat4x4_init_identity());
+  view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
 }
 
-static void shadow_pass(void *data, mat4x4_t light_matrix)
+static void draw_scene(const scene_t *scene, const view_t *view)
 {
-  ref_pipe_t *ref_pipe = (ref_pipe_t*) data;
-  
-  view_set(ref_pipe->view, light_matrix);
-  view_sub_data(ref_pipe->view, mat4x4_init_identity());
-  glDrawArrays(GL_TRIANGLES, ref_pipe->scene->meshes[0].offset, ref_pipe->scene->meshes[0].count);
+  view_sub_data(view, mat4x4_init_identity());
+  glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
 }
 
 static void init_gl()

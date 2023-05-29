@@ -26,11 +26,6 @@ typedef struct {
 } light_t;
 
 typedef struct {
-  void *data;
-  void (*draw)(void *data, mat4x4_t light_matrix);
-} shadow_pass_t;
-
-typedef struct {
   GLuint        light_shader;
   GLuint        ubo_lights;
   GLuint        ul_view_pos;
@@ -41,8 +36,6 @@ typedef struct {
   GLuint        depth_map;
   
   int           light_count;
-  
-  shadow_pass_t shadow_pass;
 } lights_t;
 
 bool lights_init(lights_t *lights);
@@ -52,6 +45,6 @@ void lights_set_material(material_t material);
 void lights_set_view_pos(lights_t *lights, vec3_t view_pos);
 
 bool lights_new_light(lights_t *lights, light_t *light);
-void lights_sub_light(lights_t *lights, light_t *light);
+void lights_sub_light(lights_t *lights, const light_t *light, const scene_t *scene, view_t view);
 
 #endif
