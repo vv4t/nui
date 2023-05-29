@@ -4,7 +4,7 @@
 #include "view.h"
 #include "buffer.h"
 #include "ref_def.h"
-#include "ref_pipe.h"
+#include "pipeline.h"
 #include "skybox.h"
 #include "hdr.h"
 #include "lights.h"
@@ -22,7 +22,7 @@ typedef struct {
   lights_t    lights;
   
   scene_t     scene;
-  ref_pipe_t  ref_pipe;
+  pipeline_t  pipeline;
 } ref_t;
 
 bool ref_init(ref_t *ref);
