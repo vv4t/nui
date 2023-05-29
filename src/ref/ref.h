@@ -5,13 +5,9 @@
 #include "buffer.h"
 #include "ref_def.h"
 #include "ref_pipe.h"
-
-#include "../shaders/skybox.h"
-#include "../shaders/hdr.h"
-#include "../shaders/lights.h"
-#include "../shaders/colors.h"
-#include "../shaders/waves.h"
-#include "../shaders/flat.h"
+#include "skybox.h"
+#include "hdr.h"
+#include "lights.h"
 
 #include "../game/game.h"
 

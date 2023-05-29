@@ -1,8 +1,8 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include "../ref/gl.h"
-#include "../ref/ref_def.h"
+#include "gl.h"
+#include "ref_def.h"
 #include "../common/nui_math.h"
 
 #define MAX_LIGHTS 4

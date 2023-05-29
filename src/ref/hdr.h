@@ -1,19 +1,19 @@
 #ifndef HDR_H
 #define HDR_H
 
-#include "../ref/gl.h"
-#include "../ref/ref_def.h"
+#include "gl.h"
+#include "ref_def.h"
 #include <stdbool.h>
 
 typedef struct {
-  mesh_t  quad_mesh;
+  mesh_t    quad_mesh;
   
-  GLuint  shader;
+  shader_t  shader;
   
-  GLuint  fbo;
-  GLuint  rbo;
+  GLuint    fbo;
+  GLuint    rbo;
   
-  GLuint  color_buffer;
+  texture_t color_buffer;
 } hdr_t;
 
 bool hdr_init(hdr_t *hdr, mesh_t quad_mesh);

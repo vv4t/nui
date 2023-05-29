@@ -3,8 +3,8 @@
 
 #include "ref_def.h"
 #include "view.h"
-#include "../shaders/skybox.h"
-#include "../shaders/lights.h"
+#include "skybox.h"
+#include "lights.h"
 #include "../game/game.h"
 
 typedef struct ref_pipe {
