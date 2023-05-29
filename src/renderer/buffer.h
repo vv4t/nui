@@ -2,24 +2,12 @@
 #define MESH_H
 
 #include "gl.h"
+#include "renderer_def.h"
 #include "../common/nui_math.h"
 
 typedef struct {
-  vec3_t  pos;
-  vec3_t  tangent;
-  vec3_t  bitangent;
-  vec3_t  normal;
-  vec2_t  uv;
-} vertex_t;
-
-typedef struct {
-  GLuint    ptr;
-  int       num_vertices;
-} mesh_t;
-
-typedef struct {
   GLuint  vbo;
-  GLuint  ptr;
+  GLuint  offset;
   int     max_vertices;
 } buffer_t;
 

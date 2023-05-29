@@ -14,7 +14,7 @@ static bool renderer_init_mesh(renderer_t *renderer);
 
 static void renderer_render_scene(renderer_t *renderer, const game_t *game);
 
-static void renderer_draw_scene(void *data, view_t *view);
+static void renderer_light_pass(void *data, mat4x4_t light_matrix);
 
 bool renderer_init(renderer_t *renderer)
 {
@@ -60,16 +60,14 @@ static bool renderer_init_scene(renderer_t *renderer)
   if (!renderer_init_mesh(renderer))
     return false;
   
+  if (!renderer_init_texture(renderer))
+    return false;
+  
   if (!renderer_init_material(renderer))
     return false;
   
-  renderer->scene = (scene_t) {
-    .data = renderer,
-    .view = &renderer->view,
-    .draw = renderer_draw_scene
-  };
-  
-  lights_set_scene(&renderer->lights, &renderer->scene);
+  renderer->lights.shadow_pass.data = renderer;
+  renderer->lights.shadow_pass.draw = renderer_light_pass;
   
   light_t light;
   lights_new_light(&renderer->lights, &light);
@@ -82,41 +80,48 @@ static bool renderer_init_scene(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
-  renderer_render_scene(renderer, game);
-}
-
-static void renderer_render_scene(renderer_t *renderer, const game_t *game)
-{
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
   skybox_render(&renderer->skybox, &renderer->view, game->rotation);
   
   lights_bind(&renderer->lights);
+  renderer_render_scene(renderer, game);
+}
+
+static void renderer_render_scene(renderer_t *renderer, const game_t *game)
+{
   view_move(&renderer->view, game->position, game->rotation);
   lights_set_view_pos(&renderer->lights, game->position);
   lights_set_material(&renderer->tile_mtl);
   view_sub_data(&renderer->view, mat4x4_init_identity());
-  draw_mesh(renderer->scene_mesh);
+  glDrawArrays(GL_TRIANGLES, renderer->scene_mesh.offset, renderer->scene_mesh.count);
 }
 
-static void renderer_draw_scene(void *data, view_t *view)
+static void renderer_light_pass(void *data, mat4x4_t light_matrix)
 {
-  view_sub_data(view, mat4x4_init_identity());
-  draw_mesh((*(renderer_t*) data).scene_mesh);
+  renderer_t *renderer = (renderer_t*) data;
+  
+  view_set(&renderer->view, light_matrix);
+  view_sub_data(&renderer->view, mat4x4_init_identity());
+  glDrawArrays(GL_TRIANGLES, renderer->scene_mesh.offset, renderer->scene_mesh.count);
+}
+
+static bool renderer_init_texture(renderer_t *renderer)
+{
+  if (!texture_load(&renderer->tile_diffuse_tex, "res/mtl/tile/color.jpg"))
+    return false;
+  
+  if (!texture_load(&renderer->tile_normal_tex, "res/mtl/tile/normal.jpg"))
+    return false;
+  
+  return true;
 }
 
 static bool renderer_init_material(renderer_t *renderer)
 {
-  if (
-    !material_load(
-      &renderer->tile_mtl,
-      "res/mtl/tile/color.jpg",
-      "res/mtl/tile/normal.jpg"
-    )
-  ) {
-    return false;
-  }
+  renderer->tile_mtl.diffuse = renderer->tile_diffuse_tex;
+  renderer->tile_mtl.normal = renderer->tile_normal_tex;
   
   return true;
 }
@@ -137,11 +142,13 @@ static bool renderer_init_mesh(renderer_t *renderer)
     if (!mesh_file_load(&mesh_file, meshes[i].path))
       return false;
     
-    if (!buffer_new_mesh(
-      &renderer->buffer,
-      meshes[i].mesh,
-      mesh_file.vertices,
-      mesh_file.num_vertices)
+    if (
+      !buffer_new_mesh(
+        &renderer->buffer,
+        meshes[i].mesh,
+        mesh_file.vertices,
+        mesh_file.num_vertices
+      )
     ) {
       return false;
     }

@@ -2,7 +2,7 @@
 #define HDR_H
 
 #include "../renderer/gl.h"
-#include "../renderer/scene.h"
+#include "../renderer/renderer_def.h"
 #include <stdbool.h>
 
 typedef struct {

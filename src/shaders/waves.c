@@ -141,7 +141,7 @@ static void waves_render_waves_map(waves_t *waves)
   glUseProgram(waves->shader);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
-  draw_mesh(waves->quad_mesh);
+  glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -157,7 +157,7 @@ static void waves_copy(waves_t *waves, flat_t *flat, view_t *view)
   
   material_t material = { .diffuse = waves->wave[0] };
   flat_set_material(&material);
-  draw_mesh(waves->quad_mesh);
+  glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -169,7 +169,7 @@ static void waves_render_normal_map(waves_t *waves)
   glUseProgram(waves->out_shader);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
-  draw_mesh(waves->quad_mesh);
+  glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -204,7 +204,7 @@ void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
     );
   
     flat_set_material(&material);
-    draw_mesh(waves->quad_mesh);
+    glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   }
   
   glDisable(GL_SCISSOR_TEST);

@@ -144,7 +144,7 @@ void skybox_render(skybox_t *skybox, view_t *view, quat_t view_angle)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture);
   
-  glDrawArrays(GL_TRIANGLES, skybox->mesh.ptr, skybox->mesh.num_vertices);
+  glDrawArrays(GL_TRIANGLES, skybox->mesh.offset, skybox->mesh.count);
   
   glDepthMask(GL_TRUE);
 }

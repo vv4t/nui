@@ -2,8 +2,8 @@
 #define RENDERER_H
 
 #include "view.h"
-#include "scene.h"
-#include "mesh.h"
+#include "buffer.h"
+#include "renderer_def.h"
 
 #include "../shaders/skybox.h"
 #include "../shaders/hdr.h"
@@ -21,10 +21,9 @@ typedef struct {
   skybox_t    skybox;
   lights_t    lights;
   
-  scene_t     scene;
-  
+  texture_t   tile_diffuse_tex;
+  texture_t   tile_normal_tex;
   material_t  tile_mtl;
-  
   mesh_t      scene_mesh;
   mesh_t      cube_mesh;
 } renderer_t;

@@ -2,11 +2,11 @@
 #define FLAT_H
 
 #include "../renderer/gl.h"
-#include "../renderer/scene.h"
+#include "../renderer/renderer_def.h"
 #include "../common/nui_math.h"
 
 typedef struct {
-  GLuint  shader;
+  shader_t shader;
 } flat_t;
 
 bool flat_init(flat_t *color);

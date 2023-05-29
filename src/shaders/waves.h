@@ -6,19 +6,19 @@
 
 #include "../renderer/gl.h"
 #include "../renderer/view.h"
-#include "../renderer/scene.h"
+#include "../renderer/renderer_def.h"
 #include <stdbool.h>
 
 typedef struct {
   mesh_t  quad_mesh;
   
-  GLuint  shader;
-  GLuint  out_shader;
+  shader_t  shader;
+  shader_t  out_shader;
   
-  GLuint  pattern;
+  texture_t pattern;
   
-  GLuint  normal_map;
-  GLuint  wave[2];
+  texture_t normal_map;
+  texture_t wave[2];
   GLuint  fbo[2];
 } waves_t;
 

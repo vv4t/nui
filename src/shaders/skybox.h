@@ -3,14 +3,14 @@
 
 #include "../renderer/gl.h"
 #include "../renderer/view.h"
-#include "../renderer/scene.h"
-#include "../renderer/mesh.h"
+#include "../renderer/renderer_def.h"
+#include "../renderer/buffer.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>
 
 typedef struct {
-  GLuint    texture;
-  GLuint    shader;
+  texture_t texture;
+  shader_t  shader;
   mesh_t    mesh;
 } skybox_t;
 

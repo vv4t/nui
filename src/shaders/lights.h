@@ -2,8 +2,7 @@
 #define LIGHT_H
 
 #include "../renderer/gl.h"
-#include "../renderer/view.h"
-#include "../renderer/scene.h"
+#include "../renderer/renderer_def.h"
 #include "../common/nui_math.h"
 
 #define MAX_LIGHTS 4
@@ -27,24 +26,28 @@ typedef struct {
 } light_t;
 
 typedef struct {
-  GLuint      light_shader;
-  GLuint      ubo_lights;
-  GLuint      ul_view_pos;
+  void *data;
+  void (*draw)(void *data, mat4x4_t light_matrix);
+} shadow_pass_t;
+
+typedef struct {
+  GLuint        light_shader;
+  GLuint        ubo_lights;
+  GLuint        ul_view_pos;
   
-  GLuint      shadow_shader;
+  GLuint        shadow_shader;
   
-  GLuint      depth_fbo;
-  GLuint      depth_map;
+  GLuint        depth_fbo;
+  GLuint        depth_map;
   
-  int         light_count;
+  int           light_count;
   
-  scene_t     *scene;
+  shadow_pass_t shadow_pass;
 } lights_t;
 
 bool lights_init(lights_t *lights);
 void lights_bind(lights_t *lights);
 
-void lights_set_scene(lights_t *lights, scene_t *scene);
 void lights_set_material(material_t *material);
 void lights_set_view_pos(lights_t *lights, vec3_t view_pos);
 

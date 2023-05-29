@@ -75,7 +75,7 @@ void hdr_draw(hdr_t *hdr)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, hdr->color_buffer);
   
-  draw_mesh(hdr->quad_mesh);
+  glDrawArrays(GL_TRIANGLES, hdr->quad_mesh.offset, hdr->quad_mesh.count);
   
   glEnable(GL_DEPTH_TEST);
 }

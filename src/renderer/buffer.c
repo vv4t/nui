@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "buffer.h"
 
 #include "../common/log.h"
 
@@ -28,7 +28,7 @@ void buffer_init(buffer_t *buffer, int max_vertices)
   glEnableVertexAttribArray(4);
   glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (float*) 0 + 12);
   
-  buffer->ptr = 0;
+  buffer->offset = 0;
   buffer->max_vertices = max_vertices;
 }
 
@@ -38,18 +38,18 @@ bool buffer_new_mesh(
   const vertex_t  *vertices,
   int             num_vertices)
 {
-  if (buffer->ptr + num_vertices > buffer->max_vertices) {
+  if (buffer->offset + num_vertices > buffer->max_vertices) {
     LOG_ERROR("ran out of memory");
     return false;
   }
   
-  mesh->ptr = buffer->ptr;
-  mesh->num_vertices = num_vertices;
-  buffer->ptr += num_vertices;
+  mesh->offset = buffer->offset;
+  mesh->count = num_vertices;
+  buffer->offset += num_vertices;
   
   glBufferSubData(
     GL_ARRAY_BUFFER,
-    mesh->ptr * sizeof(vertex_t),
+    mesh->offset * sizeof(vertex_t),
     num_vertices * sizeof(vertex_t),
     vertices
   );

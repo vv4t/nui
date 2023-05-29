@@ -31,11 +31,6 @@ void lights_bind(lights_t *lights)
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
 }
 
-void lights_set_scene(lights_t *lights, scene_t *scene)
-{
-  lights->scene = scene;
-}
-
 void lights_set_view_pos(lights_t *lights, vec3_t view_pos)
 {
   glUniform3f(lights->ul_view_pos, view_pos.x, view_pos.y, view_pos.z);
@@ -107,8 +102,7 @@ void lights_sub_light(lights_t *lights, light_t *light)
     ubc_light.light_matrices[i] = bias_mvp;
     
     glViewport(i * 1024, light->id * 1024, 1024, 1024);
-    view_set(lights->scene->view, view_projection_matrix);
-    draw_scene(lights->scene);
+    lights->shadow_pass.draw(lights->shadow_pass.data, view_projection_matrix);
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
