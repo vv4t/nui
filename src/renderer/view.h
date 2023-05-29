@@ -12,7 +12,6 @@ typedef struct {
 typedef struct {
   mat4x4_t  projection_matrix;
   mat4x4_t  view_projection_matrix;
-  vec3_t    view_pos;
   GLuint    ubo_view;
 } view_t;
 
