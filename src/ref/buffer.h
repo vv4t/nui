@@ -2,7 +2,7 @@
 #define MESH_H
 
 #include "gl.h"
-#include "renderer_def.h"
+#include "ref_def.h"
 #include "../common/nui_math.h"
 
 typedef struct {

@@ -1,9 +1,9 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef REF_H
+#define REF_H
 
 #include "view.h"
 #include "buffer.h"
-#include "renderer_def.h"
+#include "ref_def.h"
 
 #include "../shaders/skybox.h"
 #include "../shaders/hdr.h"
@@ -26,9 +26,9 @@ typedef struct {
   material_t  tile_mtl;
   mesh_t      scene_mesh;
   mesh_t      cube_mesh;
-} renderer_t;
+} ref_t;
 
-bool renderer_init(renderer_t *renderer);
-void renderer_render(renderer_t *renderer, const game_t *game);
+bool ref_init(ref_t *ref);
+void ref_render(ref_t *ref, const game_t *game);
 
 #endif

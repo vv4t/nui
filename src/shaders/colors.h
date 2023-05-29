@@ -1,7 +1,7 @@
 #ifndef COLORS_H
 #define COLORS_H
 
-#include "../renderer/gl.h"
+#include "../ref/gl.h"
 #include "../common/nui_math.h"
 
 typedef struct {

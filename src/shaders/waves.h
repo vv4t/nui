@@ -4,9 +4,9 @@
 #include "flat.h"
 #include "colors.h"
 
-#include "../renderer/gl.h"
-#include "../renderer/view.h"
-#include "../renderer/renderer_def.h"
+#include "../ref/gl.h"
+#include "../ref/view.h"
+#include "../ref/ref_def.h"
 #include <stdbool.h>
 
 typedef struct {

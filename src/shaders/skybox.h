@@ -1,10 +1,10 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
 
-#include "../renderer/gl.h"
-#include "../renderer/view.h"
-#include "../renderer/renderer_def.h"
-#include "../renderer/buffer.h"
+#include "../ref/gl.h"
+#include "../ref/view.h"
+#include "../ref/ref_def.h"
+#include "../ref/buffer.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>
 

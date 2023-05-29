@@ -1,7 +1,7 @@
 #ifndef MESH_FILE_H
 #define MESH_FILE_H
 
-#include "renderer_def.h"
+#include "ref_def.h"
 
 typedef struct {
   vertex_t  *vertices;

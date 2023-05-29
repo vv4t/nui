@@ -1,8 +1,8 @@
 #ifndef FLAT_H
 #define FLAT_H
 
-#include "../renderer/gl.h"
-#include "../renderer/renderer_def.h"
+#include "../ref/gl.h"
+#include "../ref/ref_def.h"
 #include "../common/nui_math.h"
 
 typedef struct {

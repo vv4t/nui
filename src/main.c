@@ -3,8 +3,8 @@
 #include "sdl.h"
 #include "common/log.h"
 #include "game/game.h"
-#include "renderer/gl.h"
-#include "renderer/renderer.h"
+#include "ref/gl.h"
+#include "ref/ref.h"
 
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>
@@ -12,7 +12,7 @@
 
 static struct {
   sdl_t       sdl;
-  renderer_t  renderer;
+  ref_t       ref;
   game_t      game;
   usercmd_t   usercmd;
 } nui;
@@ -45,7 +45,7 @@ bool nui_init()
   if (!gl_init())
     return false;
   
-  if (!renderer_init(&nui.renderer))
+  if (!ref_init(&nui.ref))
     return false;
   
   nui.usercmd = (usercmd_t) {0};
@@ -59,6 +59,6 @@ void nui_update()
 {
   sdl_poll(&nui.sdl, &nui.usercmd);
   game_update(&nui.game, 0.015, &nui.usercmd);
-  renderer_render(&nui.renderer, &nui.game);
+  ref_render(&nui.ref, &nui.game);
   sdl_swap(&nui.sdl);
 }
