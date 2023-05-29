@@ -5,10 +5,13 @@
 #include "view.h"
 #include "skybox.h"
 #include "lights.h"
+#include "hdr.h"
 #include "../game/game.h"
 
 typedef struct ref_pipe {
   buffer_t  *buffer;
+  
+  hdr_t     *hdr;
   skybox_t  *skybox;
   lights_t  *lights;
   

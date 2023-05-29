@@ -15,6 +15,9 @@ typedef struct {
   buffer_t    buffer;
   view_t      view;
   
+  mesh_t      quad_mesh;
+  
+  hdr_t       hdr;
   skybox_t    skybox;
   lights_t    lights;
   

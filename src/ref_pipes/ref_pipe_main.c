@@ -35,6 +35,7 @@ bool ref_pipe_main_init_scene(ref_pipe_t *ref_pipe, scene_t *scene, view_t *view
 
 void ref_pipe_main_render_scene(ref_pipe_t *ref_pipe, const scene_t *scene, const game_t *game, view_t *view)
 {
+  hdr_begin(ref_pipe->hdr);
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
@@ -48,6 +49,9 @@ void ref_pipe_main_render_scene(ref_pipe_t *ref_pipe, const scene_t *scene, cons
   
   view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
+  hdr_end(ref_pipe->hdr);
+  
+  hdr_draw(ref_pipe->hdr);
 }
 
 static void draw_scene(const scene_t *scene, const view_t *view)
