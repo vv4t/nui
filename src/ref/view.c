@@ -40,7 +40,7 @@ void view_set(view_t *view, mat4x4_t view_projection_matrix)
   view->view_projection_matrix = view_projection_matrix;
 }
 
-void view_sub_data(view_t *view, mat4x4_t model_matrix)
+void view_sub_data(const view_t *view, mat4x4_t model_matrix)
 {
   mat4x4_t mvp_matrix = mat4x4_mul(model_matrix, view->view_projection_matrix);
   

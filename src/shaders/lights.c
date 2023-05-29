@@ -36,13 +36,13 @@ void lights_set_view_pos(lights_t *lights, vec3_t view_pos)
   glUniform3f(lights->ul_view_pos, view_pos.x, view_pos.y, view_pos.z);
 }
 
-void lights_set_material(material_t *material)
+void lights_set_material(material_t material)
 {
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, material->diffuse);
+  glBindTexture(GL_TEXTURE_2D, material.diffuse);
   
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, material->normal);
+  glBindTexture(GL_TEXTURE_2D, material.normal);
 }
 
 bool lights_new_light(lights_t *lights, light_t *light)
