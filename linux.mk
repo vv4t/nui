@@ -1,14 +1,19 @@
 .PHONY=nui run
 
-OUT=bin/linux/nui
-CFLAGS=
+CFLAGS=-O3
 LDFLAGS=-lSDL2 -lSDL2_image -lm -lGL -lGLEW
 SRC=src/*.c src/*/*.c
 
-nui: $(OUT) run
+nui: bin/linux/nui run
 
-$(OUT): $(SRC) src/*/*.h
-	gcc $(CFLAGS) $(SRC) $(LDFLAGS) -o $(OUT)
+bin/linux/nui: $(SRC) src/*/*.h | bin/linux
+	gcc $(CFLAGS) $(SRC) $(LDFLAGS) -o $@
+
+bin/linux: | bin
+	mkdir -p bin/linux
+
+bin:
+	mkdir -p bin
 
 run:
-	$(OUT)
+	bin/linux/nui
