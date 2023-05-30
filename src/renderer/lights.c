@@ -18,8 +18,6 @@ bool lights_init(lights_t *lights)
   lights_init_lights(lights);
   lights_init_shadow(lights);
   
-  lights->light_count = 0;
-  
   return true;
 }
 
@@ -43,20 +41,6 @@ void lights_set_material(material_t material)
   
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, material.normal);
-}
-
-bool lights_new_light(lights_t *lights, light_t *light)
-{
-  *light = (light_t) {
-    .id = lights->light_count,
-    .pos = vec3_init(0.0, 0.0, 0.0),
-    .color = vec4_init(1.0, 1.0, 1.0, 1.0),
-    .intensity = 5.0
-  };
-  
-  lights->light_count++;
-  
-  return true;
 }
 
 void lights_sub_light(lights_t *lights, const light_t *light, const scene_t *scene, view_t view)

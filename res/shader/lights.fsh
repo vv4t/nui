@@ -1,7 +1,6 @@
 layout (location = 0) out vec4 frag_color;
 
 in vec3 vs_pos;
-in vec3 vs_normal;
 in vec2 vs_uv;
 in mat3 vs_TBN;
 
@@ -43,35 +42,6 @@ void main() {
     
     vec3 delta_pos = lights[i].pos - vs_pos;
     vec3 light_dir = normalize(delta_pos);
-  
-    float shadow = 1.0;
-    float u_map = 0.0;
-    
-    for (int j = 0; j < 6; j++) {
-      vec3 proj_coords = vs_light_pos[i * 6 + j].xyz / vs_light_pos[i * 6 + j].w;
-      
-      if (
-        proj_coords.x < 1.0 / 6.0 && proj_coords.x > 0.0 &&
-        proj_coords.y < 1.0 / float(MAX_LIGHTS) && proj_coords.y > 0.0 && 
-        proj_coords.z < 1.0 && proj_coords.z > 0.0
-      ) {
-        proj_coords.x = proj_coords.x + u_map;
-        proj_coords.y = proj_coords.y + v_map;
-        
-        float closest_depth = texture(u_depth_map, proj_coords.xy).r;
-        float current_depth = proj_coords.z;
-        
-        float cos_theta = dot(vs_normal, -light_dir);
-        float bias = clamp(0.0005 * (1.0 - cos_theta), 0.0, 0.0001);
-        
-        if (current_depth - bias < closest_depth)
-          shadow = 0.0;
-      }
-      
-      u_map += 1.0 / 6.0;
-    }
-    
-    v_map += 1.0 / float(MAX_LIGHTS);
     
     vec3 view_dir = normalize(u_view_pos - vs_pos);
     vec3 reflect_dir = reflect(-light_dir, normal);
@@ -80,12 +50,43 @@ void main() {
     float diffuse = max(dot(normal, light_dir), 0.0);
     float delta_dist = length(delta_pos);
     
-    float attentuation = lights[i].intensity / (1.0 + 4.0 * delta_dist + 0.4 * delta_dist * delta_dist);
-    float intensity = (diffuse + specular) * attentuation;
+    float attenuation = lights[i].intensity / (1.0 + 4.0 * delta_dist + 0.4 * delta_dist * delta_dist);
+    float intensity = (diffuse + specular) * attenuation;
+    
+    float shadow = 1.0;
+    float u_map = 0.0;
+    
+    if (diffuse > 0.0) {
+      for (int j = 0; j < 6; j++) {
+        vec3 proj_coords = vs_light_pos[i * 6 + j].xyz / vs_light_pos[i * 6 + j].w;
+        
+        if (
+          proj_coords.x < 1.0 / 6.0 && proj_coords.x > 0.0 &&
+          proj_coords.y < 1.0 / float(MAX_LIGHTS) && proj_coords.y > 0.0 && 
+          proj_coords.z < 1.0 && proj_coords.z > 0.0
+        ) {
+          proj_coords.x = proj_coords.x + u_map;
+          proj_coords.y = proj_coords.y + v_map;
+          
+          float closest_depth = texture(u_depth_map, proj_coords.xy).r;
+          float current_depth = proj_coords.z;
+          
+          float cos_theta = dot(normal, -light_dir);
+          float bias = clamp(0.0005 * (1.0 - cos_theta), 0.0, 0.0001);
+          
+          if (current_depth - bias < closest_depth)
+            shadow = 0.0;
+        }
+        
+        u_map += 1.0 / 6.0;
+      }
+    }
+    
+    v_map += 1.0 / float(MAX_LIGHTS);
     light += lights[i].color.xyz * intensity * (1.0 - shadow);
   }
   
-  light += vec3(0.1, 0.1, 0.1);
+  light += vec3(0.0, 0.0, 0.0);
   
   frag_color = texture(u_color, vs_uv) * vec4(light, 1.0);
 }

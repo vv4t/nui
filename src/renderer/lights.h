@@ -34,8 +34,6 @@ typedef struct {
   
   GLuint        depth_fbo;
   GLuint        depth_map;
-  
-  int           light_count;
 } lights_t;
 
 bool lights_init(lights_t *lights);

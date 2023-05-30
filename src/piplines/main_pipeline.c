@@ -25,8 +25,9 @@ bool main_pipeline_init_scene(pipeline_t *pipeline, scene_t *scene, view_t *view
   scene->draw = draw_scene;
   
   light_t light;
-  lights_new_light(pipeline->lights, &light);
-  light.pos = vec3_init(0.0, 5.0, 0.0);
+  light.id = 0;
+  light.pos = vec3_init(5.0, 5.0, 5.0);
+  light.color = vec4_init(1.0, 1.0, 1.0, 1.0);
   light.intensity = 40.0;
   lights_sub_light(pipeline->lights, &light, scene, *view);
   
@@ -36,6 +37,7 @@ bool main_pipeline_init_scene(pipeline_t *pipeline, scene_t *scene, view_t *view
 void main_pipeline_render_scene(pipeline_t *pipeline, const scene_t *scene, const game_t *game, view_t *view)
 {
   hdr_begin(pipeline->hdr);
+  
   glViewport(0, 0, 1280, 720);
   glClear(GL_DEPTH_BUFFER_BIT);
   
@@ -45,10 +47,15 @@ void main_pipeline_render_scene(pipeline_t *pipeline, const scene_t *scene, cons
   
   view_set_offset(view, game->position, game->rotation);
   lights_set_view_pos(pipeline->lights, game->position);
-  lights_set_material(scene->materials[0]);
   
+  lights_set_material(scene->materials[0]);
   view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
+  
+  lights_set_material(scene->materials[0]);
+  view_sub_data(view, mat4x4_init_translation(vec3_init(0.0, 4.0, 0.0)));
+  glDrawArrays(GL_TRIANGLES, scene->meshes[1].offset, scene->meshes[1].count);
+  
   hdr_end(pipeline->hdr);
   
   hdr_draw(pipeline->hdr);
@@ -58,6 +65,9 @@ static void draw_scene(const scene_t *scene, const view_t *view)
 {
   view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
+  
+  view_sub_data(view, mat4x4_init_translation(vec3_init(0.0, 4.0, 0.0)));
+  glDrawArrays(GL_TRIANGLES, scene->meshes[1].offset, scene->meshes[1].count);
 }
 
 static void init_gl()
@@ -81,6 +91,20 @@ static bool init_meshes(pipeline_t *pipeline, scene_t *scene)
     !buffer_new_mesh(
       pipeline->buffer,
       &scene->meshes[0],
+      mesh_file.vertices,
+      mesh_file.num_vertices
+    )
+  ) {
+    return false;
+  }
+  
+  if (!mesh_file_load(&mesh_file, "res/mesh/cube.mesh"))
+    return false;
+  
+  if (
+    !buffer_new_mesh(
+      pipeline->buffer,
+      &scene->meshes[1],
       mesh_file.vertices,
       mesh_file.num_vertices
     )
