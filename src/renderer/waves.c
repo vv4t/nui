@@ -9,8 +9,9 @@
 #define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
-static void waves_copy(waves_t *waves, flat_t *flat, view_t *view);
+static void waves_copy(waves_t *waves);
 static void waves_render_normal_map(waves_t *waves);
+
 static void waves_init_pattern(waves_t *waves);
 static void waves_init_maps(waves_t *waves);
 static bool waves_init_shaders(waves_t *waves);
@@ -113,10 +114,12 @@ static bool waves_init_shaders(waves_t *waves)
   free(src_fragment);
   free(src_out);
   
+  waves->ul_compute = glGetUniformLocation(waves->shader, "u_compute");
+  
   return true;
 }
 
-void waves_move(waves_t *waves, flat_t *flat, view_t *view)
+void waves_move(waves_t *waves)
 {
   glDisable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
@@ -124,10 +127,13 @@ void waves_move(waves_t *waves, flat_t *flat, view_t *view)
   glViewport(0, 0, WAVES_SIZE, WAVES_SIZE);
   glScissor(BORDER_SIZE, BORDER_SIZE, WAVES_SIZE - BORDER_SIZE * 2, WAVES_SIZE - BORDER_SIZE * 2);
   
+  glUseProgram(waves->shader);
   glEnable(GL_SCISSOR_TEST);
   waves_render_waves_map(waves);
-  waves_copy(waves, flat, view);
+  waves_copy(waves);
   glDisable(GL_SCISSOR_TEST);
+  
+  glUseProgram(waves->out_shader);
   waves_render_normal_map(waves);
   
   glEnable(GL_BLEND);
@@ -136,9 +142,9 @@ void waves_move(waves_t *waves, flat_t *flat, view_t *view)
 
 static void waves_render_waves_map(waves_t *waves)
 {
+  glUniform1i(waves->ul_compute, 1);
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
   
-  glUseProgram(waves->shader);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
   glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
@@ -146,18 +152,13 @@ static void waves_render_waves_map(waves_t *waves)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void waves_copy(waves_t *waves, flat_t *flat, view_t *view)
+static void waves_copy(waves_t *waves)
 {
+  glUniform1i(waves->ul_compute, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
   
-  flat_bind(flat);
-  
-  // TODO: fix view
-  view_set_matrix(view, mat4x4_init_identity());
-  view_sub_data(view, mat4x4_init_identity());
-  
-  material_t material = { .diffuse = waves->wave[0] };
-  flat_set_material(&material);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, waves->wave[0]);
   glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -167,7 +168,6 @@ static void waves_render_normal_map(waves_t *waves)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[0]);
   
-  glUseProgram(waves->out_shader);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
   glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
@@ -175,7 +175,7 @@ static void waves_render_normal_map(waves_t *waves)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
+void waves_setup(waves_t *waves)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, waves->fbo[1]);
   
@@ -186,25 +186,18 @@ void waves_setup(waves_t *waves, flat_t *flat, view_t *view)
   glEnable(GL_SCISSOR_TEST);
   glScissor(2, 2, WAVES_SIZE - 4, WAVES_SIZE - 4);
   
-  flat_bind(flat);
-  view_set_matrix(view, mat4x4_init_identity()); // TODO: fix view
-  
-  material_t material = { .diffuse = waves->pattern };
+  glUseProgram(waves->shader);
+  glUniform1i(waves->ul_compute, 0);
   
   for (int i = 0; i < NUM_WAVES; i++) {
-    float x = (rand() % 256) / 128.0 - 1.0;
-    float y = (rand() % 256) / 128.0 - 1.0;
-    float t = (float) PATTERN_SIZE / (float) WAVES_SIZE;// 0.2 + (rand() % 256) / 256.0 * 0.2;
+    int x = (rand() % WAVES_SIZE);
+    int y = (rand() % WAVES_SIZE);
+    int t = PATTERN_SIZE / WAVES_SIZE;
     
-    view_sub_data(
-      view,
-      mat4x4_init_transform(
-        vec3_init(x, y, 1.0f),
-        vec3_init(t, t, 1.0f)
-      )
-    );
-  
-    flat_set_material(&material);
+    glViewport(x, y, t, t);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
     glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   }
   

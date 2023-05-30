@@ -20,6 +20,9 @@ bool renderer_init(renderer_t *renderer)
   if (!hdr_init(&renderer->hdr, renderer->quad_mesh))
     return false;
   
+  if (!waves_init(&renderer->waves, renderer->quad_mesh))
+    return false;
+  
   if (!skybox_init(&renderer->skybox, &renderer->buffer))
     return false;
   

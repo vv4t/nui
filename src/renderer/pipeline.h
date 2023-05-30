@@ -2,6 +2,7 @@
 #define PIPELINE_H
 
 #include "renderer_def.h"
+#include "waves.h"
 #include "view.h"
 #include "skybox.h"
 #include "lights.h"
@@ -14,6 +15,7 @@ typedef struct pipeline {
   hdr_t     *hdr;
   skybox_t  *skybox;
   lights_t  *lights;
+  waves_t   *waves;
   
   bool (*init_scene)(struct pipeline *pipeline, scene_t *scene, view_t *view);
   void (*render_scene)(struct pipeline *pipeline, const scene_t *scene, const game_t *game, view_t *view);

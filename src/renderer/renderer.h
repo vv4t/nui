@@ -20,6 +20,7 @@ typedef struct {
   hdr_t       hdr;
   skybox_t    skybox;
   lights_t    lights;
+  waves_t     waves;
   
   scene_t     scene;
   pipeline_t  pipeline;
