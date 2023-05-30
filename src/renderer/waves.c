@@ -4,8 +4,8 @@
 #include "../common/file.h"
 
 #define WAVES_SIZE    1024
-#define NUM_WAVES     8
-#define PATTERN_SIZE  64
+#define NUM_WAVES     32
+#define PATTERN_SIZE  32
 #define BORDER_SIZE   2
 
 static void waves_render_waves_map(waves_t *waves);
@@ -192,12 +192,12 @@ void waves_setup(waves_t *waves)
   for (int i = 0; i < NUM_WAVES; i++) {
     int x = (rand() % WAVES_SIZE);
     int y = (rand() % WAVES_SIZE);
-    int t = PATTERN_SIZE / WAVES_SIZE;
+    int t = PATTERN_SIZE;
     
     glViewport(x, y, t, t);
     
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, waves->wave[1]);
+    glBindTexture(GL_TEXTURE_2D, waves->pattern);
     glDrawArrays(GL_TRIANGLES, waves->quad_mesh.offset, waves->quad_mesh.count);
   }
   

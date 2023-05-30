@@ -31,11 +31,15 @@ bool main_pipeline_init_scene(pipeline_t *pipeline, scene_t *scene, view_t *view
   light.intensity = 40.0;
   lights_sub_light(pipeline->lights, &light, scene, *view);
   
+  waves_setup(pipeline->waves);
+  
   return true;
 }
 
 void main_pipeline_render_scene(pipeline_t *pipeline, const scene_t *scene, const game_t *game, view_t *view)
 {
+  waves_move(pipeline->waves);
+  
   hdr_begin(pipeline->hdr);
   
   glViewport(0, 0, 1280, 720);
@@ -52,8 +56,8 @@ void main_pipeline_render_scene(pipeline_t *pipeline, const scene_t *scene, cons
   view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
   
-  lights_set_material(scene->materials[0]);
-  view_sub_data(view, mat4x4_init_translation(vec3_init(0.0, 4.0, 0.0)));
+  lights_set_material(scene->materials[1]);
+  view_sub_data(view, mat4x4_init_transform(vec3_init(0.0, 0.0, 0.0), vec3_init(10.0, 1.0, 10.0)));
   glDrawArrays(GL_TRIANGLES, scene->meshes[1].offset, scene->meshes[1].count);
   
   hdr_end(pipeline->hdr);
@@ -65,9 +69,6 @@ static void draw_scene(const scene_t *scene, const view_t *view)
 {
   view_sub_data(view, mat4x4_init_identity());
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
-  
-  view_sub_data(view, mat4x4_init_translation(vec3_init(0.0, 4.0, 0.0)));
-  glDrawArrays(GL_TRIANGLES, scene->meshes[1].offset, scene->meshes[1].count);
 }
 
 static void init_gl()
@@ -123,6 +124,9 @@ static bool init_textures(pipeline_t *pipeline, scene_t *scene)
   if (!texture_load(&scene->textures[1], "res/mtl/tile/normal.jpg"))
     return false;
   
+  if (!texture_load(&scene->textures[2], "res/mtl/water/color.png"))
+    return false;
+  
   return true;
 }
 
@@ -130,4 +134,7 @@ static void init_materials(pipeline_t *pipeline, scene_t *scene)
 {
   scene->materials[0].diffuse = scene->textures[0];
   scene->materials[0].normal = scene->textures[1];
+  
+  scene->materials[1].diffuse = scene->textures[2];
+  scene->materials[1].normal = pipeline->waves->normal_map;
 }

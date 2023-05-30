@@ -86,7 +86,7 @@ void main() {
     light += lights[i].color.xyz * intensity * (1.0 - shadow);
   }
   
-  light += vec3(0.0, 0.0, 0.0);
+  light += vec3(0.1, 0.1, 0.1);
   
   frag_color = texture(u_color, vs_uv) * vec4(light, 1.0);
 }

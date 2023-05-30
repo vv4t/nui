@@ -31,6 +31,7 @@ bool renderer_init(renderer_t *renderer)
     .hdr    = &renderer->hdr,
     .lights = &renderer->lights,
     .skybox = &renderer->skybox,
+    .waves  = &renderer->waves,
     .init_scene = main_pipeline_init_scene,
     .render_scene = main_pipeline_render_scene
   };
