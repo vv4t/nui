@@ -27,6 +27,9 @@ void lights_bind(lights_t *lights)
   
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, lights->depth_map);
+  
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, lights->cube_map);
 }
 
 void lights_set_view_pos(lights_t *lights, vec3_t view_pos)
@@ -146,6 +149,7 @@ static bool lights_init_light_shader(lights_t *lights)
   GLuint ul_color = glGetUniformLocation(lights->light_shader, "u_color");
   GLuint ul_normal = glGetUniformLocation(lights->light_shader, "u_normal");
   GLuint ul_depth_map = glGetUniformLocation(lights->light_shader, "u_depth_map");
+  GLuint ul_cube_map = glGetUniformLocation(lights->light_shader, "u_cube_map");
   
   lights->ul_view_pos = glGetUniformLocation(lights->light_shader, "u_view_pos");
   
@@ -153,6 +157,7 @@ static bool lights_init_light_shader(lights_t *lights)
   glUniform1i(ul_color, 0);
   glUniform1i(ul_normal, 1);
   glUniform1i(ul_depth_map, 2);
+  glUniform1i(ul_cube_map, 3);
   
   glUniformBlockBinding(lights->light_shader, ubl_matrices, 0);
   glUniformBlockBinding(lights->light_shader, ubl_lights, 1);

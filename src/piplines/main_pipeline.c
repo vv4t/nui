@@ -26,12 +26,20 @@ bool main_pipeline_init_scene(pipeline_t *pipeline, scene_t *scene, view_t *view
   
   light_t light;
   light.id = 0;
-  light.pos = vec3_init(5.0, 5.0, 5.0);
-  light.color = vec4_init(1.0, 1.0, 1.0, 1.0);
-  light.intensity = 40.0;
+  light.pos = vec3_init(-6.0, 6.0, -6.0);
+  light.color = vec4_init(0.0, 1.0, 1.0, 1.0);
+  light.intensity = 30.0;
+  lights_sub_light(pipeline->lights, &light, scene, *view);
+  
+  light.id = 1;
+  light.pos = vec3_init(6.0, 6.0, -6.0);
+  light.color = vec4_init(1.0, 0.0, 1.0, 1.0);
+  light.intensity = 30.0;
   lights_sub_light(pipeline->lights, &light, scene, *view);
   
   waves_setup(pipeline->waves);
+  
+  pipeline->lights->cube_map = pipeline->skybox->texture;
   
   return true;
 }
@@ -57,7 +65,7 @@ void main_pipeline_render_scene(pipeline_t *pipeline, const scene_t *scene, cons
   glDrawArrays(GL_TRIANGLES, scene->meshes[0].offset, scene->meshes[0].count);
   
   lights_set_material(scene->materials[1]);
-  view_sub_data(view, mat4x4_init_transform(vec3_init(0.0, 0.0, 0.0), vec3_init(10.0, 1.0, 10.0)));
+  view_sub_data(view, mat4x4_init_transform(vec3_init(0.0, -0.2, 0.0), vec3_init(5.0, 1.0, 5.0)));
   glDrawArrays(GL_TRIANGLES, scene->meshes[1].offset, scene->meshes[1].count);
   
   hdr_end(pipeline->hdr);

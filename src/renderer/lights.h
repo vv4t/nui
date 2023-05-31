@@ -33,7 +33,8 @@ typedef struct {
   GLuint        shadow_shader;
   
   GLuint        depth_fbo;
-  GLuint        depth_map;
+  texture_t     depth_map;
+  texture_t     cube_map;
 } lights_t;
 
 bool lights_init(lights_t *lights);

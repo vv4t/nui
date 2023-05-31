@@ -6,10 +6,11 @@ in mat3 vs_TBN;
 
 in vec4 vs_light_pos[MAX_LIGHTS * 6];
 
-uniform sampler2D u_color;
-uniform sampler2D u_normal;
-uniform sampler2D u_depth_map;
-uniform vec3      u_view_pos;
+uniform sampler2D   u_color;
+uniform sampler2D   u_normal;
+uniform sampler2D   u_depth_map;
+uniform vec3        u_view_pos;
+uniform samplerCube u_cube_map;
 
 struct light_t {
   mat4  light_matrices[6];
@@ -33,6 +34,11 @@ void main() {
   vec3 normal = texture(u_normal, vs_uv).rgb;
   normal = normal * 2.0 - 1.0;
   normal = normalize(vs_TBN * normal);
+  
+  float ratio = 1.00 / 2.42;
+  
+  vec3 I = normalize(vs_pos - u_view_pos);
+  vec3 R = refract(I, normalize(normal), ratio);
   
   float v_map = 0.0;
   
@@ -87,6 +93,9 @@ void main() {
   }
   
   light += vec3(0.1, 0.1, 0.1);
+  light += 0.5 * max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.1) * texture(u_cube_map, R).rgb;
   
-  frag_color = texture(u_color, vs_uv) * vec4(light, 1.0);
+  vec4 diffuse = texture(u_color, vs_uv);
+  
+  frag_color = diffuse * vec4(light, 1.0);
 }

@@ -3,7 +3,7 @@
 #include "../common/log.h"
 #include "../common/file.h"
 
-#define WAVES_SIZE    1024
+#define WAVES_SIZE    512
 #define NUM_WAVES     32
 #define PATTERN_SIZE  32
 #define BORDER_SIZE   2
