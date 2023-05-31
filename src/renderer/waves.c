@@ -55,7 +55,7 @@ static void waves_init_pattern(waves_t *waves)
         float k = 0.015;
         
         data[(i * PATTERN_SIZE + j) * 3 + 0] = u + 0.5;
-        data[(i * PATTERN_SIZE + j) * 3 + 1] = u + u_t * k + 0.5;
+        data[(i * PATTERN_SIZE + j) * 3 + 1] = 0.5;
         data[(i * PATTERN_SIZE + j) * 3 + 2] = 0.5;
       }
     }
