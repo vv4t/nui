@@ -32,9 +32,9 @@ bool renderer_init(renderer_t *renderer)
     .lights = &renderer->lights,
     .skybox = &renderer->skybox,
     .waves  = &renderer->waves,
-    .init = main_scene_init,
+    .init   = main_scene_init,
     .render = main_scene_render,
-    .draw = main_scene_draw
+    .draw   = main_scene_draw
   };
   
   if (!renderer->scene.init(&renderer->scene, &renderer->view))
