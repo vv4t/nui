@@ -44,6 +44,6 @@ void lights_set_material(material_t material);
 void lights_set_view_pos(lights_t *lights, vec3_t view_pos);
 
 bool lights_new_light(lights_t *lights, light_t *light);
-void lights_sub_light(lights_t *lights, const light_t *light, const scene_t *scene, view_t view);
+void lights_sub_light(lights_t *lights, const light_t *light, scene_t *scene, view_t view);
 
 #endif

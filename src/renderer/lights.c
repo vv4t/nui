@@ -1,6 +1,7 @@
 #include "lights.h"
 
 #include "../common/file.h"
+#include "scene.h"
 
 static bool lights_init_light_shader(lights_t *lights);
 static bool lights_init_shadow_shader(lights_t *lights);
@@ -46,7 +47,7 @@ void lights_set_material(material_t material)
   glBindTexture(GL_TEXTURE_2D, material.normal);
 }
 
-void lights_sub_light(lights_t *lights, const light_t *light, const scene_t *scene, view_t view)
+void lights_sub_light(lights_t *lights, const light_t *light, scene_t *scene, view_t view)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, lights->depth_fbo);
   

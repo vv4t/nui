@@ -4,7 +4,7 @@
 #include "view.h"
 #include "buffer.h"
 #include "renderer_def.h"
-#include "pipeline.h"
+#include "scene.h"
 #include "skybox.h"
 #include "hdr.h"
 #include "lights.h"
@@ -22,8 +22,7 @@ typedef struct {
   lights_t    lights;
   waves_t     waves;
   
-  scene_t     scene;
-  pipeline_t  pipeline;
+  scene_t  scene;
 } renderer_t;
 
 bool renderer_init(renderer_t *renderer);

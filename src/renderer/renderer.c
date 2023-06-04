@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include "gl.h"
-#include "../piplines/main_pipeline.h"
+#include "../scenes/main_scene.h"
 
 static bool renderer_init_primitive_mesh(renderer_t *renderer);
 
@@ -26,17 +26,18 @@ bool renderer_init(renderer_t *renderer)
   if (!skybox_init(&renderer->skybox, &renderer->buffer))
     return false;
   
-  renderer->pipeline = (pipeline_t) {
+  renderer->scene = (scene_t) {
     .buffer = &renderer->buffer,
     .hdr    = &renderer->hdr,
     .lights = &renderer->lights,
     .skybox = &renderer->skybox,
     .waves  = &renderer->waves,
-    .init_scene = main_pipeline_init_scene,
-    .render_scene = main_pipeline_render_scene
+    .init = main_scene_init,
+    .render = main_scene_render,
+    .draw = main_scene_draw
   };
   
-  if (!renderer->pipeline.init_scene(&renderer->pipeline, &renderer->scene, &renderer->view))
+  if (!renderer->scene.init(&renderer->scene, &renderer->view))
     return false;
   
   return true;
@@ -44,7 +45,7 @@ bool renderer_init(renderer_t *renderer)
 
 void renderer_render(renderer_t *renderer, const game_t *game)
 {
-  renderer->pipeline.render_scene(&renderer->pipeline, &renderer->scene, game, &renderer->view);
+  renderer->scene.render(&renderer->scene, game, &renderer->view);
 }
 
 static bool renderer_init_primitive_mesh(renderer_t *renderer)

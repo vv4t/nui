@@ -30,12 +30,6 @@ typedef struct {
   texture_t   normal;
 } material_t;
 
-typedef struct scene {
-  mesh_t      meshes[MAX_MESHES];
-  texture_t   textures[MAX_TEXTURES];
-  material_t  materials[MAX_MATERIALS];
-  
-  void (*draw)(const struct scene *scene, const view_t *view);
-} scene_t;
+typedef struct scene scene_t;
 
 #endif
