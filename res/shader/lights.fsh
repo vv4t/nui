@@ -35,10 +35,8 @@ void main() {
   normal = normal * 2.0 - 1.0;
   normal = normalize(vs_TBN * normal);
   
-  float ratio = 1.00 / 2.42;
-  
   vec3 I = normalize(vs_pos - u_view_pos);
-  vec3 R = refract(I, normalize(normal), ratio);
+  vec3 R = reflect(I, normalize(normal));
   
   float v_map = 0.0;
   
@@ -93,7 +91,7 @@ void main() {
   }
   
   light += vec3(0.1, 0.1, 0.1);
-  light += 0.5 * max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.1) * texture(u_cube_map, R).rgb;
+  light += 1.5 * texture(u_cube_map, R).rgb;
   
   vec4 diffuse = texture(u_color, vs_uv);
   
