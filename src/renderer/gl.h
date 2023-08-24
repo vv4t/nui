@@ -13,12 +13,17 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_opengl.h>
 
+typedef GLuint shader_t;
+typedef GLuint texture_t;
+
 bool gl_init();
-bool texture_load(GLuint *texture, const char *path);
+
+bool texture_load(texture_t *texture, const char *path);
 bool shader_load(
-  GLuint *shader,
+  texture_t *shader,
   const char *define,
   const char *src_vertex,
-  const char *src_fragment);
+  const char *src_fragment
+);
 
 #endif

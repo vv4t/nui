@@ -56,3 +56,8 @@ bool buffer_new_mesh(
   
   return true;
 }
+
+void mesh_draw(mesh_t mesh)
+{
+  glDrawArrays(GL_TRIANGLES, mesh.offset, mesh.count);
+}

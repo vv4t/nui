@@ -1,31 +1,25 @@
-#ifndef REF_H
-#define REF_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
-#include "view.h"
+#include "renderer_api.h"
+
+#include "camera.h"
 #include "buffer.h"
-#include "renderer_def.h"
-#include "scene.h"
-#include "skybox.h"
-#include "hdr.h"
-#include "lights.h"
-
 #include "../game/game.h"
 
-typedef struct {
-  buffer_t    buffer;
-  view_t      view;
+struct renderer_s {
+  const game_t    *game;
   
-  mesh_t      quad_mesh;
+  buffer_t buffer;
+  camera_t        camera;
   
-  hdr_t       hdr;
-  skybox_t    skybox;
-  lights_t    lights;
-  waves_t     waves;
+  mesh_t          scene_mesh;
+  mesh_t          quad_mesh;
   
-  scene_t  scene;
-} renderer_t;
+  GLuint          tile_diffuse;
+};
 
-bool renderer_init(renderer_t *renderer);
-void renderer_render(renderer_t *renderer, const game_t *game);
+bool renderer_init(renderer_t *r);
+void renderer_render(renderer_t *r);
 
 #endif
