@@ -40,6 +40,7 @@ bool texture_load(GLuint *texture, const char *path)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   
   GLuint internal_format = GL_RGBA;
+  
 #ifndef __EMSCRIPTEN__
   switch (bitmap->format->BytesPerPixel) {
   case 3:

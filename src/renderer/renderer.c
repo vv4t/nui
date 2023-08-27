@@ -3,24 +3,23 @@
 #include "gl.h"
 #include "mesh_file.h"
 
-static bool renderer_init_texture(renderer_t *r);
+static void renderer_init_gl();
+
 static bool renderer_init_mesh(renderer_t *r);
+static bool renderer_init_texture(renderer_t *r);
+static bool renderer_init_material(renderer_t *r);
 
 static bool load_mesh_file(buffer_t *buffer, mesh_t *mesh, const char *path);
 
-bool renderer_init(renderer_t *r)
+bool renderer_init(renderer_t *r, const game_t *game)
 {
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_FRONT);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-  
+  renderer_init_gl();
   buffer_init(&r->buffer, 4096);
   
+  gls_flat_init(&r->gls_flat);
+  
   camera_init(&r->camera);
-  camera_perspective(&r->camera, to_radians(90.0), 720.0 / 1280.0, 0.1, 100.0);
+  camera_perspective(&r->camera, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
   
   if (!renderer_init_mesh(r)) {
     return false;
@@ -30,13 +29,32 @@ bool renderer_init(renderer_t *r)
     return false;
   }
   
+  renderer_init_material(r);
+  
+  r->game = game;
+  
   return true;
+}
+
+static void renderer_init_gl()
+{
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_FRONT);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 }
 
 void renderer_render(renderer_t *r)
 {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  gls_flat_bind(&r->gls_flat);
+  
   camera_move(&r->camera, r->game->position, r->game->rotation);
   
+  material_bind(r->tile_mtl);
   camera_sub_data(&r->camera, mat4x4_init_identity());
   mesh_draw(r->scene_mesh);
 }
@@ -75,4 +93,9 @@ static bool renderer_init_texture(renderer_t *r)
   }
   
   return true;
+}
+
+static bool renderer_init_material(renderer_t *r)
+{
+  r->tile_mtl.diffuse = r->tile_diffuse;
 }

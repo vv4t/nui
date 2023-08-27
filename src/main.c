@@ -45,12 +45,12 @@ bool nui_init()
   if (!gl_init())
     return false;
   
-  if (!renderer_init(&nui.renderer))
-    return false;
-  
   nui.usercmd = (usercmd_t) {0};
   game_init(&nui.game);
   sdl_lock(true);
+  
+  if (!renderer_init(&nui.renderer, &nui.game))
+    return false;
   
   return true;
 }
@@ -59,6 +59,6 @@ void nui_update()
 {
   sdl_poll(&nui.sdl, &nui.usercmd);
   game_update(&nui.game, 0.015, &nui.usercmd);
-  renderer_render(&nui.renderer, &nui.game);
+  renderer_render(&nui.renderer);
   sdl_swap(&nui.sdl);
 }
