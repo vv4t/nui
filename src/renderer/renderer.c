@@ -20,6 +20,7 @@ bool renderer_init(renderer_t *r, const game_t *game)
   
   camera_init(&r->camera);
   camera_perspective(&r->camera, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
+  // camera_orthogonal(&r->camera, 720.0 / 1280.0, 10.0, -50, 50);
   
   if (!renderer_init_mesh(r)) {
     return false;

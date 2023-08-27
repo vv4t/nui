@@ -27,6 +27,14 @@ void camera_perspective(camera_t *camera, float aspect_ratio, float fov, float n
   camera->mat_view_projection = camera->mat_projection;
 }
 
+void camera_orthogonal(camera_t *camera, float aspect_ratio, float size, float near, float far)
+{
+  float ar_size = aspect_ratio * size;
+  
+  camera->mat_projection = mat4x4_init_orthogonal(-size, size, ar_size, -ar_size , near, far);
+  camera->mat_view_projection = camera->mat_projection;
+}
+
 void camera_move(camera_t *camera, vec3_t view_offset, quat_t view_angle)
 {
   vec3_t view_origin = vec3_mulf(view_offset, -1);
