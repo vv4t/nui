@@ -9,12 +9,12 @@ static bool renderer_init_mesh(renderer_t *r);
 static bool renderer_init_texture(renderer_t *r);
 static bool renderer_init_material(renderer_t *r);
 
-static bool load_mesh_file(buffer_t *buffer, mesh_t *mesh, const char *path);
+static bool load_mesh_file(mesh_buffer_t *mesh_buffer, mesh_t *mesh, const char *path);
 
 bool renderer_init(renderer_t *r, const game_t *game)
 {
   renderer_init_gl();
-  buffer_init(&r->buffer, 4096);
+  mesh_buffer_init(&r->mesh_buffer, 4096);
   
   gls_flat_init(&r->gls_flat);
   
@@ -62,7 +62,7 @@ void renderer_render(renderer_t *r)
 
 static bool renderer_init_mesh(renderer_t *r)
 {
-  if (!load_mesh_file(&r->buffer, &r->scene_mesh, "res/mesh/scene.mesh")) {
+  if (!load_mesh_file(&r->mesh_buffer, &r->scene_mesh, "res/mesh/scene.mesh")) {
     return false;
   }
   
@@ -70,7 +70,7 @@ static bool renderer_init_mesh(renderer_t *r)
 }
 
 
-static bool load_mesh_file(buffer_t *buffer, mesh_t *mesh, const char *path)
+static bool load_mesh_file(mesh_buffer_t *mesh_buffer, mesh_t *mesh, const char *path)
 {
   mesh_file_t mesh_file;
   
@@ -78,7 +78,7 @@ static bool load_mesh_file(buffer_t *buffer, mesh_t *mesh, const char *path)
     return false;
   }
   
-  if (!buffer_new_mesh(buffer, mesh, mesh_file.vertices, mesh_file.num_vertices)) {
+  if (!mesh_buffer_new(mesh_buffer, mesh, mesh_file.vertices, mesh_file.num_vertices)) {
     return false;
   }
   

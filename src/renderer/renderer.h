@@ -4,7 +4,7 @@
 #include "renderer_api.h"
 
 #include "camera.h"
-#include "buffer.h"
+#include "mesh.h"
 #include "gls_flat.h"
 #include "material.h"
 #include "../game/game.h"
@@ -12,13 +12,12 @@
 struct renderer_s {
   const game_t  *game;
   
-  buffer_t      buffer;
+  mesh_buffer_t mesh_buffer;
   camera_t      camera;
+  gls_flat_t    gls_flat;
   
   mesh_t        scene_mesh;
   mesh_t        quad_mesh;
-  
-  gls_flat_t    gls_flat;
   
   GLuint        tile_diffuse;
   material_t    tile_mtl;

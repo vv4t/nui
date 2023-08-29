@@ -1,5 +1,5 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef MESH_H
+#define MESH_H
 
 #include "gl.h"
 #include "../common/nui_math.h"
@@ -21,12 +21,12 @@ typedef struct {
   GLuint  vbo;
   GLuint  offset;
   int     max_vertices;
-} buffer_t;
+} mesh_buffer_t;
 
-void buffer_init(buffer_t *buffer, int max_vertices);
+void mesh_buffer_init(mesh_buffer_t *mesh_buffer, int max_vertices);
 
-bool buffer_new_mesh(
-  buffer_t *buffer,
+bool mesh_buffer_new(
+  mesh_buffer_t   *mesh_buffer,
   mesh_t          *mesh,
   const vertex_t  *vertices,
   int             num_vertices

@@ -34,21 +34,154 @@ class face_t {
   }
 };
 
+class material_t {
+  constructor(name)
+  {
+    this.name = name;
+    this.diffuse = "";
+  }
+};
+
+class object_t {
+  constructor(material, faces)
+  {
+    this.material = material;
+    this.faces = faces;
+  }
+};
+
+class mtllib_t {
+  constructor()
+  {
+    this.materials = [];
+  }
+  
+  load(str_path)
+  {
+    const dir = path.parse(str_path).dir;
+    
+    const file = fs.readFileSync(str_path).toString();
+    const lines = file.split('\n');
+    
+    let material = null;
+    
+    this.materials = [];
+    
+    for (const line of lines) {
+      const args = line.split(' ').filter((x) => x.length > 0);
+      
+      if (args[0] == "newmtl") {
+        if (material) {
+          this.materials.push(material);
+        }
+        
+        material = new material_t(args[1]);
+      } else if (args[0] == "map_Kd") {
+        material.diffuse = args[1];
+      }
+    }
+    
+    if (material) {
+      this.materials.push(material);
+    }
+  }
+  
+  find(name)
+  {
+    for (let i = 0; i < this.materials.length; i++) {
+      if (name == this.materials[i].name) {
+        return i;
+      }
+    }
+    
+    return -1;
+  }
+};
+
+class obj_t {
+  constructor(materials, objects)
+  {
+    this.materials = materials;
+    this.objects = objects;
+  }
+};
+
+class vertex_group_t {
+  constructor(material, offset, count)
+  {
+    this.material = material;
+    this.offset = offset;
+    this.count = count;
+  }
+};
+
+class mdl_t {
+  constructor(materials, vertex_groups, vertices)
+  {
+    this.materials = materials;
+    this.vertex_groups = vertex_groups;
+    this.vertices = vertices;
+  }
+};
+
+function obj_to_mdl(obj)
+{
+  const vertices = [];
+  const vertex_groups = [];
+  
+  for (const object of obj.objects) {
+    const offset = vertices.length;
+    
+    for (const face of object.faces) {
+      vertices.push(face.v1);
+      vertices.push(face.v2);
+      vertices.push(face.v3);
+    }
+    
+    const count = vertices.length - offset;
+    
+    vertex_groups.push(new vertex_group_t(object.material, offset, count));
+  }
+  
+  return new mdl_t(obj.materials, vertex_groups, vertices);
+}
+
 function main()
 {
-  const face_buf = obj_parse("saves/scene.obj");
+  if (process.argv.length != 4) {
+    console.log("usage:", path.parse(process.argv[1]).name, "[obj-file] [mdl-file]");
+    process.exit(1);
+  }
+  
+  const input_obj = process.argv[2];
+  const output_mdl = process.argv[3];
+  
+  const obj = obj_parse(input_obj);
+  const mdl = obj_to_mdl(obj);
+  
+  console.log(mdl);
   
   const write = new write_t();
   
-  write.write_u32(face_buf.length);
-  
-  for (const face of face_buf) {
-    write.write_vertex(face.v1);
-    write.write_vertex(face.v2);
-    write.write_vertex(face.v3);
+  write.write_u32(mdl.materials.length);
+  for (const material of mdl.materials) {
+    write.write_str(material.diffuse);
   }
   
-  fs.writeFileSync("../../res/mesh/scene.mesh", Buffer.from(write.data()));
+  write.write_u32(mdl.vertex_groups.length);
+  for (const vertex_group of mdl.vertex_groups) {
+    write.write_u32(vertex_group.material);
+    write.write_u32(vertex_group.offset);
+    write.write_u32(vertex_group.count);
+  }
+  
+  write.write_u32(mdl.vertices.length);
+  
+  for (const vertex of mdl.vertices) {
+    write.write_vertex(vertex);
+  }
+  
+  fs.writeFileSync(output_mdl, Buffer.from(write.data()));
 }
 
 function obj_parse(str_path)
@@ -61,8 +194,14 @@ function obj_parse(str_path)
   let pos_buf = [];
   let normal_buf = [];
   let uv_buf = [];
-  
   let face_buf = [];
+  let objects = [];
+  let materials = [];
+  
+  let material = 0;
+  let object = null;
+  
+  let mtllib = new mtllib_t();
   
   for (const line of lines) {
     const args = line.split(' ').filter((x) => x.length > 0);
@@ -112,10 +251,24 @@ function obj_parse(str_path)
       const face = new face_t(vertices[0], vertices[1], vertices[2]);
       
       face_buf.push(face);
+    } else if (args[0] == "usemtl") {
+      material = mtllib.find(args[1]);
+    } else if (args[0] == "mtllib") {
+      mtllib.load(path.join(dir, args[1]));
+      materials.push(...mtllib.materials);
+    } else if (args[0] == "o") {
+      if (face_buf.length > 0) {
+        objects.push(new object_t(material, face_buf));
+        face_buf = [];
+      }
     }
   }
   
-  return face_buf;
+  if (face_buf.length > 0) {
+    objects.push(new object_t(material, face_buf));
+  }
+  
+  return new obj_t(materials, objects);
 }
 
 class write_t {
@@ -213,6 +366,15 @@ class write_t {
     this.write_vec3(vertex.pos);
     this.write_vec3(vertex.normal);
     this.write_vec2(vertex.uv);
+  }
+  
+  write_str(str)
+  {
+    this.write_u32(str.length);
+    
+    for (const c in str) {
+      this.write_u8(c);
+    }
   }
 };
 

@@ -1,11 +1,11 @@
-#include "buffer.h"
+#include "mesh.h"
 
 #include "../common/log.h"
 
-void buffer_init(buffer_t *buffer, int max_vertices)
+void mesh_buffer_init(mesh_buffer_t *mesh_buffer, int max_vertices)
 {
-  glGenBuffers(1, &buffer->vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer-> vbo);
+  glGenBuffers(1, &mesh_buffer->vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, mesh_buffer-> vbo);
   glBufferData(GL_ARRAY_BUFFER, max_vertices * sizeof(vertex_t), 0, GL_STATIC_DRAW);
   
   // pos
@@ -28,24 +28,24 @@ void buffer_init(buffer_t *buffer, int max_vertices)
   glEnableVertexAttribArray(4);
   glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (float*) 0 + 12);
   
-  buffer->offset = 0;
-  buffer->max_vertices = max_vertices;
+  mesh_buffer->offset = 0;
+  mesh_buffer->max_vertices = max_vertices;
 }
 
-bool buffer_new_mesh(
-  buffer_t *buffer,
+bool mesh_buffer_new(
+  mesh_buffer_t *mesh_buffer,
   mesh_t          *mesh,
   const vertex_t  *vertices,
   int             num_vertices)
 {
-  if (buffer->offset + num_vertices > buffer->max_vertices) {
+  if (mesh_buffer->offset + num_vertices > mesh_buffer->max_vertices) {
     LOG_ERROR("ran out of memory");
     return false;
   }
   
-  mesh->offset = buffer->offset;
+  mesh->offset = mesh_buffer->offset;
   mesh->count = num_vertices;
-  buffer->offset += num_vertices;
+  mesh_buffer->offset += num_vertices;
   
   glBufferSubData(
     GL_ARRAY_BUFFER,
