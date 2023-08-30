@@ -4,20 +4,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool mesh_file_load(mesh_file_t *mesh_file, const char *path)
+mdl_file_t *mdl_file_load(const char *path)
 {
   FILE *file = fopen(path, "rb");
   if (!file) {
     LOG_ERROR("failed to open '%s'", path);
-    return false;
+    return NULL;
   }
   
-  int num_faces; 
-  fread(&num_faces, sizeof(int), 1, file);
+  mdl_file_t *mdl_file = malloc(sizeof(mdl_file_t));
   
-  mesh_file->num_vertices = num_faces * 3;
-  mesh_file->vertices = malloc(mesh_file->num_vertices * sizeof(vertex_t));
+  fread(&mdl_file->num_materials, sizeof(int), 1, file); 
+  fread(&mdl_file->num_vertex_groups, sizeof(int), 1, file); 
+  fread(&mdl_file->num_vertices, sizeof(int), 1, file); 
   
+  mdl_file->materials = calloc(mdl_file->num_materials, sizeof(mdl_material_t));
+  mdl_file->vertex_groups = calloc(mesh_file->vertex_groups, sizeof(mdl_vertex_group_t));
+  mdl_file->vertices = calloc(mesh_file->num_vertices, sizeof(mdl_vertex_t));
+  
+  for (int i = 0; i < mdl_file->num_materials; i++) {
+    int diffuse_len = 0;
+    fread(&diffuse_len, sizeof(int), 1, file);
+    
+    char *diffuse = calloc(diffuse_len, sizeof(char));
+    fread(diffuse, diffuse_len, 1, file);
+  }
+  
+  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_group_t), mdl->num_vertex_groups, file);
+  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_t), mdl->num_vertices, file);
+  
+  /*
   for (int i = 0; i < num_faces; i++) {
     vec3_t pos[3];
     vec3_t normal[3];
@@ -59,11 +75,19 @@ bool mesh_file_load(mesh_file_t *mesh_file, const char *path)
       mesh_file->vertices[i * 3 + j].bitangent = vec3_normalize(bitangent);
     }
   }
+  */
   
   return true;
 }
 
-void mesh_file_free(mesh_file_t *mesh_file)
+void mesh_file_free(mdl_file_t *mdl_file)
 {
-  free(mesh_file->vertices);
+  for (int i = 0; i < mdl_file->num_materials; i++) {
+    free(mdl_file->materials[i].diffuse);
+  }
+  
+  free(mdl_file->materials);
+  free(mdl_file->vertex_groups);
+  free(mdl_file->vertices);
+  free(mdl_file);
 }

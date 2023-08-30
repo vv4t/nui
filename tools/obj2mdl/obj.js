@@ -159,23 +159,21 @@ function main()
   const obj = obj_parse(input_obj);
   const mdl = obj_to_mdl(obj);
   
-  console.log(mdl);
-  
   const write = new write_t();
   
   write.write_u32(mdl.materials.length);
+  write.write_u32(mdl.vertex_groups.length);
+  write.write_u32(mdl.vertices.length);
+  
   for (const material of mdl.materials) {
     write.write_str(material.diffuse);
   }
   
-  write.write_u32(mdl.vertex_groups.length);
   for (const vertex_group of mdl.vertex_groups) {
     write.write_u32(vertex_group.material);
     write.write_u32(vertex_group.offset);
     write.write_u32(vertex_group.count);
   }
-  
-  write.write_u32(mdl.vertices.length);
   
   for (const vertex of mdl.vertices) {
     write.write_vertex(vertex);
@@ -372,8 +370,8 @@ class write_t {
   {
     this.write_u32(str.length);
     
-    for (const c in str) {
-      this.write_u8(c);
+    for (let i = 0; i < str.length; i++) {
+      this.write_u8(str.charCodeAt(i));
     }
   }
 };
