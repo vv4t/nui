@@ -1,5 +1,5 @@
-#ifndef MESH_FILE_H
-#define MESH_FILE_H
+#ifndef MDL_FILE_H
+#define MDL_FILE_H
 
 #include "../common/nui_math.h"
 

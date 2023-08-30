@@ -1,4 +1,4 @@
-#include "mesh_file.h"
+#include "mdl_file.h"
 
 #include "../common/log.h"
 #include <stdio.h>
@@ -19,8 +19,8 @@ mdl_file_t *mdl_file_load(const char *path)
   fread(&mdl_file->num_vertices, sizeof(int), 1, file); 
   
   mdl_file->materials = calloc(mdl_file->num_materials, sizeof(mdl_material_t));
-  mdl_file->vertex_groups = calloc(mesh_file->vertex_groups, sizeof(mdl_vertex_group_t));
-  mdl_file->vertices = calloc(mesh_file->num_vertices, sizeof(mdl_vertex_t));
+  mdl_file->vertex_groups = calloc(mdl_file->num_vertex_groups, sizeof(mdl_vertex_group_t));
+  mdl_file->vertices = calloc(mdl_file->num_vertices, sizeof(mdl_vertex_t));
   
   for (int i = 0; i < mdl_file->num_materials; i++) {
     int diffuse_len = 0;
@@ -30,8 +30,8 @@ mdl_file_t *mdl_file_load(const char *path)
     fread(diffuse, diffuse_len, 1, file);
   }
   
-  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_group_t), mdl->num_vertex_groups, file);
-  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_t), mdl->num_vertices, file);
+  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_group_t), mdl_file->num_vertex_groups, file);
+  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_t), mdl_file->num_vertices, file);
   
   /*
   for (int i = 0; i < num_faces; i++) {
@@ -77,10 +77,10 @@ mdl_file_t *mdl_file_load(const char *path)
   }
   */
   
-  return true;
+  return mdl_file;
 }
 
-void mesh_file_free(mdl_file_t *mdl_file)
+void mdl_file_free(mdl_file_t *mdl_file)
 {
   for (int i = 0; i < mdl_file->num_materials; i++) {
     free(mdl_file->materials[i].diffuse);

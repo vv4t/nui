@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include "gl.h"
-#include "mesh_file.h"
+#include "mdl_file.h"
 
 static void renderer_init_gl();
 
