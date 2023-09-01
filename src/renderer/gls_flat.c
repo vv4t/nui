@@ -4,8 +4,8 @@
 
 bool gls_flat_init(gls_flat_t *gls_flat)
 {
-  char *src_vertex = file_read_all("res/shader/flat.vsh");
-  char *src_fragment = file_read_all("res/shader/flat.fsh");
+  char *src_vertex = file_read_all("assets/shader/flat.vsh");
+  char *src_fragment = file_read_all("assets/shader/flat.fsh");
   
   if (!shader_load(&gls_flat->program, "", src_vertex, src_fragment)) {
     return false;

@@ -49,8 +49,9 @@ bool nui_init()
   game_init(&nui.game);
   sdl_lock(true);
   
-  if (!renderer_init(&nui.renderer, &nui.game))
+  if (!renderer_init(&nui.renderer, &nui.game)) {
     return false;
+  }
   
   return true;
 }

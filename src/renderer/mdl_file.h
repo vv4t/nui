@@ -4,13 +4,13 @@
 #include "../common/nui_math.h"
 
 typedef struct {
-  char *diffuse;
+  char diffuse[32];
 } mdl_material_t;
 
 typedef struct {
-  int material;
-  int count;
+  mdl_material_t material;
   int offset;
+  int count;
 } mdl_vertex_group_t;
 
 typedef struct {
@@ -20,9 +20,6 @@ typedef struct {
 } mdl_vertex_t;
 
 typedef struct {
-  int                 num_materials;
-  mdl_material_t      *materials;
-  
   int                 num_vertex_groups;
   mdl_vertex_group_t  *vertex_groups;
   

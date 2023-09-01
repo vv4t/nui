@@ -116,9 +116,8 @@ class vertex_group_t {
 };
 
 class mdl_t {
-  constructor(materials, vertex_groups, vertices)
+  constructor(vertex_groups, vertices)
   {
-    this.materials = materials;
     this.vertex_groups = vertex_groups;
     this.vertices = vertices;
   }
@@ -126,24 +125,36 @@ class mdl_t {
 
 function obj_to_mdl(obj)
 {
+  const object_groups = {};
+  
+  for (const object of obj.objects) {
+    if (!(object.material in object_groups)) {
+      object_groups[object.material] = [];
+    }
+    
+    object_groups[object.material].push(object);
+  }
+  
   const vertices = [];
   const vertex_groups = [];
   
-  for (const object of obj.objects) {
+  for (const [material, objects] of Object.entries(object_groups)) {
     const offset = vertices.length;
     
-    for (const face of object.faces) {
-      vertices.push(face.v1);
-      vertices.push(face.v2);
-      vertices.push(face.v3);
+    for (const object of objects) {
+      for (const face of object.faces) {
+        vertices.push(face.v1);
+        vertices.push(face.v2);
+        vertices.push(face.v3);
+      }
     }
     
     const count = vertices.length - offset;
     
-    vertex_groups.push(new vertex_group_t(object.material, offset, count));
+    vertex_groups.push(new vertex_group_t(obj.materials[material], offset, count));
   }
   
-  return new mdl_t(obj.materials, vertex_groups, vertices);
+  return new mdl_t(vertex_groups, vertices);
 }
 
 function main()
@@ -161,16 +172,12 @@ function main()
   
   const write = new write_t();
   
-  write.write_u32(mdl.materials.length);
   write.write_u32(mdl.vertex_groups.length);
   write.write_u32(mdl.vertices.length);
   
-  for (const material of mdl.materials) {
-    write.write_str(material.diffuse);
-  }
-  
   for (const vertex_group of mdl.vertex_groups) {
-    write.write_u32(vertex_group.material);
+    write.write_s32(vertex_group.material.diffuse);
+    
     write.write_u32(vertex_group.offset);
     write.write_u32(vertex_group.count);
   }
@@ -366,12 +373,14 @@ class write_t {
     this.write_vec2(vertex.uv);
   }
   
-  write_str(str)
+  write_s32(s32)
   {
-    this.write_u32(str.length);
+    for (let i = 0; i < Math.min(s32.length, 32); i++) {
+      this.write_u8(s32.charCodeAt(i));
+    }
     
-    for (let i = 0; i < str.length; i++) {
-      this.write_u8(str.charCodeAt(i));
+    for (let i = s32.length; i < 32; i++) {
+      this.write_u8(0);
     }
   }
 };

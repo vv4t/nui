@@ -4,7 +4,7 @@
 #include "renderer_api.h"
 
 #include "camera.h"
-#include "mesh.h"
+#include "model.h"
 #include "gls_flat.h"
 #include "material.h"
 #include "../game/game.h"
@@ -16,11 +16,7 @@ struct renderer_s {
   camera_t      camera;
   gls_flat_t    gls_flat;
   
-  mesh_t        scene_mesh;
-  mesh_t        quad_mesh;
-  
-  GLuint        tile_diffuse;
-  material_t    tile_mtl;
+  model_t       scene_model;
 };
 
 bool renderer_init(renderer_t *r, const game_t *game);

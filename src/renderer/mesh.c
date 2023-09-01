@@ -33,13 +33,13 @@ void mesh_buffer_init(mesh_buffer_t *mesh_buffer, int max_vertices)
 }
 
 bool mesh_buffer_new(
-  mesh_buffer_t *mesh_buffer,
+  mesh_buffer_t   *mesh_buffer,
   mesh_t          *mesh,
   const vertex_t  *vertices,
   int             num_vertices)
 {
   if (mesh_buffer->offset + num_vertices > mesh_buffer->max_vertices) {
-    LOG_ERROR("ran out of memory");
+    LOG_ERROR("ran out of memory %i/%i", mesh_buffer->offset + num_vertices, mesh_buffer->max_vertices);
     return false;
   }
   
