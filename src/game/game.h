@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "../common/nui_math.h"
+#include "bsp.h"
 
 #define GAME_SENSITIVITY 0.01
 
@@ -22,6 +23,8 @@ typedef struct {
   
   float   camera_yaw;
   float   camera_pitch;
+  
+  bsp_file_t  *bsp_file;
 } game_t;
 
 void game_init(game_t *game);

@@ -1,17 +1,102 @@
+"use strict";
 
-function collapse_brush_R(brush)
+import fs from "fs";
+import path from "path";
+import { write_t } from "../shared/write.js";
+import { obj_parse, obj_vertex_t, obj_face_t } from "../shared/obj.js";
+
+const DOT_DEGREE = 0.001;
+
+function main()
 {
-  if (!brush)
+  if (process.argv.length != 4) {
+    console.log("usage:", path.parse(process.argv[1]).name, "[obj-file] [bsp-file]");
+    process.exit(1);
+  }
+  
+  const input_obj = process.argv[2];
+  const out_bsp = process.argv[3];
+  
+  const obj = obj_parse(input_obj);
+  const bsp = obj_to_bsp(obj);
+  
+  const write = new write_t();
+  
+  write_bsp(write, bsp, out_bsp);
+}
+
+function obj_to_bsp(obj)
+{
+  const faces = [];
+  
+  for (const object of obj.objects) {
+    faces.push(...object.faces);
+  }
+  
+  return collapse_brush_R(faces);
+}
+
+function write_bsp(write, bsp, out_bsp)
+{
+  const nodes = [];
+  collapse_nodes_R(nodes, bsp);
+  
+  write.write_u32(nodes.length);
+  
+  for (const node of nodes) {
+    write.write_vec3(node.plane.normal);
+    write.write_f32(node.plane.distance);
+    write.write_u32(node.behind);
+    write.write_u32(node.ahead);
+  }
+  
+  fs.writeFileSync(out_bsp, Buffer.from(write.data()));
+}
+
+function collapse_nodes_R(nodes, bsp)
+{
+  if (!bsp) {
+    return -1;
+  }
+  
+  const node = new bsp_node_t(bsp.plane);
+  
+  const node_id = nodes.length;
+  nodes.push(node);
+  
+  node.behind = collapse_nodes_R(nodes, bsp.behind);
+  node.ahead = collapse_nodes_R(nodes, bsp.ahead);
+  
+  return node_id;
+}
+
+class bsp_node_t {
+  constructor(plane)
+  {
+    this.plane = plane;
+    this.behind = null;
+    this.ahead = null;
+  }
+};
+
+class plane_t {
+  constructor(normal, distance)
+  {
+    this.normal = normal;
+    this.distance = distance;
+  }
+};
+
+function collapse_brush_R(faces)
+{
+  if (faces.length == 0)
     return;
   
-  let plane = face_to_plane(brush.faces[0]);
+  let plane = face_to_plane(faces[0]);
   
-  if (!plane)
-    return;
+  let [behind, ahead] = split_brush(faces, plane);
   
-  let [behind, faces, ahead] = split_brush(brush, plane);
-  
-  const node = new bsp_node_t(plane, faces);
+  const node = new bsp_node_t(plane);
   node.behind = collapse_brush_R(behind);
   node.ahead = collapse_brush_R(ahead);
   
@@ -21,17 +106,17 @@ function collapse_brush_R(brush)
 function face_to_plane(face)
 {
   const n = face.normal;
-  const d = face.normal.dot(face.vertices[0]);
+  const d = face.normal.dot(face.vertices[0].pos);
   return new plane_t(n, d)
 }
 
-function split_brush(brush, plane)
+function split_brush(faces, plane)
 {
   const behind = [];
   const middle = [];
   const ahead = [];
   
-  for (const face of brush.faces) {
+  for (const face of faces) {
     const [ f_behind, f_middle, f_ahead ] = split_face(face, plane);
     
     behind.push(...f_behind);
@@ -39,30 +124,28 @@ function split_brush(brush, plane)
     ahead.push(...f_ahead);
   }
   
-  let brush_behind = null;
-  if (behind.length > 0)
-    brush_behind = new mesh_t(behind);
-  
-  let brush_ahead = null;
-  if (ahead.length > 0)
-    brush_ahead = new mesh_t(ahead);
-  
-  return [ brush_behind, middle, brush_ahead ];
+  return [ behind, ahead ];
 }
 
 function intersect_plane(a, b, plane)
 {
-  const delta_pos = b.sub(a);
-  const t = -(a.dot(plane.normal) - plane.distance) / delta_pos.dot(plane.normal);
-  return a.add(delta_pos.mulf(t));
+  const delta_pos = b.pos.sub(a.pos);
+  const delta_uv = b.uv.sub(b.uv);
+  
+  const t = -(a.pos.dot(plane.normal) - plane.distance) / delta_pos.dot(plane.normal);
+  
+  const pos = a.pos.add(delta_pos.mulf(t));
+  const uv = a.uv.add(delta_uv.mulf(t));
+  
+  return new obj_vertex_t(pos, uv);
 }
 
 function split_face_even(vbehind, vmiddle, vahead, plane, normal)
 {
   const shared = intersect_plane(vbehind, vahead, plane);
   
-  const behind = new face_t([vbehind, shared, vmiddle], normal);
-  const ahead = new face_t([vahead, shared, vmiddle], normal);
+  const behind = new obj_face_t([vbehind, shared, vmiddle], normal);
+  const ahead = new obj_face_t([vahead, shared, vmiddle], normal);
   
   return [ [behind], [], [ahead] ];
 }
@@ -72,11 +155,11 @@ function split_face_uneven(vbase, vhead, plane, normal, flip)
   const hit_a = intersect_plane(vhead, vbase[0], plane);
   const hit_b = intersect_plane(vhead, vbase[1], plane);
   
-  const head = [ new face_t([hit_a, hit_b, vhead], normal) ];
+  const head = [ new obj_face_t([hit_a, hit_b, vhead], normal) ];
   
   const base = [
-    new face_t([vbase[0], vbase[1], hit_b], normal),
-    new face_t([hit_b, hit_a, vbase[0]], normal)
+    new obj_face_t([vbase[0], vbase[1], hit_b], normal),
+    new obj_face_t([hit_b, hit_a, vbase[0]], normal)
   ];
   
   if (flip)
@@ -92,7 +175,7 @@ function split_face(face, plane)
   const ahead = [];
   
   for (const vertex of face.vertices) {
-    const dist = vertex.dot(plane.normal) - plane.distance;
+    const dist = vertex.pos.dot(plane.normal) - plane.distance;
     
     if (dist < -DOT_DEGREE) {
       behind.push(vertex);
@@ -127,3 +210,5 @@ function split_face(face, plane)
     throw "split_face(): unknown case";
   }
 }
+
+main();

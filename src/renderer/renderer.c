@@ -22,7 +22,7 @@ bool renderer_init(renderer_t *r, const game_t *game)
   
   r->game = game;
   
-  if (!model_load(&r->scene_model, &r->mesh_buffer, "cirno_fumo")) {
+  if (!model_load(&r->scene_model, &r->mesh_buffer, "scene")) {
     return false;
   }
   

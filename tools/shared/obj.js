@@ -51,6 +51,7 @@ export function obj_parse(str_path)
       );
     } else if (args[0] == "f") {
       const vertices = [];
+      let normal;
       
       for (let i = 1; i < 4; i++) {
         const face_data = args[i].split('/').map((x) => parseInt(x, 10));
@@ -59,16 +60,16 @@ export function obj_parse(str_path)
         const normal_id = face_data[2] - 1;
         const uv_id = face_data[1] - 1;
         
-        const vertex = new vertex_t(
+        const vertex = new obj_vertex_t(
           pos_buf[pos_id],
-          normal_buf[normal_id],
           uv_buf[uv_id]
         );
         
+        normal = normal_buf[normal_id];
         vertices.push(vertex);
       }
       
-      const face = new face_t(vertices[0], vertices[1], vertices[2]);
+      const face = new obj_face_t([vertices[0], vertices[1], vertices[2]], normal);
       
       face_buf.push(face);
     } else if (args[0] == "usemtl") {
@@ -78,37 +79,36 @@ export function obj_parse(str_path)
       materials.push(...mtllib.materials);
     } else if (args[0] == "o") {
       if (face_buf.length > 0) {
-        objects.push(new object_t(material, face_buf));
+        objects.push(new obj_object_t(material, face_buf));
         face_buf = [];
       }
     }
   }
   
   if (face_buf.length > 0) {
-    objects.push(new object_t(material, face_buf));
+    objects.push(new obj_object_t(material, face_buf));
   }
   
   return new obj_t(materials, objects);
 }
-class vertex_t {
-  constructor(pos, normal, uv)
+
+export class obj_vertex_t {
+  constructor(pos, uv)
   {
     this.pos = pos;
-    this.normal = normal;
     this.uv = uv;
   }
 };
 
-class face_t {
-  constructor(v1, v2, v3)
+export class obj_face_t {
+  constructor(vertices, normal)
   {
-    this.v1 = v1;
-    this.v2 = v2;
-    this.v3 = v3;
+    this.vertices = vertices;
+    this.normal = normal;
   }
 };
 
-class material_t {
+export class obj_material_t {
   constructor(name)
   {
     this.name = name;
@@ -116,7 +116,7 @@ class material_t {
   }
 };
 
-class object_t {
+export class obj_object_t {
   constructor(material, faces)
   {
     this.material = material;
@@ -149,7 +149,7 @@ class mtllib_t {
           this.materials.push(material);
         }
         
-        material = new material_t(args[1]);
+        material = new obj_material_t(args[1]);
       } else if (args[0] == "map_Kd") {
         material.diffuse = args[1];
       }

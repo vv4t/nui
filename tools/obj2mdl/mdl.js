@@ -14,6 +14,15 @@ class vertex_group_t {
   }
 };
 
+class mdl_vertex_t {
+  constructor(pos, normal, uv)
+  {
+    this.pos = pos;
+    this.normal = normal;
+    this.uv = uv;
+  }
+};
+
 class mdl_t {
   constructor(vertex_groups, vertices)
   {
@@ -30,17 +39,17 @@ function main()
   }
   
   const input_obj = process.argv[2];
-  const output_mdl = process.argv[3];
+  const out_mdl = process.argv[3];
   
   const obj = obj_parse(input_obj);
   const mdl = obj_to_mdl(obj);
   
   const write = new write_t();
   
-  write_mdl(write, mdl, output_mdl);
+  write_mdl(write, mdl, out_mdl);
 }
 
-function write_mdl(write, mdl, output_mdl)
+function write_mdl(write, mdl, out_mdl)
 {
   write.write_u32(mdl.vertex_groups.length);
   write.write_u32(mdl.vertices.length);
@@ -56,7 +65,7 @@ function write_mdl(write, mdl, output_mdl)
     write.write_vertex(vertex);
   }
   
-  fs.writeFileSync(output_mdl, Buffer.from(write.data()));
+  fs.writeFileSync(out_mdl, Buffer.from(write.data()));
 }
 
 function obj_to_mdl(obj)
@@ -79,9 +88,9 @@ function obj_to_mdl(obj)
     
     for (const object of objects) {
       for (const face of object.faces) {
-        vertices.push(face.v1);
-        vertices.push(face.v2);
-        vertices.push(face.v3);
+        vertices.push(new mdl_vertex_t(face.vertices[0].pos, face.normal, face.vertices[0].uv));
+        vertices.push(new mdl_vertex_t(face.vertices[1].pos, face.normal, face.vertices[1].uv));
+        vertices.push(new mdl_vertex_t(face.vertices[2].pos, face.normal, face.vertices[2].uv));
       }
     }
     
