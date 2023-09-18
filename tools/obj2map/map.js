@@ -7,6 +7,42 @@ import { obj_parse, obj_vertex_t, obj_face_t } from "../shared/obj.js";
 
 const DOT_DEGREE = 0.001;
 
+class map_vertex_group_t {
+  constructor(material, offset, count)
+  {
+    this.material = material;
+    this.offset = offset;
+    this.count = count;
+  }
+};
+
+class map_vertex_t {
+  constructor(pos, normal, uv)
+  {
+    this.pos = pos;
+    this.normal = normal;
+    this.uv = uv;
+  }
+};
+
+class map_bsp_node_t {
+  constructor(plane)
+  {
+    this.plane = plane;
+    this.behind = -1;
+    this.ahead = -1;
+  }
+};
+
+class map_t {
+  constructor(nodes, vertex_groups, vertices)
+  {
+    this.nodes = nodes;
+    this.vertex_groups = vertex_groups;
+    this.vertices = vertices;
+  }
+};
+
 function main()
 {
   if (process.argv.length != 4) {
@@ -15,17 +51,17 @@ function main()
   }
   
   const input_obj = process.argv[2];
-  const out_bsp = process.argv[3];
+  const out_map = process.argv[3];
   
   const obj = obj_parse(input_obj);
-  const bsp = obj_to_bsp(obj);
+  const map = obj_to_map(obj);
   
   const write = new write_t();
   
-  write_bsp(write, bsp, out_bsp);
+  write_map(write, map, out_map);
 }
 
-function obj_to_bsp(obj)
+function obj_to_map(obj)
 {
   const faces = [];
   
@@ -33,39 +69,81 @@ function obj_to_bsp(obj)
     faces.push(...object.faces);
   }
   
-  return collapse_brush_R(faces);
+  const object_groups = {};
+  
+  for (const object of obj.objects) {
+    if (!(object.material in object_groups)) {
+      object_groups[object.material] = [];
+    }
+    
+    object_groups[object.material].push(object);
+  }
+  
+  const vertices = [];
+  const vertex_groups = [];
+  
+  for (const [material, objects] of Object.entries(object_groups)) {
+    const offset = vertices.length;
+    
+    for (const object of objects) {
+      for (const face of object.faces) {
+        vertices.push(new map_vertex_t(face.vertices[0].pos, face.normal, face.vertices[0].uv));
+        vertices.push(new map_vertex_t(face.vertices[1].pos, face.normal, face.vertices[1].uv));
+        vertices.push(new map_vertex_t(face.vertices[2].pos, face.normal, face.vertices[2].uv));
+      }
+    }
+    
+    const count = vertices.length - offset;
+    
+    vertex_groups.push(new map_vertex_group_t(obj.materials[material], offset, count));
+  }
+  
+  const bsp = collapse_brush_R(faces);
+  
+  const nodes = [];
+  flat_bsp_R(nodes, bsp);
+  console.log(nodes);
+  
+  return new map_t(nodes, vertex_groups, vertices);
 }
 
-function write_bsp(write, bsp, out_bsp)
+function write_map(write, map, out_map)
 {
-  const nodes = [];
-  collapse_nodes_R(nodes, bsp);
+  write.write_u32(map.nodes.length);
+  write.write_u32(map.vertex_groups.length);
+  write.write_u32(map.vertices.length);
   
-  write.write_u32(nodes.length);
-  
-  for (const node of nodes) {
+  for (const node of map.nodes) {
     write.write_vec3(node.plane.normal);
     write.write_f32(node.plane.distance);
     write.write_u32(node.behind);
     write.write_u32(node.ahead);
   }
   
-  fs.writeFileSync(out_bsp, Buffer.from(write.data()));
+  for (const vertex_group of map.vertex_groups) {
+    write.write_s32(vertex_group.material.diffuse);
+    write.write_u32(vertex_group.offset);
+    write.write_u32(vertex_group.count);
+  }
+  
+  for (const vertex of map.vertices) {
+    write.write_vertex(vertex);
+  }
+  
+  fs.writeFileSync(out_map, Buffer.from(write.data()));
 }
 
-function collapse_nodes_R(nodes, bsp)
+function flat_bsp_R(nodes, bsp)
 {
   if (!bsp) {
     return -1;
   }
   
-  const node = new bsp_node_t(bsp.plane);
+  const node = new map_bsp_node_t(bsp.plane);
+  const node_id = nodes.push(node) - 1;
   
-  const node_id = nodes.length;
-  nodes.push(node);
-  
-  node.behind = collapse_nodes_R(nodes, bsp.behind);
-  node.ahead = collapse_nodes_R(nodes, bsp.ahead);
+  node.behind = flat_bsp_R(nodes, bsp.behind);
+  node.ahead = flat_bsp_R(nodes, bsp.ahead);
   
   return node_id;
 }
@@ -90,7 +168,7 @@ class plane_t {
 function collapse_brush_R(faces)
 {
   if (faces.length == 0)
-    return;
+    return null;
   
   let plane = face_to_plane(faces[0]);
   

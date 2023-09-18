@@ -3,6 +3,7 @@
 #include "sdl.h"
 #include "common/log.h"
 #include "game/game.h"
+#include "game/map_file.h"
 #include "renderer/gl.h"
 #include "renderer/renderer.h"
 
@@ -12,7 +13,7 @@
 
 static struct {
   sdl_t       sdl;
-  renderer_t       renderer;
+  renderer_t  renderer;
   game_t      game;
   usercmd_t   usercmd;
 } nui;
@@ -52,6 +53,13 @@ bool nui_init()
   if (!renderer_init(&nui.renderer, &nui.game)) {
     return false;
   }
+  
+  map_file_t *map_file = map_file_load("assets/map/scene.map");
+  
+  game_map_load(&nui.game, map_file);
+  renderer_map_load(&nui.renderer, map_file);
+  
+  map_file_free(map_file);
   
   return true;
 }

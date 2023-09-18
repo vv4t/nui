@@ -5,7 +5,7 @@ import path from "path";
 import { write_t } from "../shared/write.js";
 import { obj_parse } from "../shared/obj.js";
 
-class vertex_group_t {
+class mdl_vertex_group {
   constructor(material, offset, count)
   {
     this.material = material;
@@ -56,7 +56,6 @@ function write_mdl(write, mdl, out_mdl)
   
   for (const vertex_group of mdl.vertex_groups) {
     write.write_s32(vertex_group.material.diffuse);
-    
     write.write_u32(vertex_group.offset);
     write.write_u32(vertex_group.count);
   }
@@ -96,7 +95,7 @@ function obj_to_mdl(obj)
     
     const count = vertices.length - offset;
     
-    vertex_groups.push(new vertex_group_t(obj.materials[material], offset, count));
+    vertex_groups.push(new mdl_vertex_group(obj.materials[material], offset, count));
   }
   
   return new mdl_t(vertex_groups, vertices);

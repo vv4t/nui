@@ -8,6 +8,7 @@
 #include "gls_flat.h"
 #include "material.h"
 #include "../game/game.h"
+#include "../game/map_file.h"
 
 struct renderer_s {
   const game_t  *game;
@@ -16,10 +17,12 @@ struct renderer_s {
   camera_t      camera;
   gls_flat_t    gls_flat;
   
-  model_t       scene_model;
+  model_t       fumo_model;
+  model_t       map_model;
 };
 
 bool renderer_init(renderer_t *r, const game_t *game);
+void renderer_map_load(renderer_t *r, map_file_t *map_file);
 void renderer_render(renderer_t *r);
 
 #endif

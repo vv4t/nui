@@ -1,0 +1,49 @@
+#ifndef BSP_FILE_H
+#define BSP_FILE_H
+
+#include "../common/nui_math.h"
+#include "bsp.h"
+
+typedef struct {
+  char diffuse[32];
+} map_material_t;
+
+typedef struct {
+  map_material_t material;
+  int offset;
+  int count;
+} map_vertex_group_t;
+
+typedef struct {
+  vec3_t pos;
+  vec3_t normal;
+  vec2_t uv;
+} map_vertex_t;
+
+typedef struct {
+  vec3_t normal;
+  float distance;
+} map_plane_t;
+
+typedef struct {
+  bsp_plane_t plane;
+  int behind;
+  int ahead;
+} map_bsp_node_t;
+
+typedef struct {
+  map_bsp_node_t      *nodes;
+  int                 num_nodes;
+  
+  int                 num_vertex_groups;
+  map_vertex_group_t  *vertex_groups;
+  
+  int                 num_vertices;
+  map_vertex_t        *vertices;
+} map_file_t;
+
+map_file_t  *map_file_load(const char *path);
+bsp_t       *map_load_bsp(map_file_t *map_file);
+void        map_file_free(map_file_t *map_file);
+
+#endif

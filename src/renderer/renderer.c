@@ -21,10 +21,11 @@ bool renderer_init(renderer_t *r, const game_t *game)
   // camera_orthogonal(&r->camera, 720.0 / 1280.0, 10.0, -50, 50);
   
   r->game = game;
-  
-  if (!model_load(&r->scene_model, &r->mesh_buffer, "scene")) {
+  /*
+  if (!model_load(&r->fumo_model, &r->mesh_buffer, "cirno_fumo")) {
     return false;
   }
+  */
   
   return true;
 }
@@ -46,8 +47,13 @@ void renderer_render(renderer_t *r)
   gls_flat_bind(&r->gls_flat);
   
   camera_move(&r->camera, r->game->position, r->game->rotation);
-  
   camera_sub_data(&r->camera, mat4x4_init_identity());
-  model_draw(&r->scene_model);
+  
+  // model_draw(&r->fumo_model);
+  model_draw(&r->map_model);
 }
 
+void renderer_map_load(renderer_t *r, map_file_t *map_file)
+{
+  model_load_map(&r->map_model, &r->mesh_buffer, map_file);
+}

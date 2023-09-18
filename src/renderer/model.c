@@ -9,7 +9,7 @@ static vertex_t *load_model_vertices(mdl_file_t *mdl_file);
 bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
 {
   char path[PATH_LEN];
-  strncpy(path, "assets/model/", PATH_LEN);
+  strncpy(path, "assets/mdl/", PATH_LEN);
   strcat(path, name);
   strcat(path, "/");
   
@@ -50,6 +50,72 @@ bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
   model->num_meshes = mdl_file->num_vertex_groups;
   
   mdl_file_free(mdl_file);
+  free(vertices);
+  
+  return true;
+}
+
+bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_file_t *map_file)
+{
+  vertex_t *vertices = calloc(map_file->num_vertices, sizeof(vertex_t));
+  
+  for (int i = 0; i < map_file->num_vertices; i += 3) {
+    for (int j = 0; j < 3; j++) {
+      vertices[i + j].pos = map_file->vertices[i + j].pos;
+      vertices[i + j].normal = map_file->vertices[i + j].normal;
+      vertices[i + j].uv = map_file->vertices[i + j].uv;
+    }
+    
+    vec3_t delta_pos1 = vec3_sub(vertices[i + 1].pos, vertices[i].pos);
+    vec3_t delta_pos2 = vec3_sub(vertices[i + 2].pos, vertices[i].pos);
+    
+    vec2_t delta_uv1 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
+    vec2_t delta_uv2 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
+    
+    float f = 1.0f / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
+    
+    vec3_t tangent = vec3_mulf(
+      vec3_sub(
+        vec3_mulf(delta_pos1, delta_uv2.y),
+        vec3_mulf(delta_pos2, delta_uv1.y)
+      ), f
+    );
+    
+    vec3_t bitangent = vec3_mulf(
+      vec3_sub(
+        vec3_mulf(delta_pos2, delta_uv1.x),
+        vec3_mulf(delta_pos1, delta_uv2.x)
+      ), f
+    );
+    
+    for (int j = 0; j < 3; j++) {
+      vertices[i + j].tangent = vec3_normalize(tangent);
+      vertices[i + j].bitangent = vec3_normalize(bitangent);
+    }
+  }
+  
+  for (int i = 0; i < map_file->num_vertex_groups; i++) {
+    mesh_group_t *mesh_group = &model->mesh_groups[i];
+    map_vertex_group_t vertex_group = map_file->vertex_groups[i];
+    
+    if (!texture_load(&mesh_group->material.diffuse, "assets/map/brick.png")) {
+      return false;
+    }
+    
+    if (
+      !mesh_buffer_new(
+        mesh_buffer,
+        &mesh_group->mesh,
+        &vertices[vertex_group.offset],
+        vertex_group.count
+      )
+    ) {
+      return false;
+    }
+  }
+  
+  model->num_meshes = map_file->num_vertex_groups;
+  
   free(vertices);
   
   return true;
