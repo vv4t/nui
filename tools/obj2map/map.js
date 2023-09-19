@@ -45,20 +45,19 @@ class map_t {
 
 function main()
 {
-  if (process.argv.length != 4) {
-    console.log("usage:", path.parse(process.argv[1]).name, "[obj-file] [bsp-file]");
+  if (process.argv.length != 3) {
+    console.log("usage:", path.parse(process.argv[1]).name, "[map]");
     process.exit(1);
   }
   
-  const input_obj = process.argv[2];
-  const out_map = process.argv[3];
+  const map_name = process.argv[2];
   
-  const obj = obj_parse(input_obj);
+  const obj = obj_parse("obj/" + map_name + "/" + map_name + ".obj");
   const map = obj_to_map(obj);
   
   const write = new write_t();
   
-  write_map(write, map, out_map);
+  write_map(write, map, map_name);
 }
 
 function obj_to_map(obj)
@@ -102,12 +101,11 @@ function obj_to_map(obj)
   
   const nodes = [];
   flat_bsp_R(nodes, bsp);
-  console.log(nodes);
   
   return new map_t(nodes, vertex_groups, vertices);
 }
 
-function write_map(write, map, out_map)
+function write_map(write, map, map_name)
 {
   write.write_u32(map.nodes.length);
   write.write_u32(map.vertex_groups.length);
@@ -121,7 +119,7 @@ function write_map(write, map, out_map)
   }
   
   for (const vertex_group of map.vertex_groups) {
-    write.write_s32(vertex_group.material.diffuse);
+    write.write_s32("assets/map/" + map_name + "/" + vertex_group.material.diffuse);
     write.write_u32(vertex_group.offset);
     write.write_u32(vertex_group.count);
   }
@@ -130,7 +128,16 @@ function write_map(write, map, out_map)
     write.write_vertex(vertex);
   }
   
-  fs.writeFileSync(out_map, Buffer.from(write.data()));
+  for (const vertex_group of map.vertex_groups) {
+    const diffuse_path = "obj/" + map_name + "/" + vertex_group.material.diffuse;
+    const diffuse_copy = "../../assets/map/" + map_name + "/" + vertex_group.material.diffuse;
+    
+    fs.copyFile(diffuse_path, diffuse_copy, (err) => console.log(err));
+  }
+  
+  fs.mkdir("../../assets/map/" + map_name, (err) => console.log(err));
+  
+  fs.writeFileSync("../../assets/map/" + map_name + "/" + map_name + ".map", Buffer.from(write.data()));
 }
 
 function flat_bsp_R(nodes, bsp)

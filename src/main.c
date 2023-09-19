@@ -54,7 +54,7 @@ bool nui_init()
     return false;
   }
   
-  map_file_t *map_file = map_file_load("assets/map/scene.map");
+  map_file_t *map_file = map_file_load("scene");
   
   game_map_load(&nui.game, map_file);
   renderer_map_load(&nui.renderer, map_file);

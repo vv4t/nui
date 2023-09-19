@@ -3,9 +3,22 @@
 #include "../common/log.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-map_file_t *map_file_load(const char *path)
+#define PATH_LEN 256
+
+map_file_t *map_file_load(const char *name)
 {
+  char path[PATH_LEN];
+  strncpy(path, "assets/map/", PATH_LEN);
+  strcat(path, name);
+  strcat(path, "/");
+  
+  int base_len = strlen(path);
+  
+  strcat(path, name);
+  strcat(path, ".map");
+  
   FILE *file = fopen(path, "rb");
   
   if (!file) {

@@ -98,7 +98,7 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_file_t *map_
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     map_vertex_group_t vertex_group = map_file->vertex_groups[i];
     
-    if (!texture_load(&mesh_group->material.diffuse, "assets/map/brick.png")) {
+    if (!texture_load(&mesh_group->material.diffuse, vertex_group.material.diffuse)) {
       return false;
     }
     
