@@ -33,23 +33,22 @@ class mdl_t {
 
 function main()
 {
-  if (process.argv.length != 4) {
-    console.log("usage:", path.parse(process.argv[1]).name, "[obj-file] [mdl-file]");
+  if (process.argv.length != 3) {
+    console.log("usage:", path.parse(process.argv[1]).name, "[mdl]");
     process.exit(1);
   }
   
-  const input_obj = process.argv[2];
-  const out_mdl = process.argv[3];
+  const mdl_name = process.argv[2];
   
-  const obj = obj_parse(input_obj);
+  const obj = obj_parse("obj/" + mdl_name + "/" + mdl_name + ".obj");
   const mdl = obj_to_mdl(obj);
   
   const write = new write_t();
   
-  write_mdl(write, mdl, out_mdl);
+  write_mdl(write, mdl, mdl_name);
 }
 
-function write_mdl(write, mdl, out_mdl)
+function write_mdl(write, mdl, mdl_name)
 {
   write.write_u32(mdl.vertex_groups.length);
   write.write_u32(mdl.vertices.length);
@@ -64,7 +63,18 @@ function write_mdl(write, mdl, out_mdl)
     write.write_vertex(vertex);
   }
   
-  fs.writeFileSync(out_mdl, Buffer.from(write.data()));
+  // fs.writeFileSync(out_mdl, Buffer.from(write.data()));
+  
+  for (const vertex_group of mdl.vertex_groups) {
+    const diffuse_path = "obj/" + mdl_name + "/" + vertex_group.material.diffuse;
+    const diffuse_copy = "../../assets/mdl/" + mdl_name + "/" + vertex_group.material.diffuse;
+    
+    fs.copyFile(diffuse_path, diffuse_copy, (err) => console.log(err));
+  }
+  
+  fs.mkdir("../../assets/mdl/" + mdl_name, (err) => console.log(err));
+  
+  fs.writeFileSync("../../assets/mdl/" + mdl_name + "/" + mdl_name + ".mdl", Buffer.from(write.data()));
 }
 
 function obj_to_mdl(obj)
