@@ -81,15 +81,15 @@ bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
   return true;
 }
 
-bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_file_t *map_file)
+bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
 {
-  vertex_t *vertices = calloc(map_file->num_vertices, sizeof(vertex_t));
+  vertex_t *vertices = calloc(map->num_vertices, sizeof(vertex_t));
   
-  for (int i = 0; i < map_file->num_vertices; i += 3) {
+  for (int i = 0; i < map->num_vertices; i += 3) {
     for (int j = 0; j < 3; j++) {
-      vertices[i + j].pos = map_file->vertices[i + j].pos;
-      vertices[i + j].normal = map_file->vertices[i + j].normal;
-      vertices[i + j].uv = map_file->vertices[i + j].uv;
+      vertices[i + j].pos = map->vertices[i + j].pos;
+      vertices[i + j].normal = map->vertices[i + j].normal;
+      vertices[i + j].uv = map->vertices[i + j].uv;
     }
     
     vec3_t delta_pos1 = vec3_sub(vertices[i + 1].pos, vertices[i].pos);
@@ -120,9 +120,9 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_file_t *map_
     }
   }
   
-  for (int i = 0; i < map_file->num_vertex_groups; i++) {
+  for (int i = 0; i < map->num_vertex_groups; i++) {
     mesh_group_t *mesh_group = &model->mesh_groups[i];
-    map_vertex_group_t vertex_group = map_file->vertex_groups[i];
+    map_vertex_group_t vertex_group = map->vertex_groups[i];
     
     if (!texture_load(&mesh_group->material.diffuse, vertex_group.material.diffuse)) {
       return false;
@@ -140,7 +140,7 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_file_t *map_
     }
   }
   
-  model->num_meshes = map_file->num_vertex_groups;
+  model->num_meshes = map->num_vertex_groups;
   
   free(vertices);
   

@@ -51,7 +51,7 @@ void renderer_render(renderer_t *r)
   model_draw(&r->map_model);
 }
 
-void renderer_map_load(renderer_t *r, map_file_t *map_file)
+void renderer_map_load(renderer_t *r, map_t *map)
 {
-  model_load_map(&r->map_model, &r->mesh_buffer, map_file);
+  model_load_map(&r->map_model, &r->mesh_buffer, map);
 }

@@ -40,10 +40,10 @@ typedef struct {
   
   int                 num_vertices;
   map_vertex_t        *vertices;
-} map_file_t;
+} map_t;
 
-map_file_t  *map_file_load(const char *path);
-bsp_t       *map_load_bsp(map_file_t *map_file);
-void        map_file_free(map_file_t *map_file);
+map_t *map_load(const char *path);
+bsp_t *map_load_bsp(map_t *map);
+void  map_free(map_t *map);
 
 #endif

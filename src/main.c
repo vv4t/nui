@@ -3,7 +3,7 @@
 #include "sdl.h"
 #include "common/log.h"
 #include "game/game.h"
-#include "game/map_file.h"
+#include "game/map.h"
 #include "renderer/gl.h"
 #include "renderer/renderer.h"
 
@@ -54,12 +54,12 @@ bool nui_init()
     return false;
   }
   
-  map_file_t *map_file = map_file_load("scene");
+  map_t *map = map_load("scene");
   
-  game_map_load(&nui.game, map_file);
-  renderer_map_load(&nui.renderer, map_file);
+  game_map_load(&nui.game, map);
+  renderer_map_load(&nui.renderer, map);
   
-  map_file_free(map_file);
+  map_free(map);
   
   return true;
 }

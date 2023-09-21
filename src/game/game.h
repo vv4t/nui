@@ -2,7 +2,7 @@
 #define GAME_H
 
 #include "../common/nui_math.h"
-#include "map_file.h"
+#include "map.h"
 #include "bsp.h"
 
 #define GAME_SENSITIVITY 0.01
@@ -29,7 +29,7 @@ typedef struct {
 } game_t;
 
 void game_init(game_t *game);
-void game_map_load(game_t *game, map_file_t *map_file);
+void game_map_load(game_t *game, map_t *map);
 void game_update(game_t *game, float delta, const usercmd_t *usercmd);
 
 #endif

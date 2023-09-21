@@ -8,7 +8,7 @@
 #include "gls_flat.h"
 #include "material.h"
 #include "../game/game.h"
-#include "../game/map_file.h"
+#include "../game/map.h"
 
 struct renderer_s {
   const game_t  *game;
@@ -22,7 +22,7 @@ struct renderer_s {
 };
 
 bool renderer_init(renderer_t *r, const game_t *game);
-void renderer_map_load(renderer_t *r, map_file_t *map_file);
+void renderer_map_load(renderer_t *r, map_t *map);
 void renderer_render(renderer_t *r);
 
 #endif

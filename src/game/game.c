@@ -14,9 +14,9 @@ void game_init(game_t *game)
   game->time = 0.0;
 }
 
-void game_map_load(game_t *game, map_file_t *map_file)
+void game_map_load(game_t *game, map_t *map)
 {
-  game->bsp = map_load_bsp(map_file);
+  game->bsp = map_load_bsp(map);
 } 
 
 void game_update(game_t *game, float delta, const usercmd_t *usercmd)
