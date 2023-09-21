@@ -1,7 +1,6 @@
 #include "renderer.h"
 
 #include "gl.h"
-#include "mdl_file.h"
 
 static void renderer_init_gl();
 
@@ -21,11 +20,10 @@ bool renderer_init(renderer_t *r, const game_t *game)
   // camera_orthogonal(&r->camera, 720.0 / 1280.0, 10.0, -50, 50);
   
   r->game = game;
-  /*
+  
   if (!model_load(&r->fumo_model, &r->mesh_buffer, "cirno_fumo")) {
     return false;
   }
-  */
   
   return true;
 }
@@ -49,7 +47,7 @@ void renderer_render(renderer_t *r)
   camera_move(&r->camera, r->game->position, r->game->rotation);
   camera_sub_data(&r->camera, mat4x4_init_identity());
   
-  // model_draw(&r->fumo_model);
+  model_draw(&r->fumo_model);
   model_draw(&r->map_model);
 }
 
