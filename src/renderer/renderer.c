@@ -44,7 +44,7 @@ void renderer_render(renderer_t *r)
   
   gls_flat_bind(&r->gls_flat);
   
-  camera_move(&r->camera, r->game->position, r->game->rotation);
+  camera_move(&r->camera, r->game->player.position, r->game->player.rotation);
   camera_sub_data(&r->camera, mat4x4_init_identity());
   
   model_draw(&r->fumo_model);

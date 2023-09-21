@@ -67,7 +67,7 @@ bool nui_init()
 void nui_update()
 {
   sdl_poll(&nui.sdl, &nui.usercmd);
-  game_update(&nui.game, 0.015, &nui.usercmd);
+  game_update(&nui.game, &nui.usercmd);
   renderer_render(&nui.renderer);
   sdl_swap(&nui.sdl);
 }
