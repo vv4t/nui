@@ -11,7 +11,7 @@ void player_init(player_t *p)
   p->pitch = 0.0;
 }
 
-void player_move(player_t *p, const usercmd_t *usercmd)
+void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
 {
   vec3_t cmd_dir = vec3_init(usercmd->right - usercmd->left, 0.0f, usercmd->forward - usercmd->back);
   vec3_t wish_dir = vec3_rotate(cmd_dir, p->rotation);
@@ -19,6 +19,19 @@ void player_move(player_t *p, const usercmd_t *usercmd)
   
   vec3_t delta_pos = vec3_mulf(move_dir, 4.0f);
   vec3_t next_pos = vec3_add(p->position, delta_pos);
+  
+  sphere_t sphere = { .pos = p->position, .radius = 0.5f };
+  
+  clip_t clips[8];
+  int num_clips = bsp_clip_sphere(clips, bsp, &sphere);
+  
+  for (int i = 0; i < num_clips; i++) {
+    float lambda = -vec3_dot(delta_pos, clips[i].normal);
+    if (lambda > 0) {
+      vec3_t slide = vec3_mulf(clips[i].normal, lambda);
+      delta_pos = vec3_add(delta_pos, slide);
+    }
+  }
   
   p->position = vec3_add(p->position, delta_pos);
 }

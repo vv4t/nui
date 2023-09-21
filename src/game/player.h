@@ -3,6 +3,7 @@
 
 #include "../common/nui_math.h"
 #include "usercmd.h"
+#include "bsp.h"
 
 typedef struct {
   vec3_t  position;
@@ -14,7 +15,7 @@ typedef struct {
 } player_t;
 
 void player_init(player_t *player);
-void player_move(player_t *player, const usercmd_t *usercmd);
+void player_move(player_t *player, const bsp_t *bsp, const usercmd_t *usercmd);
 void player_look(player_t *player, const usercmd_t *usercmd);
 
 #endif
