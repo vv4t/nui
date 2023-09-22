@@ -87,9 +87,27 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
   
   for (int i = 0; i < map->num_vertices; i += 3) {
     for (int j = 0; j < 3; j++) {
-      vertices[i + j].pos = map->vertices[i + j].pos;
-      vertices[i + j].normal = map->vertices[i + j].normal;
-      vertices[i + j].uv = map->vertices[i + j].uv;
+      vec3_t pos = map->vertices[i + j].pos;
+      vec3_t normal = map->vertices[i + j].normal;
+      vec2_t uv;
+      
+      if (fabs(normal.x) > fabs(normal.y)) {
+        if (fabs(normal.z) > fabs(normal.x)) {
+          uv = vec2_init(pos.x, pos.y);
+        } else {
+          uv = vec2_init(pos.z, pos.y);
+        }
+      } else {
+        if (fabs(normal.z) > fabs(normal.y)) {
+          uv = vec2_init(pos.x, pos.y);
+        } else {
+          uv = vec2_init(pos.x, pos.z);
+        }
+      }
+      
+      vertices[i + j].pos = pos;
+      vertices[i + j].normal = normal;
+      vertices[i + j].uv = uv;
     }
     
     vec3_t delta_pos1 = vec3_sub(vertices[i + 1].pos, vertices[i].pos);
