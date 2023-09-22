@@ -22,8 +22,9 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
   
   sphere_t sphere = { .pos = p->position, .radius = 0.5f };
   
-  clip_t clips[8];
+  clip_t clips[32];
   int num_clips = bsp_clip_sphere(clips, bsp, &sphere);
+  printf("A %i\n", num_clips);
   
   for (int i = 0; i < num_clips; i++) {
     float lambda = -vec3_dot(delta_pos, clips[i].normal);
@@ -32,6 +33,8 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
       delta_pos = vec3_add(delta_pos, slide);
     }
   }
+  
+  printf("B\n");
   
   p->position = vec3_add(p->position, delta_pos);
 }
