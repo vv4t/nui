@@ -97,7 +97,7 @@ function obj_to_map(obj)
     vertex_groups.push(new map_vertex_group_t(obj.materials[material], offset, count));
   }
   
-  const bsp = collapse_brush_R(faces);
+  const bsp = collapse_brush_R(faces, []);
   
   const nodes = [];
   flat_bsp_R(nodes, bsp);
@@ -172,20 +172,68 @@ class plane_t {
   }
 };
 
-function collapse_brush_R(faces)
+function collapse_brush_R(faces, hull)
 {
-  if (faces.length == 0)
-    return null;
+  if (faces.length == 0) {
+    let node = null;
+    const bevels = do_bevel(hull);
+    
+    for (const bevel of bevels) {
+      const new_node = new bsp_node_t(bevel);
+      new_node.behind = node;
+      node = new_node;
+    }
+    
+    return node;
+  }
   
-  let plane = face_to_plane(faces[0]);
+  const plane = face_to_plane(faces[0]);
   
-  let [behind, ahead] = split_brush(faces, plane);
+  const [behind, middle, ahead] = split_brush(plane, faces);
+  const [b,m,a] = split_brush(plane, hull);
+  
+  const new_hull = [];
+  new_hull.push(...middle);
+  new_hull.push(...b);
+  new_hull.push(...m);
   
   const node = new bsp_node_t(plane);
-  node.behind = collapse_brush_R(behind);
-  node.ahead = collapse_brush_R(ahead);
+  
+  node.behind = collapse_brush_R(behind, new_hull);
+  node.ahead = collapse_brush_R(ahead, []);
   
   return node;
+}
+
+function do_bevel(hull)
+{
+  const bevels = [];
+  
+  for (let i = 0; i < hull.length; i++) {
+    const face1 = hull[i];
+    
+    for (let j = i+1; j < hull.length; j++) {
+      const face2 = hull[j];
+      
+      const shared = face1.vertices.filter(
+        (v1) => face2.vertices.some(
+          (v2) => {
+            const delta = v1.pos.sub(v2.pos);
+            return delta.dot(delta) < DOT_DEGREE;
+          }
+        )
+      );
+      
+      if (shared.length === 2 && face1.normal.dot(face2.normal) < 0.5) {
+        const normal = face1.normal.add(face2.normal).normalize();
+        const distance = shared[0].pos.dot(normal);
+        
+        bevels.push(new plane_t(normal, distance));
+      }
+    }
+  }
+  
+  return bevels;
 }
 
 function face_to_plane(face)
@@ -195,7 +243,7 @@ function face_to_plane(face)
   return new plane_t(n, d)
 }
 
-function split_brush(faces, plane)
+function split_brush(plane, faces)
 {
   const behind = [];
   const middle = [];
@@ -209,7 +257,7 @@ function split_brush(faces, plane)
     ahead.push(...f_ahead);
   }
   
-  return [ behind, ahead ];
+  return [ behind, middle, ahead ];
 }
 
 function intersect_plane(a, b, plane)
