@@ -107,6 +107,15 @@ export class vec3_t {
     return this.mulf(inverse_length);
   }
   
+  cross(v)
+  {
+    return new vec3_t(
+      this.y * v.z - this.z * v.y,
+      this.z * v.x - this.x * v.z,
+      this.x * v.y - this.y * v.x
+    );
+  }
+  
   toString()
   {
     return "vec3_t(" + this.x.toFixed(2) + ", " + this.y.toFixed(2) + ", " + this.z.toFixed(2) + ")";

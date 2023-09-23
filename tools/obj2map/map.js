@@ -5,7 +5,7 @@ import path from "path";
 import { write_t } from "../shared/write.js";
 import { obj_parse, obj_vertex_t, obj_face_t } from "../shared/obj.js";
 
-const DOT_DEGREE = 0.001;
+const DOT_DEGREE = 0.01;
 
 class map_vertex_group_t {
   constructor(material, offset, count)
@@ -224,11 +224,11 @@ function do_bevel(hull)
         )
       );
       
-      if (shared.length === 2 && face1.normal.dot(face2.normal) < 0.5) {
+      if (shared.length === 2 && face1.normal.dot(face2.normal) < -DOT_DEGREE) {
         const normal = face1.normal.add(face2.normal).normalize();
         const distance = shared[0].pos.dot(normal);
         
-        bevels.push(new plane_t(normal, distance));
+        bevels.push(new plane_t(normal, distance - 0.2));
       }
     }
   }

@@ -47,7 +47,7 @@ void renderer_render(renderer_t *r)
   camera_move(&r->camera, r->game->player.position, r->game->player.rotation);
   camera_sub_data(&r->camera, mat4x4_init_identity());
   
-  model_draw(&r->fumo_model);
+  // model_draw(&r->fumo_model);
   model_draw(&r->map_model);
 }
 
