@@ -21,6 +21,7 @@ typedef struct {
 
 typedef struct {
   vec3_t normal;
+  float distance;
 } clip_t;
 
 typedef struct {

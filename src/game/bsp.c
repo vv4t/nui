@@ -30,6 +30,7 @@ int bsp_clip_R(clip_t clips[], const bsp_t *bsp, int node_id, const sphere_t *sp
     
     if (node->behind == -1) {
       clips[num_clips].normal = min_plane.normal;
+      clips[num_clips].distance = min_plane_dist;
       num_clips++;
     }
     

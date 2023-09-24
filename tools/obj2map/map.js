@@ -176,6 +176,7 @@ function collapse_brush_R(faces, hull)
 {
   if (faces.length == 0) {
     let node = null;
+    
     const bevels = do_bevel(hull);
     
     for (const bevel of bevels) {
@@ -200,7 +201,7 @@ function collapse_brush_R(faces, hull)
   const node = new bsp_node_t(plane);
   
   node.behind = collapse_brush_R(behind, new_hull);
-  node.ahead = collapse_brush_R(ahead, []);
+  node.ahead = collapse_brush_R(ahead, a);
   
   return node;
 }
@@ -224,16 +225,27 @@ function do_bevel(hull)
         )
       );
       
-      if (shared.length === 2 && face1.normal.dot(face2.normal) < -DOT_DEGREE) {
+      if (shared.length === 2 && face1.normal.dot(face2.normal) < +DOT_DEGREE) {
         const normal = face1.normal.add(face2.normal).normalize();
         const distance = shared[0].pos.dot(normal);
         
-        bevels.push(new plane_t(normal, distance - 0.2));
+        bevels.push(new plane_t(normal, distance));
       }
     }
   }
   
-  return bevels;
+  const unique_bevels = bevels.filter((b1, i) => {
+    return !bevels.some((b2, j) => {
+      const alpha = b1.normal.dot(b2.normal);
+      const delta = Math.abs(b1.distance - b2.distance);
+      
+      return alpha < DOT_DEGREE && delta < DOT_DEGREE && i < j;
+    });
+  });
+  
+  console.log(unique_bevels);
+  
+  return unique_bevels;
 }
 
 function face_to_plane(face)
