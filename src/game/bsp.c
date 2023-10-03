@@ -23,14 +23,14 @@ int bsp_clip_R(clip_t clips[], const bsp_t *bsp, int node_id, const sphere_t *sp
   }
   
   if (min_dist < 0) {
-    if (min_dist > min_plane_dist) {
+    if (min_dist > min_plane_dist && !node->bevel) {
       min_plane = node->plane;
       min_plane_dist = min_dist;
     }
     
     if (node->behind == -1) {
       clips[num_clips].normal = min_plane.normal;
-      clips[num_clips].distance = min_plane_dist;
+      clips[num_clips].distance = min_plane.distance;
       num_clips++;
     }
     

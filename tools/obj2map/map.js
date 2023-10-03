@@ -5,7 +5,7 @@ import path from "path";
 import { write_t } from "../shared/write.js";
 import { obj_parse, obj_vertex_t, obj_face_t } from "../shared/obj.js";
 
-const DOT_DEGREE = 0.01;
+const DOT_DEGREE = 0.001;
 
 class map_vertex_group_t {
   constructor(material, offset, count)
@@ -31,6 +31,7 @@ class map_bsp_node_t {
     this.plane = plane;
     this.behind = -1;
     this.ahead = -1;
+    this.bevel = 0;
   }
 };
 
@@ -68,6 +69,15 @@ function obj_to_map(obj)
     faces.push(...object.faces);
   }
   
+  for (const face of faces) {
+    const plane = face_to_plane(face);
+    
+    for (let i = 0; i < face.vertices.length; i++) {
+      const dist = face.vertices[i].pos.dot(plane.normal) - plane.distance;
+      face.vertices[i].pos = face.vertices[i].pos.add(plane.normal.mulf(-dist));
+    }
+  }
+  
   const object_groups = {};
   
   for (const object of obj.objects) {
@@ -97,7 +107,7 @@ function obj_to_map(obj)
     vertex_groups.push(new map_vertex_group_t(obj.materials[material], offset, count));
   }
   
-  const bsp = collapse_brush_R(faces, []);
+  const bsp = collapse_brush_R(faces, [], []);
   
   const nodes = [];
   flat_bsp_R(nodes, bsp);
@@ -116,6 +126,7 @@ function write_map(write, map, map_name)
     write.write_f32(node.plane.distance);
     write.write_u32(node.behind);
     write.write_u32(node.ahead);
+    write.write_u32(node.bevel);
   }
   
   for (const vertex_group of map.vertex_groups) {
@@ -149,6 +160,7 @@ function flat_bsp_R(nodes, bsp)
   const node = new map_bsp_node_t(bsp.plane);
   const node_id = nodes.push(node) - 1;
   
+  node.bevel = bsp.bevel ? 1 : 0;
   node.behind = flat_bsp_R(nodes, bsp.behind);
   node.ahead = flat_bsp_R(nodes, bsp.ahead);
   
@@ -161,6 +173,7 @@ class bsp_node_t {
     this.plane = plane;
     this.behind = null;
     this.ahead = null;
+    this.bevel = false;
   }
 };
 
@@ -172,16 +185,17 @@ class plane_t {
   }
 };
 
-function collapse_brush_R(faces, hull)
+function collapse_brush_R(faces, hull, splits)
 {
   if (faces.length == 0) {
     let node = null;
     
-    const bevels = do_bevel(hull);
+    const bevels = do_bevel(hull, splits);
     
     for (const bevel of bevels) {
       const new_node = new bsp_node_t(bevel);
       new_node.behind = node;
+      new_node.bevel = true;
       node = new_node;
     }
     
@@ -192,41 +206,40 @@ function collapse_brush_R(faces, hull)
   
   const [behind, middle, ahead] = split_brush(plane, faces);
   const [b,m,a] = split_brush(plane, hull);
-  
+
   const new_hull = [];
   new_hull.push(...middle);
   new_hull.push(...b);
-  new_hull.push(...m);
+  
+  const new_splits = [];
+  new_splits.push(...splits);
+  new_splits.push(new plane_t(plane.normal.mulf(-1), -plane.distance));
+  
+  splits.push(plane);
   
   const node = new bsp_node_t(plane);
   
-  node.behind = collapse_brush_R(behind, new_hull);
-  node.ahead = collapse_brush_R(ahead, a);
+  node.behind = collapse_brush_R(behind, new_hull, splits);
+  node.ahead = collapse_brush_R(ahead, a, new_splits);
   
   return node;
 }
 
-function do_bevel(hull)
+function do_bevel(hull, splits)
 {
   const bevels = [];
   
-  for (let i = 0; i < hull.length; i++) {
-    const face1 = hull[i];
-    
-    for (let j = i+1; j < hull.length; j++) {
-      const face2 = hull[j];
-      
-      const shared = face1.vertices.filter(
-        (v1) => face2.vertices.some(
-          (v2) => {
-            const delta = v1.pos.sub(v2.pos);
-            return delta.dot(delta) < DOT_DEGREE;
-          }
-        )
+  for (const split of splits) {
+    for (const face of hull) {
+      const shared = face.vertices.filter(
+        (v) => {
+          const delta = v.pos.dot(split.normal) - split.distance;
+          return Math.abs(delta) < DOT_DEGREE;
+        }
       );
       
-      if (shared.length === 2 && face1.normal.dot(face2.normal) < +DOT_DEGREE) {
-        const normal = face1.normal.add(face2.normal).normalize();
+      if (shared.length > 0 && shared.length < 3 && face.normal.dot(split.normal) < +DOT_DEGREE) {
+        const normal = face.normal.add(split.normal).normalize();
         const distance = shared[0].pos.dot(normal);
         
         bevels.push(new plane_t(normal, distance));
@@ -239,11 +252,9 @@ function do_bevel(hull)
       const alpha = b1.normal.dot(b2.normal);
       const delta = Math.abs(b1.distance - b2.distance);
       
-      return alpha < DOT_DEGREE && delta < DOT_DEGREE && i < j;
+      return alpha > 1 - DOT_DEGREE && delta < DOT_DEGREE && i > j;
     });
   });
-  
-  console.log(unique_bevels);
   
   return unique_bevels;
 }
@@ -313,7 +324,7 @@ function split_face_uneven(vbase, vhead, plane, normal, flip)
     return [base, [], head];
 }
 
-function split_face(face, plane)
+function split_face(face, plane, debug)
 {
   const behind = [];
   const middle = [];
@@ -336,10 +347,13 @@ function split_face(face, plane)
   } else if (ahead.length == 3 || (ahead.length == 2 && middle.length == 1)) {
     return [ [], [], [face] ];
   } else if (middle.length == 3) {
-    if (face.normal.dot(plane.normal) > +DOT_DEGREE)
-      return [ [], [face], [] ];
-    else
+    if (face.normal.dot(plane.normal) < -1+DOT_DEGREE) {
       return [ [], [], [face] ];
+    } else if (face.normal.dot(plane.normal) > 1-DOT_DEGREE) {
+      return [ [], [face], [] ];
+    } else {
+      return [ [], [], [] ];
+    }
   } else if (middle.length == 2) {
     if (behind.length > ahead.length)
       return [ [face], [], [] ];

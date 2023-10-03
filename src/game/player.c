@@ -27,15 +27,17 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
   
   for (int i = 0; i < num_clips; i++) {
     // float lambda_vel = -vec3_dot(delta_pos, clips[i].normal) - clips[i].distance;
-    float lambda_vel = -clips[i].distance;
+    // float lambda_vel = -clips[i].distance;
+    float lambda_vel = -(vec3_dot(next_pos, clips[i].normal) - clips[i].distance - sphere.radius);
     
     if (lambda_vel > 0) {
       vec3_t slide = vec3_mulf(clips[i].normal, lambda_vel);
       delta_pos = vec3_add(delta_pos, slide);
+      next_pos = vec3_add(p->position, delta_pos);
     }
   }
   
-  p->position = vec3_add(p->position, delta_pos);
+  p->position = next_pos;
 }
 
 void player_look(player_t *p, const usercmd_t *usercmd)

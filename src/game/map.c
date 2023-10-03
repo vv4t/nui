@@ -53,6 +53,7 @@ bsp_t *map_load_bsp(map_t *map)
     bsp->nodes[i].plane.distance = map->nodes[i].plane.distance;
     bsp->nodes[i].behind = map->nodes[i].behind;
     bsp->nodes[i].ahead = map->nodes[i].ahead;
+    bsp->nodes[i].bevel = map->nodes[i].bevel;
   }
   
   return bsp;

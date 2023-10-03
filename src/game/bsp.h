@@ -12,6 +12,7 @@ typedef struct {
   bsp_plane_t plane;
   int behind;
   int ahead;
+  int bevel;
 } bsp_node_t;
 
 typedef struct {
