@@ -42,6 +42,8 @@ static void key_event(usercmd_t *usercmd, int key, int action)
     usercmd->forward = action;
   if (key == 's')
     usercmd->back = action;
+  if (key == ' ')
+    usercmd->jump = action;
 }
 
 static void mouse_move(usercmd_t *usercmd, int d_x, int d_y)

@@ -1,9 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../common/nui_math.h"
 #include "usercmd.h"
 #include "bsp.h"
+#include "../common/nui_math.h"
+#include <stdbool.h>
 
 typedef struct {
   vec3_t  position;
@@ -12,6 +13,8 @@ typedef struct {
   
   float   yaw;
   float   pitch;
+  
+  bool    ground;
 } player_t;
 
 void player_init(player_t *player);

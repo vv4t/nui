@@ -3,6 +3,8 @@
 
 #include "../common/nui_math.h"
 
+#define MAX_HULL_VERTICES 32
+
 typedef struct {
   vec3_t normal;
   float distance;
@@ -27,9 +29,13 @@ typedef struct {
 
 typedef struct {
   vec3_t pos;
-  float radius;
-} sphere_t;
+  vec3_t vertices[MAX_HULL_VERTICES];
+  int num_vertices;
+} hull_t;
 
-int bsp_clip_sphere(clip_t clips[], const bsp_t *bsp, const sphere_t *sphere);
+int bsp_clip_hull(clip_t clips[], const bsp_t *bsp, const hull_t *hull);
+
+float hull_furthest_in(const hull_t *hull, vec3_t direction);
+float hull_furthest_out(const hull_t *hull, vec3_t direction);
 
 #endif
