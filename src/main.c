@@ -54,7 +54,7 @@ bool nui_init()
     return false;
   }
   
-  map_t *map = map_load("scene2");
+  map_t *map = map_load("nk_construct");
   
   game_map_load(&nui.game, map);
   renderer_map_load(&nui.renderer, map);

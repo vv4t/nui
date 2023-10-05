@@ -5,7 +5,7 @@
 #include "bsp.h"
 
 typedef struct {
-  char diffuse[32];
+  char diffuse[64];
 } map_material_t;
 
 typedef struct {

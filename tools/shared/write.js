@@ -110,11 +110,11 @@ export class write_t {
   
   write_s32(s32)
   {
-    for (let i = 0; i < Math.min(s32.length, 32); i++) {
+    for (let i = 0; i < Math.min(s32.length, 64); i++) {
       this.write_u8(s32.charCodeAt(i));
     }
     
-    for (let i = s32.length; i < 32; i++) {
+    for (let i = s32.length; i < 64; i++) {
       this.write_u8(0);
     }
   }
