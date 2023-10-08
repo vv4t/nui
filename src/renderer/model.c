@@ -5,7 +5,7 @@
 #define PATH_LEN 256
 
 typedef struct {
-  char diffuse[32];
+  char diffuse[64];
 } mdl_material_t;
 
 typedef struct {

@@ -30,10 +30,8 @@ bool renderer_init(renderer_t *r, const game_t *game)
 
 static void renderer_init_gl()
 {
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
-  // glEnable(GL_CULL_FACE);
-  // glCullFace(GL_FRONT);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 }
@@ -47,7 +45,7 @@ void renderer_render(renderer_t *r)
   camera_move(&r->camera, r->game->player.position, r->game->player.rotation);
   camera_sub_data(&r->camera, mat4x4_init_identity());
   
-  // model_draw(&r->fumo_model);
+  model_draw(&r->fumo_model);
   model_draw(&r->map_model);
 }
 

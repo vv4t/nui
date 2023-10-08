@@ -32,7 +32,7 @@ export function obj_parse(str_path)
           parseFloat(args[1]),
           parseFloat(args[2]),
           parseFloat(args[3])
-        ).mulf(1/100.0)
+        )
       );
     } else if (args[0] == "vt") {
       uv_buf.push(
