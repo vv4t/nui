@@ -130,7 +130,7 @@ function write_map(write, map, map_name)
   }
   
   for (const vertex_group of map.vertex_groups) {
-    write.write_s32("assets/map/" + map_name + "/" + vertex_group.material.diffuse);
+    write.write_s32(vertex_group.material.diffuse);
     write.write_u32(vertex_group.offset);
     write.write_u32(vertex_group.count);
   }

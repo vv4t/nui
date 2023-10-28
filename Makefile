@@ -1,7 +1,7 @@
 .PHONY=default run
 
 CFLAGS=-O3
-LDFLAGS=-lSDL2 -lSDL2_image -lm -lGL -lGLEW
+LDFLAGS=-lSDL2 -lSDL2_image -lm -lGL -lGLEW -g
 SRC=src/*.c src/*/*.c
 
 default: nui run

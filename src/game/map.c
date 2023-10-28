@@ -9,24 +9,16 @@
 
 map_t *map_load(const char *name)
 {
-  char path[PATH_LEN];
-  strncpy(path, "assets/map/", PATH_LEN);
-  strcat(path, name);
-  strcat(path, "/");
+  map_t *map = malloc(sizeof(map_t));
   
-  int base_len = strlen(path);
+  path_create(&map->path, "map", name);
   
-  strcat(path, name);
-  strcat(path, ".map");
-  
-  FILE *file = fopen(path, "rb");
+  FILE *file = fopen(map->path.name, "rb");
   
   if (!file) {
-    LOG_ERROR("failed to open '%s'", path);
+    LOG_ERROR("failed to open '%s'", map->path.name);
     return NULL;
   }
-  
-  map_t *map = malloc(sizeof(map_t));
   
   fread(&map->num_nodes, sizeof(int), 1, file); 
   fread(&map->num_vertex_groups, sizeof(int), 1, file); 

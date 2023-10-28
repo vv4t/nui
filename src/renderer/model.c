@@ -1,8 +1,7 @@
 #include "model.h"
 
 #include "../common/log.h"
-
-#define PATH_LEN 256
+#include "../common/path.h"
 
 typedef struct {
   char diffuse[64];
@@ -21,54 +20,44 @@ typedef struct {
 } mdl_vertex_t;
 
 typedef struct {
-  int                 num_vertex_groups;
+  int num_vertex_groups;
   mdl_vertex_group_t  *vertex_groups;
-  
-  int                 num_vertices;
-  mdl_vertex_t        *vertices;
+  int num_vertices;
+  mdl_vertex_t *vertices;
 } mdl_file_t;
 
-mdl_file_t      *mdl_file_load(const char *path);
-void            mdl_file_free(mdl_file_t *mesh_file);
-static vertex_t *load_model_vertices(mdl_file_t *mdl_file);
+mdl_file_t *mdl_file_load(path_t path);
+static void mdl_file_free(mdl_file_t *mdl_file);
+static vertex_t *model_load_vertices(mdl_file_t *mdl_file);
+static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3);
+static void vertex_planar_map(vertex_t *v);
 
 bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
 {
-  char path[PATH_LEN];
-  strncpy(path, "assets/mdl/", PATH_LEN);
-  strcat(path, name);
-  strcat(path, "/");
-  
-  int base_len = strlen(path);
-  
-  strcat(path, name);
-  strcat(path, ".mdl");
+  path_t path;
+  path_create(&path, "mdl", name);
   
   mdl_file_t *mdl_file = mdl_file_load(path);
-  path[base_len] = 0;
   
-  vertex_t *vertices = load_model_vertices(mdl_file);
+  vertex_t *vertices = model_load_vertices(mdl_file);
   
   for (int i = 0; i < mdl_file->num_vertex_groups; i++) {
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
     
-    strcat(path, vertex_group.material.diffuse);
+    char texture_path[PATH_LEN];
     
-    if (!texture_load(&mesh_group->material.diffuse, path)) {
-      return false;
-    }
+    path_join(&path, texture_path, vertex_group.material.diffuse);
+    bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
     
-    path[base_len] = 0;
+    bool mesh_error = mesh_buffer_new(
+      mesh_buffer,
+      &mesh_group->mesh,
+      &vertices[vertex_group.offset],
+      vertex_group.count
+    );
     
-    if (
-      !mesh_buffer_new(
-        mesh_buffer,
-        &mesh_group->mesh,
-        &vertices[vertex_group.offset],
-        vertex_group.count
-      )
-    ) {
+    if (!diffuse_error || !mesh_error) {
       return false;
     }
   }
@@ -81,79 +70,66 @@ bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
   return true;
 }
 
+void model_draw(const model_t *model)
+{
+  for (int i = 0; i < model->num_meshes; i++) {
+    mesh_group_t mesh_group = model->mesh_groups[i];
+    
+    material_bind(mesh_group.material);
+    mesh_draw(mesh_group.mesh);
+  }
+}
+
+static vertex_t *model_load_vertices(mdl_file_t *mdl_file)
+{
+  vertex_t *vertices = calloc(mdl_file->num_vertices, sizeof(vertex_t));
+  
+  for (int i = 0; i < mdl_file->num_vertices; i += 3) {
+    for (int j = 0; j < 3; j++) {
+      vertices[i + j].pos = mdl_file->vertices[i + j].pos;
+      vertices[i + j].normal = mdl_file->vertices[i + j].normal;
+      vertices[i + j].uv = mdl_file->vertices[i + j].uv;
+    }
+    
+    vertex_solve_tangent(&vertices[i + 0], &vertices[i + 1], &vertices[i + 2]);
+  }
+  
+  return vertices;
+}
+
+
 bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
 {
   vertex_t *vertices = calloc(map->num_vertices, sizeof(vertex_t));
   
   for (int i = 0; i < map->num_vertices; i += 3) {
     for (int j = 0; j < 3; j++) {
-      vec3_t pos = map->vertices[i + j].pos;
-      vec3_t normal = map->vertices[i + j].normal;
-      vec2_t uv;
+      vertices[i + j].pos = map->vertices[i + j].pos;
+      vertices[i + j].normal = map->vertices[i + j].normal;
       
-      if (fabs(normal.x) > fabs(normal.y)) {
-        if (fabs(normal.z) > fabs(normal.x)) {
-          uv = vec2_init(pos.x, pos.y);
-        } else {
-          uv = vec2_init(pos.z, pos.y);
-        }
-      } else {
-        if (fabs(normal.z) > fabs(normal.y)) {
-          uv = vec2_init(pos.x, pos.y);
-        } else {
-          uv = vec2_init(pos.x, pos.z);
-        }
-      }
-      
-      vertices[i + j].pos = pos;
-      vertices[i + j].normal = normal;
-      vertices[i + j].uv = uv;
+      vertex_planar_map(&vertices[i + j]);
     }
     
-    vec3_t delta_pos1 = vec3_sub(vertices[i + 1].pos, vertices[i].pos);
-    vec3_t delta_pos2 = vec3_sub(vertices[i + 2].pos, vertices[i].pos);
-    
-    vec2_t delta_uv1 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
-    vec2_t delta_uv2 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
-    
-    float f = 1.0f / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
-    
-    vec3_t tangent = vec3_mulf(
-      vec3_sub(
-        vec3_mulf(delta_pos1, delta_uv2.y),
-        vec3_mulf(delta_pos2, delta_uv1.y)
-      ), f
-    );
-    
-    vec3_t bitangent = vec3_mulf(
-      vec3_sub(
-        vec3_mulf(delta_pos2, delta_uv1.x),
-        vec3_mulf(delta_pos1, delta_uv2.x)
-      ), f
-    );
-    
-    for (int j = 0; j < 3; j++) {
-      vertices[i + j].tangent = vec3_normalize(tangent);
-      vertices[i + j].bitangent = vec3_normalize(bitangent);
-    }
+    vertex_solve_tangent(&vertices[i + 0], &vertices[i + 1], &vertices[i + 2]);
   }
   
   for (int i = 0; i < map->num_vertex_groups; i++) {
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     map_vertex_group_t vertex_group = map->vertex_groups[i];
     
-    if (!texture_load(&mesh_group->material.diffuse, vertex_group.material.diffuse)) {
-      return false;
-    }
+    char texture_path[PATH_LEN];
     
-    if (
-      !mesh_buffer_new(
-        mesh_buffer,
-        &mesh_group->mesh,
-        &vertices[vertex_group.offset],
-        vertex_group.count
-      )
-    ) {
+    path_join(&map->path, texture_path, vertex_group.material.diffuse);
+    bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
+    
+    bool mesh_error = mesh_buffer_new(
+      mesh_buffer,
+      &mesh_group->mesh,
+      &vertices[vertex_group.offset],
+      vertex_group.count
+    );
+    
+    if (!diffuse_error || !mesh_error) {
       return false;
     }
   }
@@ -165,61 +141,48 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
   return true;
 }
 
-static vertex_t *load_model_vertices(mdl_file_t *mdl_file)
+static void vertex_planar_map(vertex_t *v)
 {
-  vertex_t *vertices = calloc(mdl_file->num_vertices, sizeof(vertex_t));
-  
-  for (int i = 0; i < mdl_file->num_vertices; i += 3) {
-    for (int j = 0; j < 3; j++) {
-      vertices[i + j].pos = mdl_file->vertices[i + j].pos;
-      vertices[i + j].normal = mdl_file->vertices[i + j].normal;
-      vertices[i + j].uv = mdl_file->vertices[i + j].uv;
+  if (fabs(v->normal.x) > fabs(v->normal.y)) {
+    if (fabs(v->normal.z) > fabs(v->normal.x)) {
+      v->uv = vec2_init(v->pos.x, v->pos.y);
+    } else {
+      v->uv = vec2_init(v->pos.z, v->pos.y);
     }
-    
-    vec3_t delta_pos1 = vec3_sub(vertices[i + 1].pos, vertices[i].pos);
-    vec3_t delta_pos2 = vec3_sub(vertices[i + 2].pos, vertices[i].pos);
-    
-    vec2_t delta_uv1 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
-    vec2_t delta_uv2 = vec2_sub(vertices[i + 1].uv, vertices[i].uv);
-    
-    float f = 1.0f / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
-    
-    vec3_t tangent = vec3_mulf(
-      vec3_sub(
-        vec3_mulf(delta_pos1, delta_uv2.y),
-        vec3_mulf(delta_pos2, delta_uv1.y)
-      ), f
-    );
-    
-    vec3_t bitangent = vec3_mulf(
-      vec3_sub(
-        vec3_mulf(delta_pos2, delta_uv1.x),
-        vec3_mulf(delta_pos1, delta_uv2.x)
-      ), f
-    );
-    
-    for (int j = 0; j < 3; j++) {
-      vertices[i + j].tangent = vec3_normalize(tangent);
-      vertices[i + j].bitangent = vec3_normalize(bitangent);
+  } else {
+    if (fabs(v->normal.z) > fabs(v->normal.y)) {
+      v->uv = vec2_init(v->pos.x, v->pos.y);
+    } else {
+      v->uv = vec2_init(v->pos.x, v->pos.z);
     }
-  }
-  
-  return vertices;
-}
-
-void model_draw(const model_t *model)
-{
-  for (int i = 0; i < model->num_meshes; i++) {
-    mesh_group_t mesh_group = model->mesh_groups[i];
-    
-    material_bind(mesh_group.material);
-    mesh_draw(mesh_group.mesh);
   }
 }
 
-mdl_file_t *mdl_file_load(const char *path)
+static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 {
-  FILE *file = fopen(path, "rb");
+  vec3_t d_pos1 = vec3_sub(v2->pos, v1->pos);
+  vec3_t d_pos2 = vec3_sub(v3->pos, v1->pos);
+  
+  vec2_t d_uv1 = vec2_sub(v2->uv, v1->uv);
+  vec2_t d_uv2 = vec2_sub(v3->uv, v1->uv);
+  
+  float f = 1.0f / (d_uv1.x * d_uv2.y - d_uv2.x * d_uv1.y);
+  
+  vec3_t tangent = vec3_mulf(vec3_sub(vec3_mulf(d_pos1, d_uv2.y), vec3_mulf(d_pos2, d_uv1.y)), f);
+  vec3_t bitangent = vec3_mulf(vec3_sub(vec3_mulf(d_pos2, d_uv1.x), vec3_mulf(d_pos1, d_uv2.x)), f);
+  
+  v1->tangent = tangent;
+  v2->tangent = tangent;
+  v3->tangent = tangent;
+  
+  v1->bitangent = bitangent;
+  v2->bitangent = bitangent;
+  v3->bitangent = bitangent;
+}
+
+mdl_file_t *mdl_file_load(path_t path)
+{
+  FILE *file = fopen(path.name, "rb");
   if (!file) {
     LOG_ERROR("failed to open '%s'", path);
     return NULL;

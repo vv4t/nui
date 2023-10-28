@@ -2,6 +2,7 @@
 #define BSP_FILE_H
 
 #include "../common/nui_math.h"
+#include "../common/path.h"
 #include "bsp.h"
 
 typedef struct {
@@ -33,6 +34,8 @@ typedef struct {
 } map_bsp_node_t;
 
 typedef struct {
+  path_t              path;
+  
   map_bsp_node_t      *nodes;
   int                 num_nodes;
   
