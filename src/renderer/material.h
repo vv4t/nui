@@ -4,7 +4,7 @@
 #include "gl.h"
 
 typedef struct {
-  texture_t   diffuse;
+  texture_t diffuse;
 } material_t;
 
 void material_bind(material_t material);

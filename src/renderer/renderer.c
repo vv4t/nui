@@ -2,6 +2,17 @@
 
 #include "gl.h"
 
+#include "camera.h"
+#include "model.h"
+#include "gls_flat.h"
+#include "material.h"
+
+struct renderer_s {
+  view_t  view;
+  model_t fumo_model;
+  model_t map_model;
+};
+
 static void renderer_init_gl();
 
 static bool renderer_init_mesh(renderer_t *r);
@@ -11,17 +22,18 @@ static bool renderer_init_material(renderer_t *r);
 bool renderer_init(renderer_t *r, const game_t *game)
 {
   renderer_init_gl();
-  mesh_buffer_init(&r->mesh_buffer, 1024 * 1024);
+  mesh_buffer_init(1024 * 1024);
   
-  gls_flat_init(&r->gls_flat);
+  flat_init();
+  light_init();
+  camera_init();
   
-  camera_init(&r->camera);
-  camera_perspective(&r->camera, 720.0 / 1280.0, to_radians(90.0), 0.1, 100.0);
-  // camera_orthogonal(&r->camera, 720.0 / 1280.0, 10.0, -50, 50);
+  view_init_perspective(&r.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
+  camera_set_view(r.view);
   
   r->game = game;
   
-  if (!model_load(&r->fumo_model, &r->mesh_buffer, "cirno_fumo")) {
+  if (!model_load(&r->fumo_model, "cirno_fumo")) {
     return false;
   }
   
@@ -36,20 +48,20 @@ static void renderer_init_gl()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 }
 
-void renderer_render(renderer_t *r)
+void renderer_render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  gls_flat_bind(&r->gls_flat);
+  flat_bind();
   
-  camera_move(&r->camera, r->game->player.position, r->game->player.rotation);
-  camera_sub_data(&r->camera, mat4x4_init_identity());
+  camera_move(r.game->player.position, r.game->player.rotation);
+  camera_sub_data(mat4x4_init_identity());
   
-  model_draw(&r->fumo_model);
-  model_draw(&r->map_model);
+  model_draw(&r.fumo_model);
+  model_draw(&r.map_model);
 }
 
-void renderer_map_load(renderer_t *r, map_t *map)
+void renderer_map_load(const map_t *map)
 {
-  model_load_map(&r->map_model, &r->mesh_buffer, map);
+  model_load_map(&r->map_model, map);
 }
