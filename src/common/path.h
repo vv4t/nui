@@ -9,6 +9,6 @@ typedef struct {
 } path_t;
 
 void path_create(path_t *path, const char *type, const char *name);
-void path_join(path_t *path, char path_name[PATH_LEN], const char *name);
+void path_join(const path_t *path, char path_name[PATH_LEN], const char *name);
 
 #endif

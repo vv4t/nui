@@ -4,14 +4,19 @@
 
 #include "camera.h"
 #include "model.h"
-#include "gls_flat.h"
+#include "flat.h"
 #include "material.h"
 
-struct renderer_s {
-  view_t  view;
+typedef struct {
+  view_t view;
+  
   model_t fumo_model;
   model_t map_model;
-};
+  
+  const game_t *game;
+} renderer_t;
+
+static renderer_t renderer;
 
 static void renderer_init_gl();
 
@@ -19,23 +24,25 @@ static bool renderer_init_mesh(renderer_t *r);
 static bool renderer_init_texture(renderer_t *r);
 static bool renderer_init_material(renderer_t *r);
 
-bool renderer_init(renderer_t *r, const game_t *game)
+bool renderer_init(const game_t *game)
 {
   renderer_init_gl();
   mesh_buffer_init(1024 * 1024);
   
-  flat_init();
-  light_init();
-  camera_init();
-  
-  view_init_perspective(&r.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
-  camera_set_view(r.view);
-  
-  r->game = game;
-  
-  if (!model_load(&r->fumo_model, "cirno_fumo")) {
+  if (!flat_init()) {
     return false;
   }
+  
+  camera_init();
+  
+  view_init_perspective(&renderer.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
+  camera_set_view(renderer.view);
+  
+  if (!model_load(&renderer.fumo_model, "cirno_fumo")) {
+    return false;
+  }
+  
+  renderer.game = game;
   
   return true;
 }
@@ -54,14 +61,14 @@ void renderer_render()
   
   flat_bind();
   
-  camera_move(r.game->player.position, r.game->player.rotation);
-  camera_sub_data(mat4x4_init_identity());
+  camera_move(renderer.game->player.position, renderer.game->player.rotation);
+  camera_model(mat4x4_init_identity());
   
-  model_draw(&r.fumo_model);
-  model_draw(&r.map_model);
+  model_draw(&renderer.fumo_model);
+  model_draw(&renderer.map_model);
 }
 
 void renderer_map_load(const map_t *map)
 {
-  model_load_map(&r->map_model, map);
+  model_load_map(&renderer.map_model, map);
 }

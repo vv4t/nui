@@ -32,7 +32,7 @@ static vertex_t *model_load_vertices(mdl_file_t *mdl_file);
 static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void vertex_planar_map(vertex_t *v);
 
-bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
+bool model_load(model_t *model, const char *name)
 {
   path_t path;
   path_create(&path, "mdl", name);
@@ -51,7 +51,6 @@ bool model_load(model_t *model, mesh_buffer_t *mesh_buffer, const char *name)
     bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
     
     bool mesh_error = mesh_buffer_new(
-      mesh_buffer,
       &mesh_group->mesh,
       &vertices[vertex_group.offset],
       vertex_group.count
@@ -97,8 +96,7 @@ static vertex_t *model_load_vertices(mdl_file_t *mdl_file)
   return vertices;
 }
 
-
-bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
+bool model_load_map(model_t *model, const map_t *map)
 {
   vertex_t *vertices = calloc(map->num_vertices, sizeof(vertex_t));
   
@@ -123,7 +121,6 @@ bool model_load_map(model_t *model, mesh_buffer_t *mesh_buffer, map_t *map)
     bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
     
     bool mesh_error = mesh_buffer_new(
-      mesh_buffer,
       &mesh_group->mesh,
       &vertices[vertex_group.offset],
       vertex_group.count

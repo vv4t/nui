@@ -16,7 +16,7 @@ void path_create(path_t *path, const char *type, const char *name)
   strncat(path->name, type, PATH_LEN - 1);
 }
 
-void path_join(path_t *path, char path_name[PATH_LEN], const char *name)
+void path_join(const path_t *path, char path_name[PATH_LEN], const char *name)
 {
   strncpy(path_name, path->base, PATH_LEN);
   strncat(path_name, name, PATH_LEN);
