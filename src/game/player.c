@@ -2,6 +2,8 @@
 
 #define LOOK_SENSITIVITY 0.01
 
+vec3_t player_move_dir(const player_t *p, const usercmd_t *usercmd);
+void player_slide(player_t *p, const bsp_t *bsp);
 void player_accelerate(player_t *p, vec3_t wish_dir, float accel, float wish_speed);
 void player_air_accelerate(player_t *p, vec3_t wish_dir, float wish_speed);
 
@@ -32,12 +34,10 @@ void player_init(player_t *p)
 
 void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
 {
-  vec3_t cmd_dir = vec3_init(usercmd->right - usercmd->left, 0.0f, usercmd->forward - usercmd->back);
-  vec3_t wish_dir = vec3_rotate(cmd_dir, p->rotation);
-  wish_dir.y = 0.0f;
+  vec3_t move_dir = player_move_dir(p, usercmd);
   
   if (p->ground) {
-    player_accelerate(p, wish_dir, 4.0, 6.0);
+    player_accelerate(p, move_dir, 4.0, 6.0);
     p->velocity = vec3_mulf(p->velocity, 0.9f);
     
     if (usercmd->jump) {
@@ -45,32 +45,50 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
     }
   } else {
     p->velocity.y -= 9.8 * 0.015;
-    player_air_accelerate(p, wish_dir, 0.6);
+    player_air_accelerate(p, move_dir, 0.6);
   }
   
   p->position = vec3_add(p->position, vec3_mulf(p->velocity, 0.015));
   player_hull.pos = p->position;
   
-  clip_t clips[32];
-  int num_clips = bsp_clip_hull(clips, bsp, &player_hull);
-  
+  player_slide(p, bsp);
+}
+
+void player_slide(player_t *p, const bsp_t *bsp)
+{
   p->ground = false;
-  for (int i = 0; i < num_clips; i++) {
-    float lambda_pos = -(hull_furthest_in(&player_hull, clips[i].normal) - clips[i].distance);
-    float lambda_vel = -vec3_dot(p->velocity, clips[i].normal);
+  
+  trace_t trace;
+  bsp_clip_hull(&trace, bsp, &player_hull);
+  
+  for (int i = 0; i < trace.num_clips; i++) {
+    float pos_shift = -trace.clips[i].depth;
+    float vel_shift = -vec3_dot(p->velocity, trace.clips[i].normal);
     
-    if (lambda_vel > 0) {
-      if (clips[i].normal.y > 0.4f) {
-        p->ground = true;
-      }
-      
-      vec3_t slide_pos = vec3_mulf(clips[i].normal, lambda_pos);
-      vec3_t slide_vel = vec3_mulf(clips[i].normal, lambda_vel);
-      
-      p->position = vec3_add(p->position, slide_pos);
-      p->velocity = vec3_add(p->velocity, slide_vel);
+    vec3_t pos_slide = vec3_mulf(trace.clips[i].normal, pos_shift);
+    vec3_t vel_slide = vec3_mulf(trace.clips[i].normal, vel_shift);
+    
+    if (trace.clips[i].normal.y > 0.4) {
+      p->ground = true;
+    }
+    
+    if (vel_shift > 0) {
+      p->velocity = vec3_add(p->velocity, vel_slide);
+    }
+    
+    if (pos_shift > 0) {
+      p->position = vec3_add(p->position, pos_slide);
     }
   }
+}
+
+vec3_t player_move_dir(const player_t *p, const usercmd_t *usercmd)
+{
+  vec3_t cmd_dir = vec3_init(usercmd->right - usercmd->left, 0.0f, usercmd->forward - usercmd->back);
+  vec3_t wish_dir = vec3_rotate(cmd_dir, p->rotation);
+  wish_dir.y = 0.0f;
+  
+  return wish_dir;
 }
 
 void player_accelerate(player_t *p, vec3_t wish_dir, float accel, float wish_speed)

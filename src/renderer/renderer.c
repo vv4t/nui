@@ -20,10 +20,6 @@ static renderer_t renderer;
 
 static void renderer_init_gl();
 
-static bool renderer_init_mesh(renderer_t *r);
-static bool renderer_init_texture(renderer_t *r);
-static bool renderer_init_material(renderer_t *r);
-
 bool renderer_init(const game_t *game)
 {
   renderer_init_gl();

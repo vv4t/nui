@@ -27,7 +27,7 @@ typedef struct {
 } map_plane_t;
 
 typedef struct {
-  bsp_plane_t plane;
+  plane_t plane;
   int behind;
   int ahead;
   int bevel;

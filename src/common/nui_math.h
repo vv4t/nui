@@ -355,4 +355,9 @@ inline static float to_degrees(float x)
   return x * 180.0 / M_PI;
 }
 
+inline static float plane_depth(plane_t plane, vec3_t v)
+{
+  return vec3_dot(plane.normal, v) - plane.distance;
+}
+
 #endif
