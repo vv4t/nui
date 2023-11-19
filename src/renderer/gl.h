@@ -20,11 +20,4 @@ bool gl_init();
 
 bool texture_load(texture_t *texture, const char *path);
 
-bool shader_load(
-  shader_t *shader,
-  const char *define,
-  const char *src_vertex,
-  const char *src_fragment
-);
-
 #endif

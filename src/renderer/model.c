@@ -153,7 +153,7 @@ static bool model_load_map_mesh_groups(model_t *model, const vertex_t *vertices,
       return false;
     }
     
-    vertex_t *vertex_offset = &vertices[vertex_group.offset];
+    const vertex_t *vertex_offset = &vertices[vertex_group.offset];
     
     if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
       return false;

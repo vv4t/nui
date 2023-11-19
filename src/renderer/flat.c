@@ -1,37 +1,31 @@
 #include "flat.h"
 
-#include "../common/file.h"
+#include "shader.h"
 
 typedef struct {
-  GLuint program;
+  GLuint shader;
 } flat_t;
 
 static flat_t flat;
 
 bool flat_init()
 {
-  char *src_vertex = file_read_all("assets/shader/flat.vsh");
-  char *src_fragment = file_read_all("assets/shader/flat.fsh");
-  
-  if (!shader_load(&flat.program, "", src_vertex, src_fragment)) {
+  if (!shader_load(&flat.shader, "flat")) {
     return false;
   }
   
-  free(src_vertex);
-  free(src_fragment);
+  glUseProgram(flat.shader);
   
-  GLuint ul_color = glGetUniformLocation(flat.program, "u_color");
-  GLuint ubl_matrices = glGetUniformBlockIndex(flat.program, "ubo_matrices");
-  
-  glUseProgram(flat.program);
-  
+  GLuint ul_color = glGetUniformLocation(flat.shader, "u_color");
   glUniform1i(ul_color, 0);
-  glUniformBlockBinding(flat.program, ubl_matrices, 0);
+  
+  GLuint ubl_matrices = glGetUniformBlockIndex(flat.shader, "ubo_matrices");
+  glUniformBlockBinding(flat.shader, ubl_matrices, 0);
   
   return true;
 }
 
 void flat_bind()
 {
-  glUseProgram(flat.program);
+  glUseProgram(flat.shader);
 }
