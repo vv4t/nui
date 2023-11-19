@@ -20,8 +20,9 @@ typedef struct {
 } mdl_vertex_t;
 
 typedef struct {
+  path_t path;
   int num_vertex_groups;
-  mdl_vertex_group_t  *vertex_groups;
+  mdl_vertex_group_t *vertex_groups;
   int num_vertices;
   mdl_vertex_t *vertices;
 } mdl_file_t;
@@ -29,6 +30,9 @@ typedef struct {
 mdl_file_t *mdl_file_load(path_t path);
 static void mdl_file_free(mdl_file_t *mdl_file);
 static vertex_t *model_load_vertices(mdl_file_t *mdl_file);
+static bool model_load_mesh_groups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices);
+static vertex_t *model_load_map_vertices(const map_t *map);
+static bool model_load_map_mesh_groups(model_t *model, const vertex_t *vertices, const map_t *map);
 static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void vertex_planar_map(vertex_t *v);
 
@@ -36,26 +40,12 @@ bool model_load(model_t *model, const char *name)
 {
   path_t path;
   path_create(path, "assets/mdl/%s/%s.mdl", name, name);
-  
   mdl_file_t *mdl_file = mdl_file_load(path);
   
   vertex_t *vertices = model_load_vertices(mdl_file);
   
-  for (int i = 0; i < mdl_file->num_vertex_groups; i++) {
-    mesh_group_t *mesh_group = &model->mesh_groups[i];
-    mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
-    
-    path_new(path, vertex_group.material.diffuse);
-    
-    if (!texture_load(&mesh_group->material.diffuse, path)) {
-      return false;
-    }
-    
-    vertex_t *vertex_offset = &vertices[vertex_group.offset];
-    
-    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
-      return false;
-    }
+  if (!model_load_mesh_groups(model, mdl_file, vertices)) {
+    return false;
   }
   
   model->num_meshes = mdl_file->num_vertex_groups;
@@ -74,6 +64,28 @@ void model_draw(const model_t *model)
     material_bind(mesh_group.material);
     mesh_draw(mesh_group.mesh);
   }
+}
+
+static bool model_load_mesh_groups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices)
+{
+  for (int i = 0; i < mdl_file->num_vertex_groups; i++) {
+    mesh_group_t *mesh_group = &model->mesh_groups[i];
+    mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
+    
+    path_new(mdl_file->path, vertex_group.material.diffuse);
+    
+    if (!texture_load(&mesh_group->material.diffuse, mdl_file->path)) {
+      return false;
+    }
+    
+    const vertex_t *vertex_offset = &vertices[vertex_group.offset];
+    
+    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 static vertex_t *model_load_vertices(mdl_file_t *mdl_file)
@@ -95,6 +107,21 @@ static vertex_t *model_load_vertices(mdl_file_t *mdl_file)
 
 bool model_load_map(model_t *model, const map_t *map)
 {
+  vertex_t *vertices = model_load_map_vertices(map);
+  
+  if (!model_load_map_mesh_groups(model, vertices, map)) {
+    return false;
+  }
+  
+  model->num_meshes = map->num_vertex_groups;
+  
+  free(vertices);
+  
+  return true;
+}
+
+static vertex_t *model_load_map_vertices(const map_t *map)
+{
   vertex_t *vertices = calloc(map->num_vertices, sizeof(vertex_t));
   
   for (int i = 0; i < map->num_vertices; i += 3) {
@@ -108,6 +135,11 @@ bool model_load_map(model_t *model, const map_t *map)
     vertex_solve_tangent(&vertices[i + 0], &vertices[i + 1], &vertices[i + 2]);
   }
   
+  return vertices;
+}
+
+static bool model_load_map_mesh_groups(model_t *model, const vertex_t *vertices, const map_t *map)
+{
   for (int i = 0; i < map->num_vertex_groups; i++) {
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     map_vertex_group_t vertex_group = map->vertex_groups[i];
@@ -116,6 +148,7 @@ bool model_load_map(model_t *model, const map_t *map)
     path_copy(path, map->path);
     
     path_new(path, vertex_group.material.diffuse);
+    
     if (!texture_load(&mesh_group->material.diffuse, path)) {
       return false;
     }
@@ -126,10 +159,6 @@ bool model_load_map(model_t *model, const map_t *map)
       return false;
     }
   }
-  
-  model->num_meshes = map->num_vertex_groups;
-  
-  free(vertices);
   
   return true;
 }
@@ -188,6 +217,7 @@ mdl_file_t *mdl_file_load(path_t path)
   
   mdl_file->vertex_groups = calloc(mdl_file->num_vertex_groups, sizeof(mdl_vertex_group_t));
   mdl_file->vertices = calloc(mdl_file->num_vertices, sizeof(mdl_vertex_t));
+  path_copy(mdl_file->path, path);
   
   fread(mdl_file->vertex_groups, sizeof(mdl_vertex_group_t), mdl_file->num_vertex_groups, file);
   fread(mdl_file->vertices, sizeof(mdl_vertex_t), mdl_file->num_vertices, file);
