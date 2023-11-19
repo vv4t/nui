@@ -35,7 +35,7 @@ static void vertex_planar_map(vertex_t *v);
 bool model_load(model_t *model, const char *name)
 {
   path_t path;
-  path_create(&path, "mdl", name);
+  path_create(path, "assets/mdl/%s/%s.mdl", name, name);
   
   mdl_file_t *mdl_file = mdl_file_load(path);
   
@@ -45,18 +45,15 @@ bool model_load(model_t *model, const char *name)
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
     
-    char texture_path[PATH_LEN];
+    path_new(path, vertex_group.material.diffuse);
     
-    path_join(&path, texture_path, vertex_group.material.diffuse);
-    bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
+    if (!texture_load(&mesh_group->material.diffuse, path)) {
+      return false;
+    }
     
-    bool mesh_error = mesh_buffer_new(
-      &mesh_group->mesh,
-      &vertices[vertex_group.offset],
-      vertex_group.count
-    );
+    vertex_t *vertex_offset = &vertices[vertex_group.offset];
     
-    if (!diffuse_error || !mesh_error) {
+    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
       return false;
     }
   }
@@ -115,18 +112,17 @@ bool model_load_map(model_t *model, const map_t *map)
     mesh_group_t *mesh_group = &model->mesh_groups[i];
     map_vertex_group_t vertex_group = map->vertex_groups[i];
     
-    char texture_path[PATH_LEN];
+    path_t path;
+    path_copy(path, map->path);
     
-    path_join(&map->path, texture_path, vertex_group.material.diffuse);
-    bool diffuse_error = texture_load(&mesh_group->material.diffuse, texture_path);
+    path_new(path, vertex_group.material.diffuse);
+    if (!texture_load(&mesh_group->material.diffuse, path)) {
+      return false;
+    }
     
-    bool mesh_error = mesh_buffer_new(
-      &mesh_group->mesh,
-      &vertices[vertex_group.offset],
-      vertex_group.count
-    );
+    vertex_t *vertex_offset = &vertices[vertex_group.offset];
     
-    if (!diffuse_error || !mesh_error) {
+    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
       return false;
     }
   }
@@ -179,7 +175,7 @@ static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3)
 
 mdl_file_t *mdl_file_load(path_t path)
 {
-  FILE *file = fopen(path.name, "rb");
+  FILE *file = fopen(path, "rb");
   if (!file) {
     LOG_ERROR("failed to open '%s'", path);
     return NULL;

@@ -1,14 +1,12 @@
 #ifndef PATH_H
 #define PATH_H
 
-#define PATH_LEN 256
+#define PATH_MAX 256
 
-typedef struct {
-  char base[PATH_LEN];
-  char name[PATH_LEN];
-} path_t;
+typedef char path_t[PATH_MAX];
 
-void path_create(path_t *path, const char *type, const char *name);
-void path_join(const path_t *path, char path_name[PATH_LEN], const char *name);
+void path_create(path_t path, const char *format, ...);
+void path_new(path_t path, const char *file);
+void path_copy(path_t dest, const path_t src);
 
 #endif

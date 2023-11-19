@@ -11,12 +11,12 @@ map_t *map_load(const char *name)
 {
   map_t *map = malloc(sizeof(map_t));
   
-  path_create(&map->path, "map", name);
+  path_create(map->path, "assets/map/%s/%s.map", name, name);
   
-  FILE *file = fopen(map->path.name, "rb");
+  FILE *file = fopen(map->path, "rb");
   
   if (!file) {
-    LOG_ERROR("failed to open '%s'", map->path.name);
+    LOG_ERROR("failed to open '%s'", map->path);
     return NULL;
   }
   
