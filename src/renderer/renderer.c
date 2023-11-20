@@ -2,6 +2,7 @@
 
 #include "gl.h"
 
+#include "light.h"
 #include "camera.h"
 #include "model.h"
 #include "flat.h"
@@ -26,6 +27,10 @@ bool renderer_init(const game_t *game)
   mesh_buffer_init(1024 * 1024);
   
   if (!flat_init()) {
+    return false;
+  }
+  
+  if (!light_init()) {
     return false;
   }
   
@@ -55,7 +60,7 @@ void renderer_render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  flat_bind();
+  light_bind();
   
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   camera_model(mat4x4_init_identity());
