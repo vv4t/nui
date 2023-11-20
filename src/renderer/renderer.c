@@ -20,6 +20,7 @@ typedef struct {
 static renderer_t renderer;
 
 static void renderer_init_gl();
+static void renderer_init_scene();
 
 bool renderer_init(const game_t *game)
 {
@@ -45,12 +46,21 @@ bool renderer_init(const game_t *game)
   
   renderer.game = game;
   
+  renderer_init_scene();
+  
   return true;
+}
+
+static void renderer_init_scene()
+{
+  light_sub_point(0, vec3_init(4.0, 1.0, 0.0), 10.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  light_sub_point(1, vec3_init(1.0, 1.0, 0.0), 10.0, vec4_init(1.0, 1.0, 0.0, 1.0));
 }
 
 static void renderer_init_gl()
 {
-  glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
+  // glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  

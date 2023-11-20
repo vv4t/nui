@@ -10,11 +10,13 @@ layout (std140) uniform ubo_matrices {
 };
 
 out vec3 vs_pos;
+out vec3 vs_normal;
 out vec2 vs_uv;
 
 void main()
 {
   vs_uv = v_uv;
+  vs_normal = v_normal;
   vs_pos = vec3(model * vec4(v_pos, 1.0));
   
   gl_Position = mvp * vec4(v_pos, 1.0);
