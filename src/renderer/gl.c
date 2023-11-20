@@ -54,4 +54,3 @@ bool texture_load(GLuint *texture, const char *path)
   
   return true;
 }
-
