@@ -1,5 +1,6 @@
 #include "flat.h"
 
+#include "gl.h"
 #include "shader.h"
 
 typedef struct {

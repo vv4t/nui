@@ -1,7 +1,7 @@
-#ifndef GLS_FLAT_H
-#define GLS_FLAT_H
+#ifndef FLAT_H
+#define FLAT_H
 
-#include "gl.h"
+#include <stdbool.h>
 
 bool flat_init();
 void flat_bind();
