@@ -37,9 +37,6 @@ bool renderer_init(const game_t *game)
   
   camera_init();
   
-  view_init_perspective(&renderer.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
-  camera_set_view(renderer.view);
-  
   if (!model_load(&renderer.fumo_model, "cirno_fumo")) {
     return false;
   }
@@ -47,6 +44,9 @@ bool renderer_init(const game_t *game)
   renderer.game = game;
   
   renderer_init_scene();
+  
+  view_init_perspective(&renderer.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
+  camera_set_view(renderer.view);
   
   return true;
 }
@@ -63,7 +63,7 @@ static void renderer_init_gl()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void renderer_render()
@@ -72,10 +72,11 @@ void renderer_render()
   
   light_bind();
   
+  light_sub_view_pos(renderer.game->player.position);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   camera_model(mat4x4_init_identity());
   
-  model_draw(&renderer.fumo_model);
+  // model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }
 
