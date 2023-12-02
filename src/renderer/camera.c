@@ -3,7 +3,7 @@
 typedef struct {
   mat4x4_t  mvp;
   mat4x4_t  model;
-} ubc_matrices_t;
+} ub_matrices_t;
 
 typedef struct {
   view_t    view;
@@ -18,17 +18,20 @@ static camera_t camera;
 
 void camera_init()
 {
-  camera.view = (view_t) { .width = 1.0, .height = 1.0, .mat_project = mat4x4_init_identity() };
+  view_set_viewport(&camera.view, 0, 0, 800, 600);
+  view_set_orthogonal(&camera.view, -1.0, 1.0);
   
   glGenBuffers(1, &camera.ubo_matrices);
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_matrices);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ubc_matrices_t), NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_matrices_t), NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, camera.ubo_matrices);
 }
 
 void camera_set_view(view_t view)
 {
   camera.view = view;
+  glViewport(view.left, view.top, view.left + view.width, view.top + view.height);
+  glScissor(view.left, view.top, view.left + view.width, view.top + view.height);
 }
 
 void camera_move(vec3_t view_offset, quat_t view_angle)
@@ -44,30 +47,43 @@ void camera_move(vec3_t view_offset, quat_t view_angle)
   camera.mat_view_project = mat4x4_mul(view_matrix, camera.view.mat_project);
 }
 
+void camera_look_at(vec3_t at, vec3_t from, vec3_t up)
+{
+  mat4x4_t view_matrix = mat4x4_init_look_at(at, from, up);
+  camera.mat_view_project = mat4x4_mul(view_matrix, camera.view.mat_project);
+}
+
 void camera_model(mat4x4_t mat_model)
 {
   mat4x4_t mat_mvp = mat4x4_mul(mat_model, camera.mat_view_project);
   
-  ubc_matrices_t ubc_matrices = { .model = mat_model, .mvp = mat_mvp };
+  ub_matrices_t ub_matrices = { .model = mat_model, .mvp = mat_mvp };
   
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_matrices);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ubc_matrices), &ubc_matrices);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_matrices), &ub_matrices);
 }
 
-void view_init_perspective(view_t *view, float fov, float width, float height, float near, float far)
+mat4x4_t camera_get_mat_vp()
 {
-  float aspect_ratio = (float) width / (float) height;
-  
+  return camera.mat_view_project;
+}
+
+void view_set_viewport(view_t *view, float left, float top, float width, float height)
+{
+  view->left = left;
+  view->top = top;
   view->width = width;
   view->height = height;
+}
+
+void view_set_perspective(view_t *view, float fov, float near, float far)
+{
+  float aspect_ratio = (float) view->height / (float) view->width; 
   view->mat_project = mat4x4_init_perspective(aspect_ratio, fov, near, far);
 }
 
-void view_init_orthogonal(view_t *view, float width, float height, float near, float far)
+void view_set_orthogonal(view_t *view, float near, float far)
 {
-  float aspect_ratio = (float) width / (float) height;
-  
-  view->width = width;
-  view->height = height;
+  float aspect_ratio = (float) view->width / (float) view->height;
   view->mat_project = mat4x4_init_orthogonal(-1.0, 1.0, aspect_ratio, -aspect_ratio, near, far);
 }

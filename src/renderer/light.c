@@ -1,10 +1,13 @@
 #include "light.h"
 
 #define CUBE_FACES 6
+#define POINTS_MAX 4
 #define SHADOW_SIZE 1024
-#define MAX_POINTS 4
+#define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
 
 #include "shader.h"
+#include "camera.h"
+#include "renderer_api.h"
 
 typedef struct {
   GLuint shader;
@@ -29,18 +32,19 @@ typedef struct {
 } ub_point_t;
 
 typedef struct {
-  mat4x4_t light_matrices[CUBE_FACES];
-} ub_point_shadow_t;
+  mat4x4_t light_matrix;
+} ub_shadow_t;
 
 typedef struct {
-  ub_point_t points[MAX_POINTS];
-  ub_point_shadow_t point_shadows[MAX_POINTS];
+  ub_point_t points[POINTS_MAX];
+  ub_shadow_t shadows[SHADOWS_MAX];
 } ub_light_t;
 
 static bool shadow_init();
 
 static void light_init_uniform_location();
 static void light_init_uniform_buffer();
+static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
@@ -89,7 +93,7 @@ static bool shadow_init()
 {
   glGenTextures(1, &shadow.depth_map);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
-  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, MAX_POINTS * SHADOW_SIZE);
+  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, SHADOWS_MAX * SHADOW_SIZE, SHADOW_SIZE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -128,95 +132,54 @@ void light_sub_point(int id, vec3_t pos, float intensity, vec4_t color)
   
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
   glBufferSubData(GL_UNIFORM_BUFFER, id * sizeof(ub_point_t), sizeof(ub_point_t), &point);
+  
+  light_update_point_shadow(id, pos);
 }
 
 void light_update_point_shadow(int id, vec3_t pos)
 {
-  /*
-  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
-  glUseProgram(shadow.shader);
-  
   vec3_t at[] = {
-    vec3_init( 1.0,  0.0,  0.0)
-    vec3_init(-1.0,  0.0,  0.0)
-    vec3_init( 0.0,  1.0,  0.0)
-    vec3_init( 0.0, -1.0,  0.0)
-    vec3_init( 0.0,  0.0,  1.0)
+    vec3_init( 1.0,  0.0,  0.0),
+    vec3_init(-1.0,  0.0,  0.0),
+    vec3_init( 0.0,  1.0,  0.0),
+    vec3_init( 0.0, -1.0,  0.0),
+    vec3_init( 0.0,  0.0,  1.0),
     vec3_init( 0.0,  0.0, -1.0)
   };
   
   vec3_t up[] = {
-    vec3_init(0.0, -1.0,  0.0)
-    vec3_init(0.0, -1.0,  0.0)
-    vec3_init(0.0,  0.0,  1.0)
-    vec3_init(0.0,  0.0, -1.0)
-    vec3_init(0.0, -1.0,  0.0)
+    vec3_init(0.0, -1.0,  0.0),
+    vec3_init(0.0, -1.0,  0.0),
+    vec3_init(0.0,  0.0,  1.0),
+    vec3_init(0.0,  0.0, -1.0),
+    vec3_init(0.0, -1.0,  0.0),
     vec3_init(0.0, -1.0,  0.0)
   };
   
+  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
+  glUseProgram(shadow.shader);
+  
   view_t view;
-  view_init_perspective(&renderer.view, to_radians(90.0), 0.1, 100.0);
+  view_set_perspective(&view, to_radians(90.0), 0.1, 100.0);
   
-  camera_set_view(view);
+  ub_shadow_t shadows[CUBE_FACES];
   
-  for (int i = 0; i < 6; i++) {
-    camera_look_at(
+  for (int i = 0; i < CUBE_FACES; i++) {
+    shadows[i].light_matrix = camera_get_mat_vp();
     
-    view_set_matrix(&view, view_matrices[i]);
-    ubc_light.light_matrices[i] = mat4x4_mul(view.view_projection_matrix, bias_matrix);
-    glViewport(i * 1024, light->id * 1024, 1024, 1024);
-    renderer_shadow_pass();
+    view_set_viewport(&view, (id * CUBE_FACES + i) * SHADOW_SIZE, 0, SHADOW_SIZE, SHADOW_SIZE);
+    camera_set_view(view);
+    camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
+    
+    glClear(GL_DEPTH_BUFFER_BIT);
+    renderer_shadow_pass(&view);
   }
-  */
+  
+  glBufferSubData(GL_UNIFORM_BUFFER, offsetof(ub_light_t, shadows) + id * sizeof(shadows), sizeof(shadows), shadows);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void light_bind()
 {
   glUseProgram(light.shader);
 }
-
-/*
-void light_update_point_shadow(int id, vec3_t pos)
-{
-  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
-  
-  // glViewport(0, light->id * 1024, 6 * 1024, 1024);
-  glScissor(0, light->id * 1024, 6 * 1024, 1024);
-  glEnable(GL_SCISSOR_TEST);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  glDisable(GL_SCISSOR_TEST);
-  
-  glUseProgram(shadow.shader);
-  
-  mat4x4_t projection_matrix = mat4x4_init_perspective(1.0, to_radians(90), 0.1, 100.0);
-  
-  mat4x4_t view_matrices[] = {
-    mat4x4_init_look_at(vec3_add(vec3_init( 1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init(-1.0,  0.0,  0.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  1.0,  0.0), pos), pos, vec3_init(0.0,  0.0,  1.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0, -1.0,  0.0), pos), pos, vec3_init(0.0,  0.0, -1.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0,  1.0), pos), pos, vec3_init(0.0, -1.0,  0.0)),
-    mat4x4_init_look_at(vec3_add(vec3_init( 0.0,  0.0, -1.0), pos), pos, vec3_init(0.0, -1.0,  0.0))
-  };
-  
-  mat4x4_t bias_matrix = mat4x4_init(
-    vec4_init(0.5 / 6.0,  0.0,              0.0, 0.5 / 6.0),
-    vec4_init(0.0,        0.5 / MAX_POINTS, 0.0, 0.5 / MAX_POINTS),
-    vec4_init(0.0,        0.0,              0.5, 0.5),
-    vec4_init(0.0,        0.0,              0.0, 1.0)
-  );
-  
-  view_t view;
-  view_perspective(&view, mat4x4_init_perspective(1.0, to_radians(90.0), 0.1, 100.0));
-  
-  camera_set_view(view);
-  
-  for (int i = 0; i < 6; i++) {
-    camera_view_space(view_matrices[i]);
-    
-    view_set_matrix(&view, view_matrices[i]);
-    ubc_light.light_matrices[i] = mat4x4_mul(view.view_projection_matrix, bias_matrix);
-    glViewport(i * 1024, light->id * 1024, 1024, 1024);
-    renderer_shadow_pass();
-  }
-}*/

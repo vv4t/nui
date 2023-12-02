@@ -1,6 +1,6 @@
 #include "player.h"
 
-#define LOOK_SENSITIVITY 0.01
+#define LOOK_SENSITIVITY 0.005
 
 vec3_t player_move_dir(const player_t *p, const usercmd_t *usercmd);
 void player_slide(player_t *p, const bsp_t *bsp);

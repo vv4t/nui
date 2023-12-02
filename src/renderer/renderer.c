@@ -45,8 +45,8 @@ bool renderer_init(const game_t *game)
   
   renderer_init_scene();
   
-  view_init_perspective(&renderer.view, to_radians(90.0), 720.0, 1280.0, 0.1, 100.0);
-  camera_set_view(renderer.view);
+  view_set_viewport(&renderer.view, 0, 0, 1280, 720);
+  view_set_perspective(&renderer.view, to_radians(90.0), 0.1, 100.0);
   
   return true;
 }
@@ -54,7 +54,6 @@ bool renderer_init(const game_t *game)
 static void renderer_init_scene()
 {
   light_sub_point(0, vec3_init(4.0, 1.0, 0.0), 10.0, vec4_init(0.0, 1.0, 1.0, 1.0));
-  light_sub_point(1, vec3_init(1.0, 1.0, 0.0), 10.0, vec4_init(1.0, 1.0, 0.0, 1.0));
 }
 
 static void renderer_init_gl()
@@ -63,6 +62,7 @@ static void renderer_init_gl()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
+  glEnable(GL_SCISSOR_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -71,13 +71,20 @@ void renderer_render()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   light_bind();
-  
   light_sub_view_pos(renderer.game->player.position);
+  
+  camera_set_view(renderer.view);
+  
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   camera_model(mat4x4_init_identity());
   
   // model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
+}
+
+void renderer_shadow_pass()
+{
+  
 }
 
 void renderer_map_load(const map_t *map)
