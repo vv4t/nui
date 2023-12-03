@@ -7,10 +7,7 @@ typedef struct {
 
 typedef struct {
   view_t    view;
-  
-  mat4x4_t  mat_project;
   mat4x4_t  mat_view_project;
-  
   GLuint    ubo_matrices;
 } camera_t;
 
@@ -30,8 +27,8 @@ void camera_init()
 void camera_set_view(view_t view)
 {
   camera.view = view;
-  glViewport(view.left, view.top, view.left + view.width, view.top + view.height);
-  glScissor(view.left, view.top, view.left + view.width, view.top + view.height);
+  glViewport(view.left, view.top, view.width, view.height);
+  glScissor(view.left, view.top, view.width, view.height);
 }
 
 void camera_move(vec3_t view_offset, quat_t view_angle)
@@ -84,6 +81,6 @@ void view_set_perspective(view_t *view, float fov, float near, float far)
 
 void view_set_orthogonal(view_t *view, float near, float far)
 {
-  float aspect_ratio = (float) view->width / (float) view->height;
+  float aspect_ratio = (float) view->height / (float) view->width;
   view->mat_project = mat4x4_init_orthogonal(-1.0, 1.0, aspect_ratio, -aspect_ratio, near, far);
 }

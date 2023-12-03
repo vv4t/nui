@@ -2,6 +2,26 @@
 
 #include "../common/log.h"
 
+void GLAPIENTRY
+MessageCallback( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+  if (type == GL_DEBUG_TYPE_ERROR) {
+    LOG_ERROR(
+      "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+      (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+      type,
+      severity,
+      message
+    );
+  }
+}
+
 bool gl_init()
 {
 #ifdef __EMSCRIPTEN__
@@ -10,8 +30,12 @@ bool gl_init()
   glewExperimental = true;
   
   GLenum status = glewInit();
-  if (status != GLEW_OK)
+  if (status != GLEW_OK) {
     LOG_ERROR("failed to initialize GLEW: %s", glewGetErrorString(status));
+  }
+  
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(MessageCallback, 0);
   
   return status == GLEW_OK;
 #endif
