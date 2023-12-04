@@ -37,8 +37,8 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
   vec3_t move_dir = player_move_dir(p, usercmd);
   
   if (p->ground) {
-    player_accelerate(p, move_dir, 4.0, 6.0);
-    p->velocity = vec3_mulf(p->velocity, 0.9f);
+    player_accelerate(p, move_dir, 6.0, 9.0);
+    p->velocity = vec3_mulf(p->velocity, 0.8f);
     
     if (usercmd->jump) {
       p->velocity.y += 3.0f;

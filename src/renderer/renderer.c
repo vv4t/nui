@@ -51,8 +51,8 @@ bool renderer_init(const game_t *game)
 
 static void renderer_init_scene()
 {
-  light_sub_point(0, vec3_init(3.0, 1.0, 0.0), 40.0, vec4_init(0.0, 1.0, 1.0, 1.0));
-  light_sub_point(1, vec3_init(3.0, 1.0, 4.0), 40.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+  light_sub_point(0, vec3_init( 3.0, 3.0,  3.0), 30.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  // light_sub_point(1, vec3_init(-3.0, 3.0, -3.0), 30.0, vec4_init(1.0, 0.0, 1.0, 1.0));
 }
 
 static void renderer_init_gl()
@@ -64,8 +64,14 @@ static void renderer_init_gl()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+float tmp = 0.0;
+
 void renderer_render()
 {
+  tmp += 0.015;
+  
+  light_sub_point(1, vec3_init(0.0, 3.0 + cos(tmp) * 2.0, -12.0), 30.0, vec4_init(0.5, 0.25, 1.0, 1.0));
+  
   camera_set_view(renderer.view);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -75,7 +81,7 @@ void renderer_render()
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   camera_model(mat4x4_init_identity());
   
-  // model_draw(&renderer.fumo_model);
+  model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }
 
@@ -84,6 +90,8 @@ void renderer_shadow_pass()
   glClear(GL_DEPTH_BUFFER_BIT);
   
   camera_model(mat4x4_init_identity());
+  
+  model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }
 

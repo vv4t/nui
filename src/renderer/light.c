@@ -1,8 +1,8 @@
 #include "light.h"
 
 #define CUBE_FACES 6
-#define POINTS_MAX 3
-#define SHADOW_SIZE 512
+#define POINTS_MAX 2
+#define SHADOW_SIZE 1024
 #define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
 
 #include "shader.h"
@@ -173,7 +173,10 @@ void light_update_point_shadow(int id, vec3_t pos)
     
     shadows[i].light_matrix = camera_get_mat_vp();
     
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     renderer_shadow_pass();
+    glDisable(GL_CULL_FACE);
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

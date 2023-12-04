@@ -1,5 +1,5 @@
 #define CUBE_FACES 6
-#define POINTS_MAX 3
+#define POINTS_MAX 2
 #define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
 
 layout(location = 0) in vec3 v_pos;
