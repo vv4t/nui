@@ -1,6 +1,5 @@
 #define CUBE_FACES 6
 #define POINTS_MAX 2
-#define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
 
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_tangent;
@@ -19,20 +18,20 @@ struct point_t {
   vec4  color;
 };
 
-struct shadow_t {
-  mat4 light_matrix;
+struct point_shadow_t {
+  mat4 light_matrices[CUBE_FACES];
 };
 
 layout (std140) uniform ub_light {
   point_t points[POINTS_MAX];
-  shadow_t shadows[SHADOWS_MAX];
+  point_shadow_t point_shadows[POINTS_MAX];
 };
 
 out vec3 vs_pos;
 out vec3 vs_normal;
 out vec2 vs_uv;
 
-out vec4 vs_light_pos[SHADOWS_MAX];
+out vec4 vs_light_pos[POINTS_MAX * CUBE_FACES];
 
 void main()
 {
@@ -40,8 +39,10 @@ void main()
   vs_normal = v_normal;
   vs_pos = vec3(model * vec4(v_pos, 1.0));
   
-  for (int i = 0; i < SHADOWS_MAX; i++) {
-    vs_light_pos[i] = shadows[i].light_matrix * model * vec4(v_pos, 1.0);
+  for (int i = 0; i < POINTS_MAX; i++) {
+    for (int j = 0; j < CUBE_FACES; j++) {
+      vs_light_pos[i * CUBE_FACES + j] = point_shadows[i].light_matrices[j] * model * vec4(v_pos, 1.0);
+    }
   }
   
   gl_Position = mvp * vec4(v_pos, 1.0);

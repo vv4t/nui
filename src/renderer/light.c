@@ -2,8 +2,7 @@
 
 #define CUBE_FACES 6
 #define POINTS_MAX 2
-#define SHADOW_SIZE 1024
-#define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
+#define SHADOW_SIZE 512
 
 #include "shader.h"
 #include "camera.h"
@@ -33,12 +32,12 @@ typedef struct {
 } ub_point_t;
 
 typedef struct {
-  mat4x4_t light_matrix;
-} ub_shadow_t;
+  mat4x4_t light_matrices[CUBE_FACES];
+} ub_point_shadow_t;
 
 typedef struct {
   ub_point_t points[POINTS_MAX];
-  ub_shadow_t shadows[SHADOWS_MAX];
+  ub_point_shadow_t point_shadows[POINTS_MAX];
 } ub_light_t;
 
 static bool shadow_init();
@@ -96,7 +95,7 @@ static bool shadow_init()
 {
   glGenTextures(1, &shadow.depth_map);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOWS_MAX * SHADOW_SIZE, SHADOW_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, POINTS_MAX * SHADOW_SIZE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -104,7 +103,7 @@ static bool shadow_init()
   
   glGenFramebuffers(1, &shadow.depth_fbo);
   glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadow.depth_map, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depth_map, 0);
   glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
@@ -164,25 +163,22 @@ void light_update_point_shadow(int id, vec3_t pos)
   view_set_viewport(&view, 0, 0, SHADOW_SIZE, SHADOW_SIZE);
   view_set_perspective(&view, to_radians(90.0), 0.1, 100.0);
   
-  ub_shadow_t shadows[CUBE_FACES];
+  ub_point_shadow_t point_shadow;
   
   for (int i = 0; i < CUBE_FACES; i++) {
-    view_set_viewport(&view, (id * CUBE_FACES + i) * SHADOW_SIZE, 0, SHADOW_SIZE, SHADOW_SIZE);
+    view_set_viewport(&view, i * SHADOW_SIZE, id * SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE);
     camera_set_view(view);
     camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
     
-    shadows[i].light_matrix = camera_get_mat_vp();
+    point_shadow.light_matrices[i] = camera_get_mat_vp();
     
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
     renderer_shadow_pass();
-    glDisable(GL_CULL_FACE);
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
-  glBufferSubData(GL_UNIFORM_BUFFER, offsetof(ub_light_t, shadows) + id * sizeof(shadows), sizeof(shadows), shadows);
+  glBufferSubData(GL_UNIFORM_BUFFER, offsetof(ub_light_t, point_shadows) + id * sizeof(point_shadow), sizeof(point_shadow), &point_shadow);
 }
 
 void light_bind()

@@ -1,6 +1,5 @@
 #define CUBE_FACES 6
 #define POINTS_MAX 2
-#define SHADOWS_MAX (POINTS_MAX * CUBE_FACES)
 
 out vec4 frag_color;
 
@@ -10,20 +9,20 @@ struct point_t {
   vec4  color;
 };
 
-struct shadow_t {
-  mat4 light_matrix;
+struct point_shadow_t {
+  mat4 light_matrices[CUBE_FACES];
 };
 
 layout (std140) uniform ub_light {
   point_t points[POINTS_MAX];
-  shadow_t shadows[SHADOWS_MAX];
+  point_shadow_t point_shadows[POINTS_MAX];
 };
 
 in vec3 vs_pos;
 in vec3 vs_normal;
 in vec2 vs_uv;
 
-in vec4 vs_light_pos[SHADOWS_MAX];
+in vec4 vs_light_pos[CUBE_FACES * POINTS_MAX];
 
 uniform sampler2D u_color;
 uniform sampler2D u_depth_map;
@@ -56,8 +55,7 @@ void main()
     float shadow = 0.0;
     
     for (int j = 0; j < CUBE_FACES; j++) {
-      int shadow_idx = i * CUBE_FACES + j;
-      vec4 shadow_pos = vs_light_pos[shadow_idx];
+      vec4 shadow_pos = vs_light_pos[i * CUBE_FACES + j];
       vec3 shadow_coord = shadow_pos.xyz / shadow_pos.w * 0.5 + vec3(0.5, 0.5, 0.5);
       
       if (shadow_coord.z < 0.0 || shadow_coord.z > 1.0) {
@@ -79,7 +77,8 @@ void main()
           shadow_uv.y > 0.0 && shadow_uv.y < 1.0
         ) {
           shadow_uv += poissonDisk[k] / 700.0;
-          shadow_uv.x = (shadow_uv.x + float(shadow_idx)) / float(SHADOWS_MAX);
+          shadow_uv.x = (shadow_uv.x + float(j)) / float(CUBE_FACES);
+          shadow_uv.y = (shadow_uv.y + float(i)) / float(POINTS_MAX);
           
           float closest_depth = texture(u_depth_map, shadow_uv).z;
           float current_depth = shadow_coord.z;
