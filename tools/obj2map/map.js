@@ -5,7 +5,7 @@ import path from "path";
 import { write_t } from "../shared/write.js";
 import { obj_parse, obj_vertex_t, obj_face_t } from "../shared/obj.js";
 
-const DOT_DEGREE = 0.001;
+const DOT_DEGREE = 0.01;
 
 class map_vertex_group_t {
   constructor(material, offset, count)
@@ -111,6 +111,8 @@ function obj_to_map(obj)
   
   const nodes = [];
   flat_bsp_R(nodes, bsp);
+  
+  console.log(nodes.length);
   
   return new map_t(nodes, vertex_groups, vertices);
 }
