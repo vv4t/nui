@@ -73,8 +73,8 @@ void renderer_render()
   light_sub_view_pos(renderer.game->player.position);
   
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  camera_model(mat4x4_init_identity());
   
+  camera_model(mat4x4_init_identity());
   model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }

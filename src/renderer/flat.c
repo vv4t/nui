@@ -11,7 +11,7 @@ static flat_t flat;
 
 bool flat_init()
 {
-  if (!shader_load(&flat.shader, "flat")) {
+  if (!shader_load(&flat.shader, "flat", "")) {
     return false;
   }
   

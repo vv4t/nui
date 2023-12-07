@@ -3,6 +3,6 @@
 
 #include "gl.h"
 
-bool shader_load(GLuint *shader, const char *name);
+bool shader_load(GLuint *shader, const char *name, const char *define);
 
 #endif

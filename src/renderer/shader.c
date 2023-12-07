@@ -11,7 +11,7 @@ static bool shader_compile(GLuint *shader, path_t path, GLuint type, const char 
 const char *glsl_version = "#version 300 es";
 const char *glsl_precision = "precision mediump float;";
 
-bool shader_load(GLuint *shader, const char *name)
+bool shader_load(GLuint *shader, const char *name, const char *define)
 {
   *shader = glCreateProgram();
   
@@ -19,7 +19,7 @@ bool shader_load(GLuint *shader, const char *name)
   
   path_create(path, "assets/shader/%s/%s.vsh", name, name);
   GLuint vertex_shader;
-  if (!shader_compile(&vertex_shader, path, GL_VERTEX_SHADER, "")) {
+  if (!shader_compile(&vertex_shader, path, GL_VERTEX_SHADER, define)) {
     return false;
   }
   
@@ -27,7 +27,7 @@ bool shader_load(GLuint *shader, const char *name)
   
   path_create(path, "assets/shader/%s/%s.fsh", name, name);
   GLuint fragment_shader;
-  if (!shader_compile(&fragment_shader, path, GL_FRAGMENT_SHADER, "")) {
+  if (!shader_compile(&fragment_shader, path, GL_FRAGMENT_SHADER, define)) {
     return false;
   }
   

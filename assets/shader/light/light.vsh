@@ -1,11 +1,14 @@
 #define CUBE_FACES 6
-#define POINTS_MAX 2
 
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_tangent;
 layout(location = 2) in vec3 v_bitangent;
 layout(location = 3) in vec3 v_normal;
 layout(location = 4) in vec2 v_uv;
+
+out vec3 vs_pos;
+out vec3 vs_normal;
+out vec2 vs_uv;
 
 layout (std140) uniform ubo_matrices {
   mat4  mvp;
@@ -26,10 +29,6 @@ layout (std140) uniform ub_light {
   point_t points[POINTS_MAX];
   point_shadow_t point_shadows[POINTS_MAX];
 };
-
-out vec3 vs_pos;
-out vec3 vs_normal;
-out vec2 vs_uv;
 
 out vec4 vs_light_pos[POINTS_MAX * CUBE_FACES];
 

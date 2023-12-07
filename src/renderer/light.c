@@ -48,7 +48,10 @@ static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
-  if (!shader_load(&light.shader, "light")) {
+  char define[64];
+  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
+  
+  if (!shader_load(&light.shader, "light", define)) {
     return false;
   }
   
@@ -107,7 +110,7 @@ static bool shadow_init()
   glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&shadow.shader, "shadow")) {
+  if (!shader_load(&shadow.shader, "shadow", "")) {
     return false;
   }
   
