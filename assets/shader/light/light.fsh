@@ -68,11 +68,12 @@ float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
   for (int k = 0; k < 4; k++) {
     vec2 shadow_uv = shadow_coord.xy;
     
-    if (
-      shadow_uv.x > 0.0 && shadow_uv.x < 1.0 &&
-      shadow_uv.y > 0.0 && shadow_uv.y < 1.0
-    ) {
+    if (shadow_uv.x > 0.0 && shadow_uv.x < 1.0 && shadow_uv.y > 0.0 && shadow_uv.y < 1.0) {
       shadow_uv += poisson_disk[k] / 700.0;
+      
+      shadow_uv.x = clamp(shadow_uv.x, 0.01, 0.99);
+      shadow_uv.y = clamp(shadow_uv.y, 0.01, 0.99);
+      
       shadow_uv.x = (shadow_uv.x + float(face)) / float(CUBE_FACES);
       shadow_uv.y = (shadow_uv.y + float(id)) / float(POINTS_MAX);
       

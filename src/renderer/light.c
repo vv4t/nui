@@ -2,7 +2,7 @@
 
 #define CUBE_FACES 6
 #define POINTS_MAX 2
-#define SHADOW_SIZE 512
+#define SHADOW_SIZE 256
 
 #include "shader.h"
 #include "camera.h"
@@ -99,8 +99,8 @@ static bool shadow_init()
   glGenTextures(1, &shadow.depth_map);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
   glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, POINTS_MAX * SHADOW_SIZE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   
