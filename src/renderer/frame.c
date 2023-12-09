@@ -29,7 +29,7 @@ bool frame_init()
   return true;
 }
 
-bool frame_new(frame_t *frame, const char *fx, int width, int height)
+bool frame_new(frame_t *frame, GLuint fx_shader, int width, int height)
 {
   glGenTextures(1, &frame->buffer);
   glBindTexture(GL_TEXTURE_2D, frame->buffer);
@@ -51,10 +51,7 @@ bool frame_new(frame_t *frame, const char *fx, int width, int height)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!fx_shader_load(&frame->shader, fx, "")) {
-    return false;
-  }
-  
+  frame->shader = fx_shader;
   frame->width = width;
   frame->height = height;
   

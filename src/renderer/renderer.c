@@ -20,14 +20,13 @@
 #include "mesh.h"
 #include "frame.h"
 #include "hdr.h"
+#include "blur.h"
 
 typedef struct {
   view_t view;
   
   model_t fumo_model;
   model_t map_model;
-  
-  frame_t blur[2];
   
   const game_t *game;
 } renderer_t;
@@ -58,11 +57,7 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!frame_new(&renderer.blur[0], "blur", VIEW_WIDTH, VIEW_HEIGHT)) {
-    return false;
-  }
-  
-  if (!frame_new(&renderer.blur[1], "blur", VIEW_WIDTH, VIEW_HEIGHT)) {
+  if (!blur_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }
   
@@ -106,24 +101,12 @@ void renderer_render()
   hdr_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
   */
   
-  frame_begin(&renderer.blur[0]);
+  blur_begin();
   camera_set_view(renderer.view);
   renderer_scene_pass();
-  frame_end();
+  blur_end();
   
-  for (int i = 0; i < 5; i++) {
-    frame_begin(&renderer.blur[1]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    frame_draw(&renderer.blur[0], 0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-    frame_end();
-    
-    frame_begin(&renderer.blur[0]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    frame_draw(&renderer.blur[1], 0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-    frame_end();
-  }
-  
-  frame_draw(&renderer.blur[0], 0, 0, SCR_WIDTH, SCR_HEIGHT);
+  blur_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
 }
 
 void renderer_scene_pass()
