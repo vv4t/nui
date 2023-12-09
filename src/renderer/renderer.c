@@ -5,8 +5,10 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_WIDTH (SCR_WIDTH / 4)
-#define VIEW_HEIGHT (SCR_HEIGHT / 4)
+#define VIEW_SCALE 2
+
+#define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
+#define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
 
 #include "light.h"
 #include "camera.h"
@@ -24,6 +26,8 @@ typedef struct {
   
   model_t fumo_model;
   model_t map_model;
+  
+  frame_t blur[2];
   
   const game_t *game;
 } renderer_t;
@@ -51,6 +55,14 @@ bool renderer_init(const game_t *game)
   }
   
   if (!hdr_init(VIEW_WIDTH, VIEW_HEIGHT)) {
+    return false;
+  }
+  
+  if (!frame_new(&renderer.blur[0], "blur", VIEW_WIDTH, VIEW_HEIGHT)) {
+    return false;
+  }
+  
+  if (!frame_new(&renderer.blur[1], "blur", VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }
   
@@ -85,12 +97,33 @@ static void renderer_init_gl()
 
 void renderer_render()
 {
+  /*
   hdr_begin();
   camera_set_view(renderer.view);
   renderer_scene_pass();
   hdr_end();
   
   hdr_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  */
+  
+  frame_begin(&renderer.blur[0]);
+  camera_set_view(renderer.view);
+  renderer_scene_pass();
+  frame_end();
+  
+  for (int i = 0; i < 5; i++) {
+    frame_begin(&renderer.blur[1]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    frame_draw(&renderer.blur[0], 0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    frame_end();
+    
+    frame_begin(&renderer.blur[0]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    frame_draw(&renderer.blur[1], 0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    frame_end();
+  }
+  
+  frame_draw(&renderer.blur[0], 0, 0, SCR_WIDTH, SCR_HEIGHT);
 }
 
 void renderer_scene_pass()
