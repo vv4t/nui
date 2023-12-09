@@ -15,8 +15,7 @@ static camera_t camera;
 
 void camera_init()
 {
-  view_set_viewport(&camera.view, 0, 0, 800, 600);
-  view_set_orthogonal(&camera.view, -1.0, 1.0);
+  view_set_perspective(&camera.view, to_radians(90.0), 1.0, 1.0, 10.0);
   
   glGenBuffers(1, &camera.ubo_matrices);
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_matrices);
@@ -27,8 +26,12 @@ void camera_init()
 void camera_set_view(view_t view)
 {
   camera.view = view;
-  glViewport(view.left, view.top, view.width, view.height);
-  glScissor(view.left, view.top, view.width, view.height);
+}
+
+void camera_set_viewport(int x, int y, int width, int height)
+{
+  glViewport(x, y, width, height);
+  glScissor(x, y, width, height);
 }
 
 void camera_move(vec3_t view_offset, quat_t view_angle)
@@ -65,22 +68,7 @@ mat4x4_t camera_get_mat_vp()
   return camera.mat_view_project;
 }
 
-void view_set_viewport(view_t *view, float left, float top, float width, float height)
+void view_set_perspective(view_t *view, float aspect_ratio, float fov, float near, float far)
 {
-  view->left = left;
-  view->top = top;
-  view->width = width;
-  view->height = height;
-}
-
-void view_set_perspective(view_t *view, float fov, float near, float far)
-{
-  float aspect_ratio = (float) view->height / (float) view->width; 
   view->mat_project = mat4x4_init_perspective(aspect_ratio, fov, near, far);
-}
-
-void view_set_orthogonal(view_t *view, float near, float far)
-{
-  float aspect_ratio = (float) view->height / (float) view->width;
-  view->mat_project = mat4x4_init_orthogonal(-1.0, 1.0, aspect_ratio, -aspect_ratio, near, far);
 }

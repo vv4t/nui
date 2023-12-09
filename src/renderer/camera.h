@@ -5,18 +5,13 @@
 #include "../common/nui_math.h"
 
 typedef struct {
-  float left;
-  float top;
-  float width;
-  float height;
   mat4x4_t mat_project;
 } view_t;
 
-void view_set_viewport(view_t *view, float left, float top, float width, float height);
-void view_set_perspective(view_t *view, float fov, float near, float far);
-void view_set_orthogonal(view_t *view, float near, float far);
+void view_set_perspective(view_t *view, float aspect_ratio, float fov, float near, float far);
 
 void camera_init();
+void camera_set_viewport(int x, int y, int width, int height);
 void camera_set_view(view_t view);
 void camera_move(vec3_t view_offset, quat_t view_angle);
 void camera_look_at(vec3_t at, vec3_t from, vec3_t up);

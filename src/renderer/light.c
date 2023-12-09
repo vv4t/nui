@@ -4,6 +4,7 @@
 #define POINTS_MAX 2
 #define SHADOW_SIZE 256
 
+#include "gl.h"
 #include "shader.h"
 #include "camera.h"
 #include "renderer_api.h"
@@ -163,13 +164,12 @@ void light_update_point_shadow(int id, vec3_t pos)
   glUseProgram(shadow.shader);
   
   view_t view;
-  view_set_viewport(&view, 0, 0, SHADOW_SIZE, SHADOW_SIZE);
-  view_set_perspective(&view, to_radians(90.0), 0.1, 100.0);
+  view_set_perspective(&view, 1.0, to_radians(90.0), 0.1, 100.0);
   
   ub_point_shadow_t point_shadow;
   
   for (int i = 0; i < CUBE_FACES; i++) {
-    view_set_viewport(&view, i * SHADOW_SIZE, id * SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE);
+    camera_set_viewport(i * SHADOW_SIZE, id * SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE);
     camera_set_view(view);
     camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
     

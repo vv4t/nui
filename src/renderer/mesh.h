@@ -18,7 +18,7 @@ typedef struct {
 } mesh_t;
 
 void mesh_buffer_init(int max_vertices);
-bool mesh_buffer_new(mesh_t *mesh, const vertex_t  *vertices, int num_vertices);
+bool mesh_buffer_new(mesh_t *mesh, const vertex_t *vertices, int num_vertices);
 
 void mesh_draw(mesh_t mesh);
 
