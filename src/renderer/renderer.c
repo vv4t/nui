@@ -5,7 +5,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 2
+#define VIEW_SCALE 4
 
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
 #define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
@@ -27,6 +27,8 @@ typedef struct {
   
   model_t fumo_model;
   model_t map_model;
+  
+  frame_t dither;
   
   const game_t *game;
 } renderer_t;
@@ -61,6 +63,16 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
+  GLuint dither_shader;
+  
+  if (!fx_shader_load(&dither_shader, "dither", "")) {
+    return false;
+  }
+  
+  if (!frame_new(&renderer.dither, dither_shader, VIEW_WIDTH, VIEW_HEIGHT)) {
+    return false;
+  }
+  
   camera_init();
   
   if (!model_load(&renderer.fumo_model, "cirno_fumo")) {
@@ -92,21 +104,16 @@ static void renderer_init_gl()
 
 void renderer_render()
 {
-  /*
   hdr_begin();
   camera_set_view(renderer.view);
   renderer_scene_pass();
   hdr_end();
   
-  hdr_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  */
+  frame_begin(&renderer.dither);
+  hdr_draw(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_end();
   
-  blur_begin();
-  camera_set_view(renderer.view);
-  renderer_scene_pass();
-  blur_end();
-  
-  blur_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  frame_draw(&renderer.dither, 0, 0, SCR_WIDTH, SCR_HEIGHT);
 }
 
 void renderer_scene_pass()
