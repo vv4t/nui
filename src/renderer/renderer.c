@@ -32,6 +32,7 @@ typedef struct {
   model_t map_model;
   
   GLuint test_shader;
+  GLuint ul_view_pos;
   
   const game_t *game;
 } renderer_t;
@@ -103,6 +104,8 @@ static bool setup_defer()
   
   glUseProgram(renderer.test_shader);
   
+  renderer.ul_view_pos = glGetUniformLocation(renderer.test_shader, "u_view_pos");
+  
   GLuint ul_pos = glGetUniformLocation(renderer.test_shader, "u_pos");
   GLuint ul_normal = glGetUniformLocation(renderer.test_shader, "u_normal");
   GLuint ul_albedo = glGetUniformLocation(renderer.test_shader, "u_albedo");
@@ -138,25 +141,31 @@ void renderer_render()
   renderer_scene_pass();
   defer_end();
   
+  dither_begin();
   defer_bind();
   glUseProgram(renderer.test_shader);
-  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  vec3_t view_pos = renderer.game->player.position;
+  glUniform3f(renderer.ul_view_pos, view_pos.x, view_pos.y, view_pos.z);
+  
   quad_draw();
+  
+  dither_end();
+  
+  dither_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
   */
   
-  /*
   hdr_begin();
   camera_set_view(renderer.view);
   renderer_scene_render();
   hdr_end();
   
   dither_begin();
-  hdr_draw(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  hdr_draw();
   dither_end();
   
-  dither_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  */
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  dither_draw();
 }
 
 void renderer_scene_render()

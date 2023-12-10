@@ -6,6 +6,6 @@
 bool blur_init(int width, int height);
 void blur_begin();
 void blur_end();
-void blur_draw(int x, int y, int width, int height);
+void blur_draw();
 
 #endif

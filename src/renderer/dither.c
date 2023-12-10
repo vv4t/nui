@@ -35,5 +35,5 @@ void dither_end()
 
 void dither_draw(int x, int y, int width, int height)
 {
-  frame_draw(&dither.frame, x, y, width, height);
+  frame_draw(&dither.frame);
 }

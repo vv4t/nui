@@ -15,6 +15,6 @@ typedef struct {
 bool frame_new(frame_t *frame, GLuint fx_shader, int width, int height);
 void frame_begin(frame_t *frame);
 void frame_end();
-void frame_draw(frame_t *frame, int x, int y, int width, int height);
+void frame_draw(frame_t *frame);
 
 #endif

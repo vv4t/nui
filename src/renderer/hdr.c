@@ -33,7 +33,7 @@ void hdr_end()
   frame_end();
 }
 
-void hdr_draw(int x, int y, int width, int height)
+void hdr_draw()
 {
-  frame_draw(&hdr.frame, x, y, width, height);
+  frame_draw(&hdr.frame);
 }

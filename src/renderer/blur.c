@@ -46,19 +46,19 @@ void blur_end()
     
     frame_begin(&blur.frame[1]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    frame_draw(&blur.frame[0], 0, 0, blur.frame[1].width, blur.frame[1].height);
+    frame_draw(&blur.frame[0]);
     frame_end();
     
     glUniform1i(blur.ul_horizontal, 1);
     
     frame_begin(&blur.frame[0]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    frame_draw(&blur.frame[1], 0, 0, blur.frame[0].width, blur.frame[0].height);
+    frame_draw(&blur.frame[1]);
     frame_end();
   }
 }
 
-void blur_draw(int x, int y, int width, int height)
+void blur_draw()
 {
-  frame_draw(&blur.frame[0], x, y, width, height);
+  frame_draw(&blur.frame[0]);
 }

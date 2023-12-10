@@ -6,6 +6,6 @@
 bool dither_init(int width, int height);
 void dither_begin();
 void dither_end();
-void dither_draw(int x, int y, int width, int height);
+void dither_draw();
 
 #endif

@@ -6,6 +6,6 @@
 bool hdr_init(int width, int height);
 void hdr_begin();
 void hdr_end();
-void hdr_draw(int x, int y, int width, int height);
+void hdr_draw();
 
 #endif

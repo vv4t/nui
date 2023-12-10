@@ -45,14 +45,11 @@ void frame_end(frame_t *frame)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void frame_draw(frame_t *frame, int x, int y, int width, int height)
+void frame_draw(frame_t *frame)
 {
   glUseProgram(frame->shader);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, frame->buffer);
-  
-  glViewport(x, y, width, height);
-  glScissor(x, y, width, height);
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   quad_draw();
