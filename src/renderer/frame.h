@@ -12,7 +12,6 @@ typedef struct {
   GLuint rbo;
 } frame_t;
 
-bool frame_init();
 bool frame_new(frame_t *frame, GLuint fx_shader, int width, int height);
 void frame_begin(frame_t *frame);
 void frame_end();

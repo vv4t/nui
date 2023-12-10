@@ -1,33 +1,8 @@
 #include "frame.h"
 
 #include "mesh.h"
-#include "shader.h"
 #include "camera.h"
-
-typedef struct {
-  mesh_t quad;
-  GLuint shader;
-} frame_def_t;
-
-static frame_def_t frame_def;
-
-bool frame_init()
-{
-  vertex_t quad_vertices[] = {
-    { .pos = { -1.0f, -1.0f, 0.0f }, .uv = { 0.0f, 0.0f } },
-    { .pos = { -1.0f, +1.0f, 0.0f }, .uv = { 0.0f, 1.0f } },
-    { .pos = { +1.0f, -1.0f, 0.0f }, .uv = { 1.0f, 0.0f } },
-    { .pos = { -1.0f, +1.0f, 0.0f }, .uv = { 0.0f, 1.0f } },
-    { .pos = { +1.0f, +1.0f, 0.0f }, .uv = { 1.0f, 1.0f } },
-    { .pos = { +1.0f, -1.0f, 0.0f }, .uv = { 1.0f, 0.0f } }
-  };
-  
-  if (!mesh_buffer_new(&frame_def.quad, quad_vertices, 6)) {
-    return false;
-  }
-  
-  return true;
-}
+#include "quad.h"
 
 bool frame_new(frame_t *frame, GLuint fx_shader, int width, int height)
 {
@@ -62,6 +37,7 @@ void frame_begin(frame_t *frame)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, frame->fbo);
   camera_set_viewport(0, 0, frame->width, frame->height);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void frame_end(frame_t *frame)
@@ -79,6 +55,5 @@ void frame_draw(frame_t *frame, int x, int y, int width, int height)
   glScissor(x, y, width, height);
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-  mesh_draw(frame_def.quad);
+  quad_draw();
 }

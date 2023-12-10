@@ -21,6 +21,9 @@
 #include "frame.h"
 #include "hdr.h"
 #include "blur.h"
+#include "quad.h"
+#include "dither.h"
+#include "defer.h"
 
 typedef struct {
   view_t view;
@@ -28,7 +31,7 @@ typedef struct {
   model_t fumo_model;
   model_t map_model;
   
-  frame_t dither;
+  GLuint test_shader;
   
   const game_t *game;
 } renderer_t;
@@ -37,13 +40,16 @@ static renderer_t renderer;
 
 static void renderer_init_gl();
 static void renderer_init_scene();
+static void renderer_scene_render();
+
+static bool setup_defer();
 
 bool renderer_init(const game_t *game)
 {
   renderer_init_gl();
   mesh_buffer_init(1024 * 1024);
   
-  if (!frame_init()) {
+  if (!quad_init()) {
     return false;
   }
   
@@ -63,13 +69,15 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  GLuint dither_shader;
-  
-  if (!fx_shader_load(&dither_shader, "dither", "")) {
+  if (!dither_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }
   
-  if (!frame_new(&renderer.dither, dither_shader, VIEW_WIDTH, VIEW_HEIGHT)) {
+  if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
+    return false;
+  }
+  
+  if (!setup_defer()) {
     return false;
   }
   
@@ -83,6 +91,25 @@ bool renderer_init(const game_t *game)
   
   float aspect_ratio = (float) SCR_HEIGHT/ (float) SCR_WIDTH;
   view_set_perspective(&renderer.view, aspect_ratio, to_radians(90.0), 0.1, 100.0);
+  
+  return true;
+}
+
+static bool setup_defer()
+{
+  if (!shader_load(&renderer.test_shader, "test", "")) {
+    return false;
+  }
+  
+  glUseProgram(renderer.test_shader);
+  
+  GLuint ul_pos = glGetUniformLocation(renderer.test_shader, "u_pos");
+  GLuint ul_normal = glGetUniformLocation(renderer.test_shader, "u_normal");
+  GLuint ul_albedo = glGetUniformLocation(renderer.test_shader, "u_albedo");
+  
+  glUniform1i(ul_pos, 0);
+  glUniform1i(ul_normal, 1);
+  glUniform1i(ul_albedo, 2);
   
   return true;
 }
@@ -104,27 +131,46 @@ static void renderer_init_gl()
 
 void renderer_render()
 {
+  /*
+  defer_begin();
+  camera_set_view(renderer.view);
+  camera_move(renderer.game->player.position, renderer.game->player.rotation);
+  renderer_scene_pass();
+  defer_end();
+  
+  defer_bind();
+  glUseProgram(renderer.test_shader);
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  quad_draw();
+  */
+  
+  /*
   hdr_begin();
   camera_set_view(renderer.view);
-  renderer_scene_pass();
+  renderer_scene_render();
   hdr_end();
   
-  frame_begin(&renderer.dither);
+  dither_begin();
   hdr_draw(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-  frame_end();
+  dither_end();
   
-  frame_draw(&renderer.dither, 0, 0, SCR_WIDTH, SCR_HEIGHT);
+  dither_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  */
 }
 
-void renderer_scene_pass()
+void renderer_scene_render()
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  camera_move(renderer.game->player.position, renderer.game->player.rotation);
   
   light_bind();
   light_sub_view_pos(renderer.game->player.position);
   
-  camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  
+  renderer_scene_pass();
+}
+
+void renderer_scene_pass()
+{
   camera_model(mat4x4_init_identity());
   model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
