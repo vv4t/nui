@@ -31,9 +31,6 @@ typedef struct {
   model_t fumo_model;
   model_t map_model;
   
-  GLuint test_shader;
-  GLuint ul_view_pos;
-  
   const game_t *game;
 } renderer_t;
 
@@ -42,8 +39,6 @@ static renderer_t renderer;
 static void renderer_init_gl();
 static void renderer_init_scene();
 static void renderer_scene_render();
-
-static bool setup_defer();
 
 bool renderer_init(const game_t *game)
 {
@@ -78,10 +73,6 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!setup_defer()) {
-    return false;
-  }
-  
   camera_init();
   
   if (!model_load(&renderer.fumo_model, "cirno_fumo")) {
@@ -92,27 +83,6 @@ bool renderer_init(const game_t *game)
   
   float aspect_ratio = (float) SCR_HEIGHT/ (float) SCR_WIDTH;
   view_set_perspective(&renderer.view, aspect_ratio, to_radians(90.0), 0.1, 100.0);
-  
-  return true;
-}
-
-static bool setup_defer()
-{
-  if (!shader_load(&renderer.test_shader, "test", "")) {
-    return false;
-  }
-  
-  glUseProgram(renderer.test_shader);
-  
-  renderer.ul_view_pos = glGetUniformLocation(renderer.test_shader, "u_view_pos");
-  
-  GLuint ul_pos = glGetUniformLocation(renderer.test_shader, "u_pos");
-  GLuint ul_normal = glGetUniformLocation(renderer.test_shader, "u_normal");
-  GLuint ul_albedo = glGetUniformLocation(renderer.test_shader, "u_albedo");
-  
-  glUniform1i(ul_pos, 0);
-  glUniform1i(ul_normal, 1);
-  glUniform1i(ul_albedo, 2);
   
   return true;
 }
@@ -134,27 +104,22 @@ static void renderer_init_gl()
 
 void renderer_render()
 {
-  /*
   defer_begin();
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   renderer_scene_pass();
   defer_end();
   
-  dither_begin();
   defer_bind();
-  glUseProgram(renderer.test_shader);
+  light_bind();
   
-  vec3_t view_pos = renderer.game->player.position;
-  glUniform3f(renderer.ul_view_pos, view_pos.x, view_pos.y, view_pos.z);
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  light_sub_view_pos(renderer.game->player.position);
   
   quad_draw();
   
-  dither_end();
-  
-  dither_draw(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  */
-  
+  /*
   hdr_begin();
   camera_set_view(renderer.view);
   renderer_scene_render();
@@ -166,6 +131,7 @@ void renderer_render()
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   dither_draw();
+  */
 }
 
 void renderer_scene_render()

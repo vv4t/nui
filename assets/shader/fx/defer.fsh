@@ -1,26 +1,27 @@
+#define POINTS_MAX 2
 #define CUBE_FACES 6
 
 out vec4 frag_color;
 
-in vec3 vs_pos;
-in vec3 vs_normal;
 in vec2 vs_uv;
 
-uniform sampler2D u_color;
+uniform sampler2D u_pos;
+uniform sampler2D u_normal;
+uniform sampler2D u_albedo;
 
 vec3 get_frag_pos()
 {
-  return vs_pos;
+  return texture(u_pos, vs_uv).rgb;
 }
 
 vec3 get_frag_normal()
 {
-  return vs_normal;
+  return texture(u_normal, vs_uv).rgb;
 }
 
 vec4 get_diffuse()
 {
-  return texture(u_color, vs_uv);
+  return texture(u_albedo, vs_uv);
 }
 
 struct point_t {
@@ -45,7 +46,7 @@ uniform vec3 u_view_pos;
 
 float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
 {
-  vec4 shadow_pos = vs_light_pos[id * CUBE_FACES + face];
+  vec4 shadow_pos = point_shadows[id].light_matrices[face] * vec4(get_frag_pos(), 1.0);
   vec3 shadow_coord = shadow_pos.xyz / shadow_pos.w * 0.5 + vec3(0.5, 0.5, 0.5);
   
   if (shadow_coord.z < 0.0 || shadow_coord.z > 1.0) {

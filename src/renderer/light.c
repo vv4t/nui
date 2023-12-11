@@ -43,16 +43,15 @@ typedef struct {
 
 static bool shadow_init();
 
-static void light_init_uniform_location();
+static bool light_init_shader();
+static bool light_init_deferred_shader();
 static void light_init_uniform_buffer();
+static void light_init_uniform_location();
 static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
-  char define[64];
-  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
-  
-  if (!shader_load(&light.shader, "light", define)) {
+  if (!light_init_deferred_shader()) {
     return false;
   }
   
@@ -66,22 +65,53 @@ bool light_init()
   return true;
 }
 
+static bool light_init_shader()
+{
+  char define[64];
+  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
+  
+  if (!shader_load(&light.shader, "light", define)) {
+    return false;
+  }
+  
+  GLuint ubl_matrices = glGetUniformBlockIndex(light.shader, "ubo_matrices");
+  glUniformBlockBinding(light.shader, ubl_matrices, 0);
+  
+  return true;
+}
+
+static bool light_init_deferred_shader()
+{
+  char define[64];
+  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
+  
+  if (!fx_shader_load(&light.shader, "defer", define)) {
+    return false;
+  }
+  
+  glUseProgram(light.shader);
+  
+  GLuint ul_pos = glGetUniformLocation(light.shader, "u_pos");
+  GLuint ul_normal = glGetUniformLocation(light.shader, "u_normal");
+  GLuint ul_albedo = glGetUniformLocation(light.shader, "u_albedo");
+  
+  glUniform1i(ul_pos, 0);
+  glUniform1i(ul_normal, 1);
+  glUniform1i(ul_albedo, 2);
+  
+  return true;
+}
+
 static void light_init_uniform_location()
 {
   glUseProgram(light.shader);
   
   light.ul_view_pos = glGetUniformLocation(light.shader, "u_view_pos");
   
-  GLuint ul_color = glGetUniformLocation(light.shader, "u_color");
   GLuint ul_depth_map = glGetUniformLocation(light.shader, "u_depth_map");
+  glUniform1i(ul_depth_map, 4);
   
-  glUniform1i(ul_color, 0);
-  glUniform1i(ul_depth_map, 1);
-  
-  GLuint ubl_matrices = glGetUniformBlockIndex(light.shader, "ubo_matrices");
   GLuint ubl_lights = glGetUniformBlockIndex(light.shader, "ub_light");
-  
-  glUniformBlockBinding(light.shader, ubl_matrices, 0);
   glUniformBlockBinding(light.shader, ubl_lights, 1);
 }
 
@@ -187,6 +217,6 @@ void light_update_point_shadow(int id, vec3_t pos)
 void light_bind()
 {
   glUseProgram(light.shader);
-  glActiveTexture(GL_TEXTURE1);
+  glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
 }
