@@ -5,7 +5,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 4
+#define VIEW_SCALE 2
 
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
 #define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
@@ -110,19 +110,15 @@ void renderer_render()
   renderer_scene_pass();
   defer_end();
   
+  hdr_begin();
+  
   defer_bind();
   light_bind();
   
-  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   light_sub_view_pos(renderer.game->player.position);
   
   quad_draw();
   
-  /*
-  hdr_begin();
-  camera_set_view(renderer.view);
-  renderer_scene_render();
   hdr_end();
   
   dither_begin();
@@ -131,7 +127,6 @@ void renderer_render()
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   dither_draw();
-  */
 }
 
 void renderer_scene_render()

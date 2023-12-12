@@ -136,5 +136,8 @@ void main()
   
   light += vec3(0.1, 0.1, 0.1);
   
-  frag_color = get_diffuse() * vec4(light, 1.0);
+  float d = length(get_frag_pos() - u_view_pos);
+  float fog = 0.01 * d * d + 0.05 * d;
+  
+  frag_color = vec4(get_diffuse().rgb * light + vec3(fog), 1.0);
 }

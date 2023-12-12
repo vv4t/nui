@@ -73,6 +73,9 @@ void defer_begin()
   glUseProgram(defer.shader);
   camera_set_viewport(0, 0, defer.width, defer.height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  static const float transparent[] = { 10000, 10000, 10000, 1 };
+  glClearBufferfv(GL_COLOR, 0, transparent);
 }
 
 void defer_end()
