@@ -13,10 +13,9 @@
 typedef struct {
   GLuint shader;
   GLuint ul_view_pos;
+  GLuint ul_projection;
   GLuint ubo_light;
 } light_t;
-
-static light_t light;
 
 typedef struct {
   GLuint shader;
@@ -25,6 +24,7 @@ typedef struct {
 } shadow_t;
 
 static shadow_t shadow;
+static light_t light;
 
 typedef struct {
   vec3_t pos;
@@ -47,6 +47,7 @@ static bool light_init_shader();
 static bool light_init_deferred_shader();
 static void light_init_uniform_buffer();
 static void light_init_uniform_location();
+static void light_init_ambient();
 static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
@@ -56,6 +57,7 @@ bool light_init()
   }
   
   light_init_uniform_location();
+  light_init_ambient();
   light_init_uniform_buffer();
   
   if (!shadow_init()) {
@@ -85,7 +87,7 @@ static bool light_init_deferred_shader()
   char define[64];
   sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
   
-  if (!fx_shader_load(&light.shader, "defer", define)) {
+  if (!fx_shader_load(&light.shader, "light", define)) {
     return false;
   }
   
@@ -100,6 +102,27 @@ static bool light_init_deferred_shader()
   glUniform1i(ul_albedo, 2);
   
   return true;
+}
+
+static void light_init_ambient()
+{
+  glUseProgram(light.shader);
+  
+  light.ul_projection = glGetUniformLocation(light.shader, "u_projection");
+  
+  vec3_t samples[64];
+  
+  for (int i = 0; i < 64; i++) {
+    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float z = (rand() % 256) / 256.0f;
+    float t = (rand() % 256) / 256.0f;
+    
+    samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
+  }
+  
+  GLuint ul_samples = glGetUniformLocation(light.shader, "u_samples");
+  glUniform3fv(ul_samples, 64, (float*) samples);
 }
 
 static void light_init_uniform_location()
@@ -219,4 +242,7 @@ void light_bind()
   glUseProgram(light.shader);
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
+  
+  mat4x4_t projection = camera_get_mat_vp();
+  glUniformMatrix4fv(light.ul_projection, 1, GL_FALSE, projection.m);
 }

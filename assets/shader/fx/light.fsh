@@ -44,6 +44,14 @@ in vec4 vs_light_pos[CUBE_FACES * POINTS_MAX];
 uniform sampler2D u_depth_map;
 uniform vec3 u_view_pos;
 
+uniform mat4 u_projection;
+uniform vec3 u_samples[64];
+
+float rand()
+{
+  return fract(sin(dot(vs_uv, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
 {
   vec4 shadow_pos = point_shadows[id].light_matrices[face] * vec4(get_frag_pos(), 1.0);
@@ -101,6 +109,37 @@ float calc_point_shadow(int id, vec3 light_dir, vec3 normal)
   return shadow;
 } 
 
+float calc_occlusion()
+{
+  vec3 normal = get_frag_normal();
+  vec3 some_vec = normal + vec3(rand(), rand() + 1.0, rand() + 2.0);
+  vec3 tangent = normalize(some_vec - normal * dot(some_vec, normal));
+  vec3 bitangent = cross(tangent, normal);
+  mat3 TBN = mat3(tangent, bitangent, normal);
+  
+  vec4 frag_pos = u_projection * vec4(get_frag_pos(), 1.0);
+  
+  float occlusion = 0.0;
+  float radius = 0.5;
+  
+  for (int i = 0; i < 64; i++) {
+    vec3 sample_pos = get_frag_pos() + (TBN * u_samples[i]) * radius;
+    vec4 offset = u_projection * vec4(sample_pos, 1.0);
+    vec2 screen_pos = (offset.xy / offset.w) * 0.5 + 0.5;
+    
+    if (screen_pos.x < 0.0 || screen_pos.y < 0.0 || screen_pos.x > 1.0 || screen_pos.y > 1.0 || offset.z < 0.0) {
+      continue;
+    }
+    
+    float sample_depth = (u_projection * texture(u_pos, screen_pos)).z;
+    
+    float range_check = smoothstep(0.0, 1.0, radius / abs(offset.z - sample_depth));
+    occlusion += (sample_depth < offset.z + 0.025 ? 1.0 : 0.0) * range_check;
+  }
+  
+  return 1.0 - occlusion / 64.0;
+}
+
 vec3 calc_light(int id)
 {
   vec3 frag_pos = get_frag_pos();
@@ -135,9 +174,7 @@ void main()
   }
   
   light += vec3(0.1, 0.1, 0.1);
+  light *= calc_occlusion();
   
-  float d = length(get_frag_pos() - u_view_pos);
-  float fog = 0.01 * d * d + 0.05 * d;
-  
-  frag_color = vec4(get_diffuse().rgb * light + vec3(fog), 1.0);
+  frag_color = vec4(get_diffuse().rgb * light, 1.0);
 }
