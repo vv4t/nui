@@ -23,6 +23,13 @@ vec4 get_diffuse()
   return texture(u_color, vs_uv);
 }
 
+layout (std140) uniform ubo_matrices {
+  mat4 mvp;
+  mat4 model;
+  mat4 view_project;
+  vec3 view_pos;
+};
+
 struct point_t {
   vec3  pos;
   float intensity;
@@ -41,7 +48,6 @@ layout (std140) uniform ub_light {
 in vec4 vs_light_pos[CUBE_FACES * POINTS_MAX];
 
 uniform sampler2D u_depth_map;
-uniform vec3 u_view_pos;
 
 float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
 {
@@ -108,7 +114,7 @@ vec3 calc_light(int id)
   vec3 delta_pos = points[id].pos - frag_pos;
   vec3 light_dir = normalize(delta_pos);
   
-  vec3 view_dir = normalize(u_view_pos - frag_pos);
+  vec3 view_dir = normalize(view_pos - frag_pos);
   vec3 reflect_dir = reflect(-light_dir, frag_normal);
   
   float specular = 0.4 * pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);

@@ -111,14 +111,9 @@ void renderer_render()
   defer_end();
   
   hdr_begin();
-  
   defer_bind();
   light_bind();
-  
-  light_sub_view_pos(renderer.game->player.position);
-  
   quad_draw();
-  
   hdr_end();
   
   dither_begin();
@@ -132,10 +127,7 @@ void renderer_render()
 void renderer_scene_render()
 {
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  
   light_bind();
-  light_sub_view_pos(renderer.game->player.position);
-  
   renderer_scene_pass();
 }
 

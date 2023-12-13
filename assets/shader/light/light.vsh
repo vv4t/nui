@@ -11,8 +11,10 @@ out vec3 vs_normal;
 out vec2 vs_uv;
 
 layout (std140) uniform ubo_matrices {
-  mat4  mvp;
-  mat4  model;
+  mat4 mvp;
+  mat4 model;
+  mat4 view_project;
+  vec3 view_pos;
 };
 
 struct point_t {

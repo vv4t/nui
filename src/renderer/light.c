@@ -12,8 +12,6 @@
 
 typedef struct {
   GLuint shader;
-  GLuint ul_view_pos;
-  GLuint ul_projection;
   GLuint ubo_light;
 } light_t;
 
@@ -100,8 +98,6 @@ static void light_init_ambient()
 {
   glUseProgram(light.shader);
   
-  light.ul_projection = glGetUniformLocation(light.shader, "u_projection");
-  
   vec3_t samples[64];
   
   for (int i = 0; i < 64; i++) {
@@ -120,8 +116,6 @@ static void light_init_ambient()
 static void light_init_uniform_location()
 {
   glUseProgram(light.shader);
-  
-  light.ul_view_pos = glGetUniformLocation(light.shader, "u_view_pos");
   
   GLuint ul_depth_map = glGetUniformLocation(light.shader, "u_depth_map");
   glUniform1i(ul_depth_map, 4);
@@ -164,11 +158,6 @@ static bool shadow_init()
   glUniformBlockBinding(shadow.shader, ubl_matrices, 0);
   
   return true;
-}
-
-void light_sub_view_pos(vec3_t view_pos)
-{
-  glUniform3f(light.ul_view_pos, view_pos.x, view_pos.y, view_pos.z);
 }
 
 void light_sub_point(int id, vec3_t pos, float intensity, vec4_t color)
@@ -218,7 +207,7 @@ void light_update_point_shadow(int id, vec3_t pos)
     camera_set_view(view);
     camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
     
-    point_shadow.light_matrices[i] = camera_get_mat_vp();
+    point_shadow.light_matrices[i] = camera_get_view_project();
     
     renderer_shadow_pass();
   }
@@ -234,7 +223,4 @@ void light_bind()
   glUseProgram(light.shader);
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
-  
-  mat4x4_t projection = camera_get_mat_vp();
-  glUniformMatrix4fv(light.ul_projection, 1, GL_FALSE, projection.m);
 }
