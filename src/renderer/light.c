@@ -2,7 +2,7 @@
 
 #define CUBE_FACES 6
 #define POINTS_MAX 2
-#define SHADOW_SIZE 256
+#define SHADOW_SIZE 512
 
 #include "gl.h"
 #include "shader.h"

@@ -1,4 +1,3 @@
-#define POINTS_MAX 2
 #define CUBE_FACES 6
 
 out vec4 frag_color;
@@ -106,9 +105,20 @@ float calc_point_shadow(int id, vec3 light_dir, vec3 normal)
 {
   float shadow = 0.0;
   
-  for (int i = 0; i < CUBE_FACES; i++) {
-    shadow += calc_point_shadow_face(id, i, light_dir, normal);
-  }
+  // https://gist.github.com/hypernewbie/f80958de2cb262f8de2d00e52e1a0052
+  
+	vec3 v = abs(light_dir);
+  int face_id = 0;
+  
+	if(v.z >= v.x && v.z >= v.y) {
+		face_id = (light_dir.z < 0.0) ? 4 : 5;
+	} else if(v.y >= v.x) {
+		face_id = light_dir.y < 0.0 ? 2 : 3;
+	} else {
+		face_id = light_dir.x < 0.0 ? 0 : 1;
+	}
+  
+  shadow += calc_point_shadow_face(id, face_id, light_dir, normal);
   
   return shadow;
 } 
