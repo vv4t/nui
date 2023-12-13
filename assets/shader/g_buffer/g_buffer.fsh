@@ -13,4 +13,4 @@ void main()
   g_pos = vec4(vs_pos, 1.0);
   g_normal = vec4(vs_normal, 1.0);
   g_albedo = texture(texture_diffuse, vs_uv);
-}  
+}

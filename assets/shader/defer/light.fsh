@@ -180,5 +180,5 @@ void main()
   light += vec3(0.1, 0.1, 0.1);
   light *= calc_occlusion();
   
-  frag_color = vec4(get_diffuse().rgb * light, 1.0);
+  frag_color = vec4(vec3(1.0) * light, 1.0);
 }
