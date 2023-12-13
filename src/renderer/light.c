@@ -87,19 +87,11 @@ static bool light_init_deferred_shader()
   char define[64];
   sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
   
-  if (!fx_shader_load(&light.shader, "light", define)) {
+  if (!defer_shader_load(&light.shader, "light", define)) {
     return false;
   }
   
   glUseProgram(light.shader);
-  
-  GLuint ul_pos = glGetUniformLocation(light.shader, "u_pos");
-  GLuint ul_normal = glGetUniformLocation(light.shader, "u_normal");
-  GLuint ul_albedo = glGetUniformLocation(light.shader, "u_albedo");
-  
-  glUniform1i(ul_pos, 0);
-  glUniform1i(ul_normal, 1);
-  glUniform1i(ul_albedo, 2);
   
   return true;
 }

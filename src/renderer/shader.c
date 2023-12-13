@@ -36,6 +36,28 @@ bool fx_shader_load(GLuint *shader, const char *name, const char *define)
   return shader_load_each(shader, name, "assets/shader/fx/frame.vsh", path_fx, define);
 }
 
+bool defer_shader_load(GLuint *shader, const char *name, const char *define)
+{
+  path_t path_fx;
+  path_create(path_fx, "assets/shader/defer/%s.fsh", name);
+  
+  if (!shader_load_each(shader, name, "assets/shader/defer/defer.vsh", path_fx, define)) {
+    return false;
+  }
+  
+  glUseProgram(*shader);
+  
+  GLuint ul_pos = glGetUniformLocation(*shader, "u_pos");
+  GLuint ul_normal = glGetUniformLocation(*shader, "u_normal");
+  GLuint ul_albedo = glGetUniformLocation(*shader, "u_albedo");
+  
+  glUniform1i(ul_pos, 0);
+  glUniform1i(ul_normal, 1);
+  glUniform1i(ul_albedo, 2);
+  
+  return true;
+}
+
 static bool shader_load_each(
   GLuint *shader,
   const char *name,

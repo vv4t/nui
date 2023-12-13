@@ -54,7 +54,7 @@ bool defer_init(int width, int height)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&defer.shader, "defer", "")) {
+  if (!shader_load(&defer.shader, "g_buffer", "")) {
     return false;
   }
   
