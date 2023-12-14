@@ -41,7 +41,7 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
     p->velocity = vec3_mulf(p->velocity, 0.8f);
     
     if (usercmd->jump) {
-      p->velocity.y += 3.0f;
+      p->velocity.y += 4.0f;
     }
   } else {
     p->velocity.y -= 9.8 * 0.015;
