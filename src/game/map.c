@@ -20,41 +20,36 @@ map_t *map_load(const char *name)
     return NULL;
   }
   
-  fread(&map->num_nodes, sizeof(int), 1, file); 
-  fread(&map->num_vertex_groups, sizeof(int), 1, file); 
   fread(&map->num_vertices, sizeof(int), 1, file); 
+  fread(&map->num_planes, sizeof(int), 1, file); 
+  fread(&map->num_faces, sizeof(int), 1, file); 
+  fread(&map->num_hulls, sizeof(int), 1, file); 
+  fread(&map->num_nodes, sizeof(int), 1, file); 
+  fread(&map->num_subgroups, sizeof(int), 1, file); 
   
-  map->nodes = calloc(map->num_nodes, sizeof(map_bsp_node_t));
-  map->vertex_groups = calloc(map->num_vertex_groups, sizeof(map_vertex_group_t));
   map->vertices = calloc(map->num_vertices, sizeof(map_vertex_t));
+  map->planes = calloc(map->num_planes, sizeof(plane_t));
+  map->faces = calloc(map->num_faces, sizeof(map_face_t));
+  map->hulls = calloc(map->num_hulls, sizeof(map_hull_t));
+  map->nodes = calloc(map->num_nodes, sizeof(map_bsp_node_t));
+  map->subgroups = calloc(map->num_subgroups, sizeof(map_subgroup_t));
   
-  fread(map->nodes, sizeof(map_bsp_node_t), map->num_nodes, file);
-  fread(map->vertex_groups, sizeof(map_vertex_group_t), map->num_vertex_groups, file);
   fread(map->vertices, sizeof(map_vertex_t), map->num_vertices, file);
+  fread(map->planes, sizeof(plane_t), map->num_planes, file);
+  fread(map->faces, sizeof(map_face_t), map->num_faces, file);
+  fread(map->hulls, sizeof(map_hull_t), map->num_hulls, file);
+  fread(map->nodes, sizeof(map_bsp_node_t), map->num_nodes, file);
+  fread(map->subgroups, sizeof(map_subgroup_t), map->num_subgroups, file);
   
   return map;
-}
-
-bsp_t *map_load_bsp(map_t *map)
-{
-  bsp_t *bsp = malloc(sizeof(bsp_t));
-  bsp->nodes = calloc(map->num_nodes, sizeof(map_bsp_node_t));
-  
-  for (int i = 0; i < map->num_nodes; i++) {
-    bsp->nodes[i].plane.normal = map->nodes[i].plane.normal;
-    bsp->nodes[i].plane.distance = map->nodes[i].plane.distance;
-    bsp->nodes[i].behind = map->nodes[i].behind;
-    bsp->nodes[i].ahead = map->nodes[i].ahead;
-    bsp->nodes[i].bevel = map->nodes[i].bevel;
-  }
-  
-  return bsp;
 }
 
 void map_free(map_t *map)
 {
   free(map->vertices);
-  free(map->vertex_groups);
+  free(map->planes);
+  free(map->hulls);
   free(map->nodes);
+  free(map->subgroups);
   free(map);
 }

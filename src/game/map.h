@@ -1,9 +1,31 @@
-#ifndef BSP_FILE_H
-#define BSP_FILE_H
+#ifndef MAP_H
+#define MAP_H
 
 #include "../common/nui_math.h"
 #include "../common/path.h"
-#include "bsp.h"
+
+typedef struct {
+  vec3_t pos;
+} map_vertex_t;
+
+typedef struct {
+  int vertices[3];
+  vec3_t normal;
+} map_face_t;
+
+typedef struct {
+  int vertex_offset;
+  int vertex_count;
+  int plane_offset;
+  int plane_count;
+} map_hull_t;
+
+typedef struct {
+  int plane;
+  int behind;
+  int ahead;
+  int hull;
+} map_bsp_node_t;
 
 typedef struct {
   char diffuse[64];
@@ -11,43 +33,33 @@ typedef struct {
 
 typedef struct {
   map_material_t material;
-  int offset;
-  int count;
-} map_vertex_group_t;
+  int face_offset;
+  int face_count;
+} map_subgroup_t;
 
 typedef struct {
-  vec3_t pos;
-  vec3_t normal;
-  vec2_t uv;
-} map_vertex_t;
-
-typedef struct {
-  vec3_t normal;
-  float distance;
-} map_plane_t;
-
-typedef struct {
-  plane_t plane;
-  int behind;
-  int ahead;
-  int bevel;
-} map_bsp_node_t;
-
-typedef struct {
-  path_t              path;
+  path_t          path;
   
-  map_bsp_node_t      *nodes;
-  int                 num_nodes;
+  int             num_vertices;
+  map_vertex_t    *vertices;
   
-  int                 num_vertex_groups;
-  map_vertex_group_t  *vertex_groups;
+  int             num_planes;
+  plane_t         *planes;
   
-  int                 num_vertices;
-  map_vertex_t        *vertices;
+  int             num_faces;
+  map_face_t      *faces;
+  
+  int             num_hulls;
+  map_hull_t      *hulls;
+  
+  int             num_nodes;
+  map_bsp_node_t  *nodes;
+  
+  int             num_subgroups;
+  map_subgroup_t  *subgroups;
 } map_t;
 
 map_t *map_load(const char *path);
-bsp_t *map_load_bsp(map_t *map);
 void  map_free(map_t *map);
 
 #endif

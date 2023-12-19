@@ -5,16 +5,16 @@
 #include "material.h"
 #include "../game/map.h"
 
-#define MAX_MESH_GROUPS 32
+#define MAX_SUBGROUPS 32
 
 typedef struct {
-  material_t  material;
-  mesh_t      mesh;
-} mesh_group_t;
+  material_t material;
+  mesh_t mesh;
+} subgroup_t;
 
 typedef struct {
-  int           num_meshes;
-  mesh_group_t  mesh_groups[MAX_MESH_GROUPS];
+  int num_subgroups;
+  subgroup_t subgroups[MAX_SUBGROUPS];
 } model_t;
 
 bool model_load(model_t *model, const char *path);

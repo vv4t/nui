@@ -8,8 +8,8 @@
 #include "player.h"
 
 typedef struct {
-  bsp_t     *bsp;
-  player_t  player;
+  bsp_t bsp;
+  player_t player;
 } game_t;
 
 void game_init(game_t *game);

@@ -1,4 +1,4 @@
-# Blender 3.6.2 MTL File: 'scene.blend'
+# Blender 4.0.2 MTL File: 'venus.blend'
 # www.blender.org
 
 newmtl Material
@@ -9,4 +9,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd brick.png
+map_Kd white.png

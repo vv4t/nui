@@ -1,8 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "usercmd.h"
 #include "bsp.h"
+#include "hull.h"
+#include "usercmd.h"
 #include "../common/nui_math.h"
 #include <stdbool.h>
 
@@ -15,6 +16,8 @@ typedef struct {
   float   pitch;
   
   bool    ground;
+  
+  hull_t  hull;
 } player_t;
 
 void player_init(player_t *player);

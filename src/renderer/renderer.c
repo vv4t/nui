@@ -75,7 +75,7 @@ bool renderer_init(const game_t *game)
   
   camera_init();
   
-  if (!model_load(&renderer.fumo_model, "cirno_fumo")) {
+  if (!model_load(&renderer.fumo_model, "venus")) {
     return false;
   }
   
@@ -89,8 +89,8 @@ bool renderer_init(const game_t *game)
 
 static void renderer_init_scene()
 {
-  light_sub_point(0, vec3_init( 0.0, 10.0, 0.0), 60.0, vec4_init(0.0, 1.0, 1.0, 1.0));
-  light_sub_point(1, vec3_init( 0.0, 10.0, -10.0), 60.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+  light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
 }
 
 static void renderer_init_gl()

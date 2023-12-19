@@ -7,22 +7,6 @@ void player_slide(player_t *p, const bsp_t *bsp);
 void player_accelerate(player_t *p, vec3_t wish_dir, float accel, float wish_speed);
 void player_air_accelerate(player_t *p, vec3_t wish_dir, float wish_speed);
 
-static hull_t player_hull = {
-  .pos = { .x = 0.0, .y = 0.0, .z = 0.0 },
-  .vertices = {
-    { .x = -0.2, .y = 0.3, .z = -0.2 },
-    { .x = +0.2, .y = 0.3, .z = -0.2 },
-    { .x = -0.2, .y = 0.3, .z = +0.2 },
-    { .x = +0.2, .y = 0.3, .z = +0.2 },
-    
-    { .x = -0.2, .y = -0.7, .z = -0.2 },
-    { .x = +0.2, .y = -0.7, .z = -0.2 },
-    { .x = -0.2, .y = -0.7, .z = +0.2 },
-    { .x = +0.2, .y = -0.7, .z = +0.2 }
-  },
-  .num_vertices = 8
-};
-
 void player_init(player_t *p)
 {
   p->position = vec3_init(0.0, 1.0, 0.0);
@@ -30,6 +14,34 @@ void player_init(player_t *p)
   
   p->yaw = 0.0;
   p->pitch = 0.0;
+  
+  float w = 0.4;
+  float h = 1.7;
+  float l = 0.3;
+  
+  p->hull = (hull_t) {
+    .pos = { .x = 0.0, .y = 0.0, .z = 0.0 },
+    .vertices = {
+      { .x = -w, .y = +h, .z = -w },
+      { .x = +w, .y = +h, .z = -w },
+      { .x = -w, .y = +h, .z = +w },
+      { .x = +w, .y = +h, .z = +w },
+      { .x = -w, .y = -h, .z = -w },
+      { .x = +w, .y = -h, .z = -w },
+      { .x = -w, .y = -h, .z = +w },
+      { .x = +w, .y = -h, .z = +w }
+    },
+    .num_vertices = 8,
+    .planes = {
+      { .normal = { .x =  1.0, .y =  0.0, .z =  0.0 }, .distance = w },
+      { .normal = { .x =  0.0, .y =  1.0, .z =  0.0 }, .distance = h },
+      { .normal = { .x =  0.0, .y =  0.0, .z =  1.0 }, .distance = w },
+      { .normal = { .x = -1.0, .y =  0.0, .z =  0.0 }, .distance = w },
+      { .normal = { .x =  0.0, .y = -1.0, .z =  0.0 }, .distance = h },
+      { .normal = { .x =  0.0, .y =  0.0, .z = -1.0 }, .distance = w }
+    },
+    .num_planes = 6
+  };
 }
 
 void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
@@ -37,19 +49,19 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
   vec3_t move_dir = player_move_dir(p, usercmd);
   
   if (p->ground) {
-    player_accelerate(p, move_dir, 6.0, 9.0);
+    player_accelerate(p, move_dir, 9.0, 14.0);
     p->velocity = vec3_mulf(p->velocity, 0.8f);
     
     if (usercmd->jump) {
-      p->velocity.y += 4.0f;
+      p->velocity.y += 7.0f;
     }
   } else {
-    p->velocity.y -= 9.8 * 0.015;
-    player_air_accelerate(p, move_dir, 0.6);
+    p->velocity.y -= 17.8 * 0.015;
+    player_air_accelerate(p, move_dir, 2.3);
   }
   
   p->position = vec3_add(p->position, vec3_mulf(p->velocity, 0.015));
-  player_hull.pos = p->position;
+  p->hull.pos = p->position;
   
   player_slide(p, bsp);
 }
@@ -59,16 +71,18 @@ void player_slide(player_t *p, const bsp_t *bsp)
   p->ground = false;
   
   trace_t trace;
-  bsp_clip_hull(&trace, bsp, &player_hull);
+  bsp_clip(&trace, bsp, &p->hull);
   
   for (int i = 0; i < trace.num_clips; i++) {
-    float pos_shift = -trace.clips[i].depth;
-    float vel_shift = -vec3_dot(p->velocity, trace.clips[i].normal);
+    vec3_t depth_v = hull_furthest_in(&p->hull, trace.clips[i].plane.normal);
     
-    vec3_t pos_slide = vec3_mulf(trace.clips[i].normal, pos_shift);
-    vec3_t vel_slide = vec3_mulf(trace.clips[i].normal, vel_shift);
+    float pos_shift = -plane_depth(trace.clips[i].plane, depth_v);
+    float vel_shift = -vec3_dot(p->velocity, trace.clips[i].plane.normal);
     
-    if (trace.clips[i].normal.y > 0.4) {
+    vec3_t pos_slide = vec3_mulf(trace.clips[i].plane.normal, pos_shift);
+    vec3_t vel_slide = vec3_mulf(trace.clips[i].plane.normal, vel_shift);
+    
+    if (trace.clips[i].plane.normal.y > 0.4) {
       p->ground = true;
     }
     

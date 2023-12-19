@@ -21,18 +21,23 @@ typedef struct {
 
 typedef struct {
   path_t path;
+  
   int num_vertex_groups;
   mdl_vertex_group_t *vertex_groups;
+  
   int num_vertices;
   mdl_vertex_t *vertices;
 } mdl_file_t;
 
 mdl_file_t *mdl_file_load(path_t path);
 static void mdl_file_free(mdl_file_t *mdl_file);
+
 static vertex_t *model_load_vertices(mdl_file_t *mdl_file);
-static bool model_load_mesh_groups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices);
-static vertex_t *model_load_map_vertices(const map_t *map);
-static bool model_load_map_mesh_groups(model_t *model, const vertex_t *vertices, const map_t *map);
+static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices);
+
+static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, const map_subgroup_t *map_subgroup);
+static vertex_t *model_load_map_vertices(const map_t *map, const map_subgroup_t *map_subgroup);
+
 static void vertex_solve_tangent(vertex_t *v1, vertex_t *v2, vertex_t *v3);
 static void vertex_planar_map(vertex_t *v);
 
@@ -44,11 +49,11 @@ bool model_load(model_t *model, const char *name)
   
   vertex_t *vertices = model_load_vertices(mdl_file);
   
-  if (!model_load_mesh_groups(model, mdl_file, vertices)) {
+  if (!model_load_subgroups(model, mdl_file, vertices)) {
     return false;
   }
   
-  model->num_meshes = mdl_file->num_vertex_groups;
+  model->num_subgroups = mdl_file->num_vertex_groups;
   
   mdl_file_free(mdl_file);
   free(vertices);
@@ -58,29 +63,27 @@ bool model_load(model_t *model, const char *name)
 
 void model_draw(const model_t *model)
 {
-  for (int i = 0; i < model->num_meshes; i++) {
-    mesh_group_t mesh_group = model->mesh_groups[i];
-    
-    material_bind(mesh_group.material);
-    mesh_draw(mesh_group.mesh);
+  for (int i = 0; i < model->num_subgroups; i++) {
+    material_bind(model->subgroups[i].material);
+    mesh_draw(model->subgroups[i].mesh);
   }
 }
 
-static bool model_load_mesh_groups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices)
+static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices)
 {
   for (int i = 0; i < mdl_file->num_vertex_groups; i++) {
-    mesh_group_t *mesh_group = &model->mesh_groups[i];
+    subgroup_t *subgroup = &model->subgroups[i];
     mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
     
     path_new(mdl_file->path, vertex_group.material.diffuse);
     
-    if (!texture_load(&mesh_group->material.diffuse, mdl_file->path)) {
+    if (!texture_load(&subgroup->material.diffuse, mdl_file->path)) {
       return false;
     }
     
     const vertex_t *vertex_offset = &vertices[vertex_group.offset];
     
-    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
+    if (!mesh_buffer_new(&subgroup->mesh, vertex_offset, vertex_group.count)) {
       return false;
     }
   }
@@ -107,75 +110,72 @@ static vertex_t *model_load_vertices(mdl_file_t *mdl_file)
 
 bool model_load_map(model_t *model, const map_t *map)
 {
-  vertex_t *vertices = model_load_map_vertices(map);
+  for (int i = 0; i < map->num_subgroups; i++) {
+    model_load_map_subgroup(&model->subgroups[i], map, &map->subgroups[i]);
+  }
   
-  if (!model_load_map_mesh_groups(model, vertices, map)) {
+  model->num_subgroups = map->num_subgroups;
+  
+  return true;
+}
+
+static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, const map_subgroup_t *map_subgroup)
+{
+  path_t path;
+  path_copy(path, map->path);
+  
+  path_new(path, map_subgroup->material.diffuse);
+  
+  if (!texture_load(&subgroup->material.diffuse, path)) {
     return false;
   }
   
-  model->num_meshes = map->num_vertex_groups;
+  int num_vertices = map_subgroup->face_count * 3;
+  vertex_t *vertices = model_load_map_vertices(map, map_subgroup);
+  
+  if (!mesh_buffer_new(&subgroup->mesh, vertices, num_vertices)) {
+    return false;
+  }
   
   free(vertices);
   
   return true;
 }
 
-static vertex_t *model_load_map_vertices(const map_t *map)
+static vertex_t *model_load_map_vertices(const map_t *map, const map_subgroup_t *map_subgroup)
 {
-  vertex_t *vertices = calloc(map->num_vertices, sizeof(vertex_t));
+  vertex_t *vertices = calloc(map_subgroup->face_count * 3, sizeof(vertex_t));
   
-  for (int i = 0; i < map->num_vertices; i += 3) {
+  for (int i = 0; i < map_subgroup->face_count; i++) {
+    int face = map_subgroup->face_offset + i;
+    
     for (int j = 0; j < 3; j++) {
-      vertices[i + j].pos = map->vertices[i + j].pos;
-      vertices[i + j].normal = map->vertices[i + j].normal;
-      
-      vertex_planar_map(&vertices[i + j]);
+      vertices[i * 3 + j].pos = map->vertices[map->faces[face].vertices[j]].pos;
+      vertices[i * 3 + j].normal = map->faces[face].normal;
+      vertex_planar_map(&vertices[i * 3 + j]);
     }
     
-    vertex_solve_tangent(&vertices[i + 0], &vertices[i + 1], &vertices[i + 2]);
+    vertex_solve_tangent(&vertices[i * 3 + 0], &vertices[i * 3 + 1], &vertices[i * 3 + 2]);
   }
   
   return vertices;
 }
 
-static bool model_load_map_mesh_groups(model_t *model, const vertex_t *vertices, const map_t *map)
-{
-  for (int i = 0; i < map->num_vertex_groups; i++) {
-    mesh_group_t *mesh_group = &model->mesh_groups[i];
-    map_vertex_group_t vertex_group = map->vertex_groups[i];
-    
-    path_t path;
-    path_copy(path, map->path);
-    
-    path_new(path, vertex_group.material.diffuse);
-    
-    if (!texture_load(&mesh_group->material.diffuse, path)) {
-      return false;
-    }
-    
-    const vertex_t *vertex_offset = &vertices[vertex_group.offset];
-    
-    if (!mesh_buffer_new(&mesh_group->mesh, vertex_offset, vertex_group.count)) {
-      return false;
-    }
-  }
-  
-  return true;
-}
-
 static void vertex_planar_map(vertex_t *v)
 {
+  vec3_t p = vec3_mulf(v->pos, 0.5);
+  
   if (fabs(v->normal.x) > fabs(v->normal.y)) {
     if (fabs(v->normal.z) > fabs(v->normal.x)) {
-      v->uv = vec2_init(v->pos.x, v->pos.y);
+      v->uv = vec2_init(p.x, p.y);
     } else {
-      v->uv = vec2_init(v->pos.z, v->pos.y);
+      v->uv = vec2_init(p.z, p.y);
     }
   } else {
     if (fabs(v->normal.z) > fabs(v->normal.y)) {
-      v->uv = vec2_init(v->pos.x, v->pos.y);
+      v->uv = vec2_init(p.x, p.y);
     } else {
-      v->uv = vec2_init(v->pos.x, v->pos.z);
+      v->uv = vec2_init(p.x, p.z);
     }
   }
 }
