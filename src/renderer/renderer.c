@@ -19,14 +19,15 @@
 #include "shader.h"
 #include "mesh.h"
 #include "frame.h"
-#include "hdr.h"
-#include "blur.h"
 #include "quad.h"
-#include "dither.h"
 #include "defer.h"
 
 typedef struct {
   view_t view;
+  
+  GLuint hdr;
+  GLuint dither;
+  GLuint blur;
   
   model_t fumo_model;
   model_t map_model;
@@ -44,6 +45,7 @@ bool renderer_init(const game_t *game)
 {
   renderer_init_gl();
   mesh_buffer_init(1024 * 1024);
+  frame_init(VIEW_WIDTH, VIEW_HEIGHT);
   
   if (!quad_init()) {
     return false;
@@ -57,15 +59,15 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!hdr_init(VIEW_WIDTH, VIEW_HEIGHT)) {
+  if (!fx_shader_load(&renderer.hdr, "hdr", "")) {
     return false;
   }
   
-  if (!blur_init(VIEW_WIDTH, VIEW_HEIGHT)) {
+  if (!fx_shader_load(&renderer.dither, "dither", "")) {
     return false;
   }
   
-  if (!dither_init(VIEW_WIDTH, VIEW_HEIGHT)) {
+  if (!fx_shader_load(&renderer.blur, "blur", "")) {
     return false;
   }
   
@@ -110,18 +112,18 @@ void renderer_render()
   renderer_scene_pass();
   defer_end();
   
-  hdr_begin();
+  frame_begin(0);
   defer_bind();
   light_bind();
   quad_draw();
-  hdr_end();
+  frame_end();
   
-  dither_begin();
-  hdr_draw();
-  dither_end();
+  frame_begin(1);
+  frame_draw(renderer.hdr, 0);
+  frame_end();
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  dither_draw();
+  frame_draw(renderer.dither, 1);
 }
 
 void renderer_scene_render()
