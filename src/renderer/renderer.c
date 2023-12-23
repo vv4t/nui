@@ -5,7 +5,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 4
+#define VIEW_SCALE 2
 
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
 #define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
@@ -29,6 +29,8 @@ typedef struct {
   GLuint dither;
   GLuint blur;
   
+  GLuint occlude;
+  
   model_t fumo_model;
   model_t map_model;
   
@@ -40,6 +42,7 @@ static renderer_t renderer;
 static void renderer_init_gl();
 static void renderer_init_scene();
 static void renderer_scene_render();
+static bool occlude_init();
 
 bool renderer_init(const game_t *game)
 {
@@ -71,6 +74,10 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
+  if (!occlude_init()) {
+    return false;
+  }
+  
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }
@@ -85,6 +92,31 @@ bool renderer_init(const game_t *game)
   
   float aspect_ratio = (float) SCR_HEIGHT/ (float) SCR_WIDTH;
   view_set_perspective(&renderer.view, aspect_ratio, to_radians(90.0), 0.1, 100.0);
+  
+  return true;
+}
+
+static bool occlude_init()
+{
+  if (!defer_shader_load(&renderer.occlude, "occlude", "")) {
+    return false;
+  }
+  
+  glUseProgram(renderer.occlude);
+  
+  vec3_t samples[64];
+  
+  for (int i = 0; i < 64; i++) {
+    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float z = (rand() % 256) / 256.0f;
+    float t = (rand() % 256) / 256.0f;
+    
+    samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
+  }
+  
+  GLuint ul_samples = glGetUniformLocation(renderer.occlude, "u_samples");
+  glUniform3fv(ul_samples, 64, (float*) samples);
   
   return true;
 }
@@ -114,7 +146,7 @@ void renderer_render()
   
   frame_begin(0);
   defer_bind();
-  light_bind();
+  glUseProgram(renderer.occlude);
   quad_draw();
   frame_end();
   
