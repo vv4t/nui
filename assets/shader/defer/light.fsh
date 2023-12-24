@@ -1,4 +1,5 @@
 #define CUBE_FACES 6
+#define MAX_POINTS 2
 
 struct point_t {
   vec3  pos;
@@ -11,11 +12,11 @@ struct point_shadow_t {
 };
 
 layout (std140) uniform ub_light {
-  point_t points[POINTS_MAX];
-  point_shadow_t point_shadows[POINTS_MAX];
+  point_t points[MAX_POINTS];
+  point_shadow_t point_shadows[MAX_POINTS];
 };
 
-in vec4 vs_light_pos[CUBE_FACES * POINTS_MAX];
+in vec4 vs_light_pos[CUBE_FACES * MAX_POINTS];
 
 uniform sampler2D u_depth_map;
 uniform vec3 u_samples[64];
@@ -27,7 +28,7 @@ float rand()
 
 float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
 {
-  vec4 shadow_pos = point_shadows[id].light_matrices[face] * vec4(get_frag_pos(), 1.0);
+  vec4 shadow_pos = point_shadows[id].light_matrices[face] * vec4(get_world_pos(), 1.0);
   vec3 shadow_coord = shadow_pos.xyz / shadow_pos.w * 0.5 + vec3(0.5, 0.5, 0.5);
   
   if (shadow_coord.z < 0.0 || shadow_coord.z > 1.0) {
@@ -53,7 +54,7 @@ float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 normal)
       shadow_uv.y = clamp(shadow_uv.y, 0.001, 0.999);
       
       shadow_uv.x = (shadow_uv.x + float(face)) / float(CUBE_FACES);
-      shadow_uv.y = (shadow_uv.y + float(id)) / float(POINTS_MAX);
+      shadow_uv.y = (shadow_uv.y + float(id)) / float(MAX_POINTS);
       
       float closest_depth = texture(u_depth_map, shadow_uv).z;
       float current_depth = shadow_coord.z;
@@ -96,29 +97,35 @@ float calc_point_shadow(int id, vec3 light_dir, vec3 normal)
 float calc_occlusion()
 {
   vec3 normal = get_frag_normal();
-  vec3 some_vec = normal + vec3(rand(), rand() + 1.0, rand() + 2.0);
-  vec3 tangent = normalize(some_vec - normal * dot(some_vec, normal));
+  
+  vec3 rand_vec = normal + vec3(rand(), rand() + 1.0, rand() + 2.0);
+  
+  vec3 tangent = normalize(rand_vec - normal * dot(rand_vec, normal));
   vec3 bitangent = cross(tangent, normal);
   mat3 TBN = mat3(tangent, bitangent, normal);
   
-  vec4 frag_pos = view_project * vec4(get_frag_pos(), 1.0);
-  
   float occlusion = 0.0;
+  
   float radius = 0.5;
+  float bias = 0.025;
   
   for (int i = 0; i < 64; i++) {
-    vec3 sample_pos = get_frag_pos() + (TBN * u_samples[i]) * radius;
-    vec4 offset = view_project * vec4(sample_pos, 1.0);
+    vec3 sample_pos = get_world_pos() + (TBN * u_samples[i]) * radius;
+    vec4 offset = mat_mvp * vec4(sample_pos, 1.0);
     vec2 screen_pos = (offset.xy / offset.w) * 0.5 + 0.5;
     
-    if (screen_pos.x < 0.0 || screen_pos.y < 0.0 || screen_pos.x > 1.0 || screen_pos.y > 1.0 || offset.z < 0.0) {
+    if (
+      screen_pos.x < 0.0 || screen_pos.y < 0.0 ||
+      screen_pos.x > 1.0 || screen_pos.y > 1.0 ||
+      offset.z < 0.0
+    ) {
       continue;
     }
     
-    float sample_depth = (view_project * texture(u_pos, screen_pos)).z;
+    float sample_depth = texture(u_pos, screen_pos).z;
     
     float range_check = smoothstep(0.0, 1.0, radius / abs(offset.z - sample_depth));
-    occlusion += (sample_depth < offset.z + 0.025 ? 1.0 : 0.0) * range_check;
+    occlusion += (sample_depth + bias < offset.z ? 1.0 : 0.0) * range_check;
   }
   
   return 1.0 - occlusion / 64.0;
@@ -126,7 +133,7 @@ float calc_occlusion()
 
 vec3 calc_light(int id)
 {
-  vec3 frag_pos = get_frag_pos();
+  vec3 frag_pos = get_world_pos();
   vec3 frag_normal = get_frag_normal();
   
   vec3 delta_pos = points[id].pos - frag_pos;
@@ -145,11 +152,11 @@ vec3 calc_light(int id)
   return points[id].color.xyz * intensity * (1.0 - calc_point_shadow(id, light_dir, frag_normal));
 }
 
-void main()
+void frag_pass()
 {
   vec3 light = vec3(0.0);
   
-  for (int i = 0; i < POINTS_MAX; i++) {
+  for (int i = 0; i < MAX_POINTS; i++) {
     if (points[i].intensity <= 0.0) {
       continue;
     }
@@ -160,5 +167,5 @@ void main()
   light += vec3(0.1, 0.1, 0.1);
   light *= calc_occlusion();
   
-  frag_color = vec4(get_diffuse().xyz * light, 1.0);
+  set_frag(vec4(get_diffuse().xyz * light, 1.0));
 }

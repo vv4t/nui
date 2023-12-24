@@ -5,7 +5,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 2
+#define VIEW_SCALE 3
 
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
 #define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
@@ -24,8 +24,8 @@
 typedef struct {
   view_t view;
   
-  GLuint shader;
-  GLuint defer;
+  GLuint dither;
+  GLuint hdr;
   
   model_t fumo_model;
   model_t map_model;
@@ -38,7 +38,6 @@ static renderer_t renderer;
 static void renderer_init_gl();
 static void renderer_init_scene();
 static void renderer_scene_render();
-static bool occlude_init();
 
 bool renderer_init(const game_t *game)
 {
@@ -50,15 +49,17 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!forward_shader_load(&renderer.shader, "flat")) {
+  if (!light_init()) {
     return false;
   }
   
-  if (!defer_shader_load(&renderer.defer, "occlude")) {
+  if (!fx_shader_load(&renderer.dither, "dither")) {
     return false;
   }
   
-  occlude_init();
+  if (!fx_shader_load(&renderer.hdr, "hdr")) {
+    return false;
+  }
   
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
@@ -78,29 +79,10 @@ bool renderer_init(const game_t *game)
   return true;
 }
 
-static bool occlude_init()
-{
-  glUseProgram(renderer.defer);
-  
-  vec3_t samples[64];
-  
-  for (int i = 0; i < 64; i++) {
-    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
-    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
-    float z = (rand() % 256) / 256.0f;
-    float t = (rand() % 256) / 256.0f;
-    
-    samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
-  }
-  
-  GLuint ul_samples = glGetUniformLocation(renderer.defer, "u_samples");
-  glUniform3fv(ul_samples, 64, (float*) samples);
-}
-
 static void renderer_init_scene()
 {
-  // light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
-  // light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+  light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
 }
 
 static void renderer_init_gl()
@@ -120,11 +102,19 @@ void renderer_render()
   renderer_scene_pass();
   defer_end();
   
+  frame_begin(0);
   defer_bind();
-  glUseProgram(renderer.defer);
-  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+  light_bind();
   quad_draw();
+  frame_end();
+  
+  frame_begin(1);
+  frame_draw(renderer.dither, 0);
+  frame_end();
+  
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  frame_draw(renderer.hdr, 1);
 }
 
 void renderer_scene_pass()

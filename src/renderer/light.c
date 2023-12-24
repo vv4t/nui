@@ -42,10 +42,9 @@ typedef struct {
 static bool shadow_init();
 
 static bool light_init_shader();
-// static bool light_init_deferred_shader();
 static void light_init_uniform_buffer();
 static void light_init_uniform_location();
-// static void light_init_ambient();
+static void light_init_ambient();
 static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
@@ -55,7 +54,7 @@ bool light_init()
   }
   
   light_init_uniform_location();
-  // light_init_ambient();
+  light_init_ambient();
   light_init_uniform_buffer();
   
   if (!shadow_init()) {
@@ -67,20 +66,13 @@ bool light_init()
 
 static bool light_init_shader()
 {
-  char define[64];
-  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
-  
-  if (!shader_load(&light.shader, "light")) {
+  if (!defer_shader_load(&light.shader, "light")) {
     return false;
   }
-  
-  GLuint ubl_matrices = glGetUniformBlockIndex(light.shader, "ubo_matrices");
-  glUniformBlockBinding(light.shader, ubl_matrices, 0);
   
   return true;
 }
 
-/*
 static void light_init_ambient()
 {
   glUseProgram(light.shader);
@@ -99,7 +91,6 @@ static void light_init_ambient()
   GLuint ul_samples = glGetUniformLocation(light.shader, "u_samples");
   glUniform3fv(ul_samples, 64, (float*) samples);
 }
-*/
 
 static void light_init_uniform_location()
 {
@@ -108,8 +99,8 @@ static void light_init_uniform_location()
   GLuint ul_depth_map = glGetUniformLocation(light.shader, "u_depth_map");
   glUniform1i(ul_depth_map, 4);
   
-  GLuint ubl_lights = glGetUniformBlockIndex(light.shader, "ub_light");
-  glUniformBlockBinding(light.shader, ubl_lights, 1);
+  GLuint ubl_light = glGetUniformBlockIndex(light.shader, "ub_light");
+  glUniformBlockBinding(light.shader, ubl_light, 1);
 }
 
 static void light_init_uniform_buffer()
@@ -142,8 +133,8 @@ static bool shadow_init()
     return false;
   }
   
-  GLuint ubl_matrices = glGetUniformBlockIndex(shadow.shader, "ubo_matrices");
-  glUniformBlockBinding(shadow.shader, ubl_matrices, 0);
+  GLuint ubl_camera = glGetUniformBlockIndex(shadow.shader, "ub_camera");
+  glUniformBlockBinding(shadow.shader, ubl_camera, 0);
   
   return true;
 }
