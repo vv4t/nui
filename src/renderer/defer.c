@@ -54,12 +54,12 @@ bool defer_init(int width, int height)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&defer.shader, "g_buffer", "")) {
+  if (!shader_load(&defer.shader, "g_buffer")) {
     return false;
   }
   
-  GLuint ubl_matrices = glGetUniformBlockIndex(defer.shader, "ubo_matrices");
-  glUniformBlockBinding(defer.shader, ubl_matrices, 0);
+  GLuint ubl_camera = glGetUniformBlockIndex(defer.shader, "ub_camera");
+  glUniformBlockBinding(defer.shader, ubl_camera, 0);
   
   defer.width = width;
   defer.height = height;
@@ -74,8 +74,8 @@ void defer_begin()
   camera_set_viewport(0, 0, defer.width, defer.height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  // static const float transparent[] = { 10000, 10000, 10000, 1 };
-  // glClearBufferfv(GL_COLOR, 0, transparent);
+  static const float transparent[] = { 10000, 10000, 10000, 1 };
+  glClearBufferfv(GL_COLOR, 0, transparent);
 }
 
 void defer_end()

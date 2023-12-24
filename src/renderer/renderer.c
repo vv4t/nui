@@ -13,7 +13,6 @@
 #include "light.h"
 #include "camera.h"
 #include "model.h"
-#include "flat.h"
 #include "material.h"
 #include "renderer_api.h"
 #include "shader.h"
@@ -25,11 +24,8 @@
 typedef struct {
   view_t view;
   
-  GLuint hdr;
-  GLuint dither;
-  GLuint blur;
-  
-  GLuint occlude;
+  GLuint shader;
+  GLuint defer;
   
   model_t fumo_model;
   model_t map_model;
@@ -54,29 +50,15 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!flat_init()) {
+  if (!forward_shader_load(&renderer.shader, "flat")) {
     return false;
   }
   
-  if (!light_init()) {
+  if (!defer_shader_load(&renderer.defer, "occlude")) {
     return false;
   }
   
-  if (!fx_shader_load(&renderer.hdr, "hdr", "")) {
-    return false;
-  }
-  
-  if (!fx_shader_load(&renderer.dither, "dither", "")) {
-    return false;
-  }
-  
-  if (!fx_shader_load(&renderer.blur, "blur", "")) {
-    return false;
-  }
-  
-  if (!occlude_init()) {
-    return false;
-  }
+  occlude_init();
   
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
@@ -98,11 +80,7 @@ bool renderer_init(const game_t *game)
 
 static bool occlude_init()
 {
-  if (!defer_shader_load(&renderer.occlude, "occlude", "")) {
-    return false;
-  }
-  
-  glUseProgram(renderer.occlude);
+  glUseProgram(renderer.defer);
   
   vec3_t samples[64];
   
@@ -115,25 +93,23 @@ static bool occlude_init()
     samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
   }
   
-  GLuint ul_samples = glGetUniformLocation(renderer.occlude, "u_samples");
+  GLuint ul_samples = glGetUniformLocation(renderer.defer, "u_samples");
   glUniform3fv(ul_samples, 64, (float*) samples);
-  
-  return true;
 }
 
 static void renderer_init_scene()
 {
-  light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
-  light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+  // light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  // light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
 }
 
 static void renderer_init_gl()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glEnable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_BLEND);
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void renderer_render()
@@ -144,25 +120,11 @@ void renderer_render()
   renderer_scene_pass();
   defer_end();
   
-  frame_begin(0);
   defer_bind();
-  glUseProgram(renderer.occlude);
-  quad_draw();
-  frame_end();
-  
-  frame_begin(1);
-  frame_draw(renderer.hdr, 0);
-  frame_end();
-  
+  glUseProgram(renderer.defer);
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  frame_draw(renderer.dither, 1);
-}
-
-void renderer_scene_render()
-{
-  camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  light_bind();
-  renderer_scene_pass();
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+  quad_draw();
 }
 
 void renderer_scene_pass()

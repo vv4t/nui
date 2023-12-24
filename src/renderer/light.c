@@ -42,20 +42,20 @@ typedef struct {
 static bool shadow_init();
 
 static bool light_init_shader();
-static bool light_init_deferred_shader();
+// static bool light_init_deferred_shader();
 static void light_init_uniform_buffer();
 static void light_init_uniform_location();
-static void light_init_ambient();
+// static void light_init_ambient();
 static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
-  if (!light_init_deferred_shader()) {
+  if (!light_init_shader()) {
     return false;
   }
   
   light_init_uniform_location();
-  light_init_ambient();
+  // light_init_ambient();
   light_init_uniform_buffer();
   
   if (!shadow_init()) {
@@ -70,7 +70,7 @@ static bool light_init_shader()
   char define[64];
   sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
   
-  if (!shader_load(&light.shader, "light", define)) {
+  if (!shader_load(&light.shader, "light")) {
     return false;
   }
   
@@ -80,20 +80,7 @@ static bool light_init_shader()
   return true;
 }
 
-static bool light_init_deferred_shader()
-{
-  char define[64];
-  sprintf(define, "#define POINTS_MAX %i\n", POINTS_MAX);
-  
-  if (!defer_shader_load(&light.shader, "light", define)) {
-    return false;
-  }
-  
-  glUseProgram(light.shader);
-  
-  return true;
-}
-
+/*
 static void light_init_ambient()
 {
   glUseProgram(light.shader);
@@ -112,6 +99,7 @@ static void light_init_ambient()
   GLuint ul_samples = glGetUniformLocation(light.shader, "u_samples");
   glUniform3fv(ul_samples, 64, (float*) samples);
 }
+*/
 
 static void light_init_uniform_location()
 {
@@ -150,7 +138,7 @@ static bool shadow_init()
   glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&shadow.shader, "shadow", "")) {
+  if (!shader_load(&shadow.shader, "shadow")) {
     return false;
   }
   

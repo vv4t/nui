@@ -6,13 +6,14 @@
 #include "../common/file.h"
 #include "../common/log.h"
 
-static bool shader_compile(GLuint *shader, const char *path, GLuint type, const char *define);
-static bool shader_load_each(
-  GLuint *shader,
-  const char *name,
-  const char *path_vertex,
-  const char *path_fragment,
-  const char *define);
+typedef struct {
+  const char *src;
+  const char *head;
+  const char *tail;
+} cfg_shader_t;
+
+static bool shader_compile(GLuint *shader, cfg_shader_t *cfg_shader, GLuint type);
+static bool shader_load_each(GLuint *shader, const char *name, cfg_shader_t *cfg_vertex, cfg_shader_t *cfg_fragment);
 
 const char *glsl_version = "#version 300 es";
 const char *glsl_precision = "precision mediump float;";
@@ -25,23 +26,182 @@ bool shader_load(GLuint *shader, const char *name, const char *define)
   path_create(path_vertex, "assets/shader/%s/%s.vsh", name, name);
   path_create(path_fragment, "assets/shader/%s/%s.fsh", name, name);
   
-  return shader_load_each(shader, name, path_vertex, path_fragment, define);
+  cfg_shader_t cfg_vsh;
+  cfg_vsh.src = path_vertex;
+  cfg_vsh.head = "";
+  cfg_vsh.tail = "";
+  
+  cfg_shader_t cfg_fsh;
+  cfg_fsh.src = path_fragment;
+  cfg_fsh.head = "";
+  cfg_fsh.tail = "";
+  
+  return shader_load_each(shader, name, &cfg_vsh, &cfg_fsh);
+}
+
+bool forward_shader_load(GLuint *shader, const char *name)
+{
+  const char *vertex_head = "\n\
+layout(location = 0) in vec3 v_pos;\n\
+layout(location = 1) in vec3 v_tangent;\n\
+layout(location = 2) in vec3 v_bitangent;\n\
+layout(location = 3) in vec3 v_normal;\n\
+layout(location = 4) in vec2 v_uv;\n\
+\n\
+mat4 get_mvp() { return mat_mvp; }\n\
+mat4 get_model() { return mat_model; }\n\
+mat4 get_view() { return mat_view; }\n\
+vec3 get_view_pos() { return view_pos; }\n\
+\n\
+out vec2 vs_uv;\n\
+out vec3 vs_normal;\n\
+out vec3 vs_pos;";
+  
+  const char *vertex_tail = "\n\
+void main()\n\
+{\n\
+  vs_uv = v_uv;\n\
+  vs_normal = v_normal;\n\
+  vs_pos = vec3(get_model() * vec4(v_pos, 1.0));\n\
+  gl_Position = get_mvp() * vec4(v_pos, 1.0);\n\
+  vertex_pass();\n\
+}";
+  
+  const char *frag_head = "\n\
+out vec4 frag_color;\n\
+\n\
+in vec3 vs_pos;\n\
+in vec3 vs_normal;\n\
+in vec2 vs_uv;\n\
+\n\
+uniform sampler2D u_color;\n\
+\n\
+vec3 get_frag_pos() { return vs_pos; }\n\
+vec3 get_frag_normal() { return vs_normal; }\n\
+vec4 get_diffuse() { return texture(u_color, vs_uv); }\n\
+void set_frag(vec4 v) { frag_color = v; }";
+  
+  const char *frag_tail = "void main() { frag_pass(); }";
+  
+  path_t path_vertex;
+  path_t path_fragment;
+  
+  path_create(path_vertex, "assets/shader/%s/%s.vsh", name, name);
+  path_create(path_fragment, "assets/shader/%s/%s.fsh", name, name);
+  
+  cfg_shader_t cfg_vsh;
+  cfg_vsh.src = path_vertex;
+  cfg_vsh.head = vertex_head;
+  cfg_vsh.tail = vertex_tail;
+  
+  cfg_shader_t cfg_fsh;
+  cfg_fsh.src = path_fragment;
+  cfg_fsh.head = frag_head;
+  cfg_fsh.tail = frag_tail;
+  
+  if (!shader_load_each(shader, name, &cfg_vsh, &cfg_fsh)) {
+    return false;
+  }
+  
+  glUseProgram(*shader);
+  
+  GLuint ul_color = glGetUniformLocation(*shader, "u_color");
+  glUniform1i(ul_color, 0);
+  
+  GLuint ubl_camera = glGetUniformBlockIndex(*shader, "ub_camera");
+  glUniformBlockBinding(*shader, ubl_camera, 0);
+  
+  return true;
 }
 
 bool fx_shader_load(GLuint *shader, const char *name, const char *define)
 {
+  const char *fx_vertex = "\n\
+layout(location = 0) in vec3 v_pos;\n\
+layout(location = 4) in vec2 v_uv;\n\
+\n\
+out vec2 vs_uv;\n\
+\n\
+void main()\n\
+{\n\
+  vs_uv = v_uv;\n\
+  gl_Position = vec4(v_pos, 1.0);\n\
+}";
+  
+  const char *frag_head = "\n\
+out vec4 frag_color;\n\
+in vec2 vs_uv;\n\
+uniform sampler2D u_scene;\n\
+void set_frag(vec4 v) { frag_color = v; }\n\
+vec4 get_color(vec2 uv) { return texture(u_scene, vs_uv); }\n\
+vec2 get_uv() { return vs_uv; }";
+  
+  const char *frag_tail = "void main() { frag_pass(); }";
+  
   path_t path_fx;
   path_create(path_fx, "assets/shader/fx/%s.fsh", name);
   
-  return shader_load_each(shader, name, "assets/shader/fx/frame.vsh", path_fx, define);
+  cfg_shader_t cfg_vsh;
+  cfg_vsh.src = NULL;
+  cfg_vsh.head = fx_vertex;
+  cfg_vsh.tail = "";
+  
+  cfg_shader_t cfg_fsh;
+  cfg_fsh.src = path_fx;
+  cfg_fsh.head = frag_head;
+  cfg_fsh.tail = frag_tail;
+  
+  return shader_load_each(shader, name, &cfg_vsh, &cfg_fsh);
 }
 
 bool defer_shader_load(GLuint *shader, const char *name, const char *define)
 {
-  path_t path_fx;
-  path_create(path_fx, "assets/shader/defer/%s.fsh", name);
+  const char *defer_vertex = "\n\
+layout(location = 0) in vec3 v_pos;\n\
+layout(location = 4) in vec2 v_uv;\n\
+\n\
+out vec2 vs_uv;\n\
+out vec3 vs_ray;\n\
+\n\
+void main()\n\
+{\n\
+  vs_uv = v_uv;\n\
+  vs_ray = vec3(inverse(mat_look) * vec4(v_pos, 1.0));\n\
+  gl_Position = vec4(v_pos, 1.0);\n\
+}";
   
-  if (!shader_load_each(shader, name, "assets/shader/defer/defer.vsh", path_fx, define)) {
+  const char *frag_head = "\n\
+out vec4 frag_color;\n\
+\n\
+in vec2 vs_uv;\n\
+in vec3 vs_ray;\n\
+\n\
+uniform sampler2D u_pos;\n\
+uniform sampler2D u_normal;\n\
+uniform sampler2D u_albedo;\n\
+\n\
+vec3 get_frag_pos() { return texture(u_pos, vs_uv).rgb; }\n\
+vec3 get_world_pos() { return normalize(vs_ray) * texture(u_normal, vs_uv).w + view_pos; }\n\
+vec3 get_frag_normal() { return texture(u_normal, vs_uv).rgb; }\n\
+vec4 get_diffuse() { return texture(u_albedo, vs_uv); }\n\
+void set_frag(vec4 v) { frag_color = v; }";
+
+  const char *frag_tail = "void main() { frag_pass(); }";
+
+  path_t path_defer;
+  path_create(path_defer, "assets/shader/defer/%s.fsh", name);
+  
+  cfg_shader_t cfg_vsh;
+  cfg_vsh.src = NULL;
+  cfg_vsh.head = defer_vertex;
+  cfg_vsh.tail = "";
+  
+  cfg_shader_t cfg_fsh;
+  cfg_fsh.src = path_defer;
+  cfg_fsh.head = frag_head;
+  cfg_fsh.tail = frag_tail;
+  
+  if (!shader_load_each(shader, name, &cfg_vsh, &cfg_fsh)) {
     return false;
   }
   
@@ -58,22 +218,17 @@ bool defer_shader_load(GLuint *shader, const char *name, const char *define)
   return true;
 }
 
-static bool shader_load_each(
-  GLuint *shader,
-  const char *name,
-  const char *path_vertex,
-  const char *path_fragment,
-  const char *define)
+static bool shader_load_each(GLuint *shader, const char *name, cfg_shader_t *cfg_vertex, cfg_shader_t *cfg_fragment)
 {
   *shader = glCreateProgram();
   
   GLuint vertex_shader;
-  if (!shader_compile(&vertex_shader, path_vertex, GL_VERTEX_SHADER, define)) {
+  if (!shader_compile(&vertex_shader, cfg_vertex, GL_VERTEX_SHADER)) {
     return false;
   }
   
   GLuint fragment_shader;
-  if (!shader_compile(&fragment_shader, path_fragment, GL_FRAGMENT_SHADER, define)) {
+  if (!shader_compile(&fragment_shader, cfg_fragment, GL_FRAGMENT_SHADER)) {
     return false;
   }
   
@@ -101,37 +256,54 @@ static bool shader_load_each(
   return true;
 }
 
-static bool shader_compile(GLuint *shader, const char *path, GLuint type, const char *define)
+static bool shader_compile(GLuint *shader, cfg_shader_t *cfg_shader, GLuint type)
 {
-  char *src = file_read_all(path);
+  char *src = "";
   
-  if (!src) {
-    return false;
+  if (cfg_shader->src) {
+    src = file_read_all(cfg_shader->src);
+    
+    if (!src) {
+      return false;
+    }
   }
   
   int success;
   static GLchar info[INFO_MAX];
   
+  const char *ub_camera = "\
+layout (std140) uniform ub_camera {\n\
+  mat4 mat_mvp;\n\
+  mat4 mat_model;\n\
+  mat4 mat_view;\n\
+  mat4 mat_look;\n\
+  vec3 view_pos;\n\
+};";
+  
   const char *full_src[] = {
     glsl_version, "\n",
     glsl_precision, "\n",
-    define, "\n",
-    src
+    ub_camera, "\n",
+    cfg_shader->head, "\n",
+    src, "\n",
+    cfg_shader->tail
   };
   
   *shader = glCreateShader(type);
-  glShaderSource(*shader, 7, full_src, NULL);
+  glShaderSource(*shader, sizeof(full_src) / sizeof(char*), full_src, NULL);
   
   glCompileShader(*shader);
   glGetShaderiv(*shader, GL_COMPILE_STATUS, &success);
   
   if (!success) {
     glGetShaderInfoLog(*shader, INFO_MAX, NULL, info);
-    LOG_ERROR("failed to compiler shader (%s):\n%s", path, info);
+    LOG_ERROR("failed to compiler shader (%s):\n\n%s", cfg_shader->src ? cfg_shader->src : "BUILTIN", info);
     return false;
   }
   
-  free(src);
+  if (cfg_shader->src) {
+    free(src);
+  }
   
   return true;
 }

@@ -1,35 +1,5 @@
 #define CUBE_FACES 6
 
-out vec4 frag_color;
-
-in vec2 vs_uv;
-
-uniform sampler2D u_pos;
-uniform sampler2D u_normal;
-uniform sampler2D u_albedo;
-
-vec3 get_frag_pos()
-{
-  return texture(u_pos, vs_uv).rgb;
-}
-
-vec3 get_frag_normal()
-{
-  return texture(u_normal, vs_uv).rgb;
-}
-
-vec4 get_diffuse()
-{
-  return texture(u_albedo, vs_uv);
-}
-
-layout (std140) uniform ubo_matrices {
-  mat4 mvp;
-  mat4 model;
-  mat4 view_project;
-  vec3 view_pos;
-};
-
 struct point_t {
   vec3  pos;
   float intensity;
