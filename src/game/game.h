@@ -10,6 +10,9 @@
 typedef struct {
   bsp_t bsp;
   player_t player;
+  
+  vec3_t light_pos;
+  bool light_update;
 } game_t;
 
 void game_init(game_t *game);

@@ -16,4 +16,11 @@ void game_update(game_t *game, const usercmd_t *usercmd)
 {
   player_look(&game->player, usercmd);
   player_move(&game->player, &game->bsp, usercmd);
+  
+  if (usercmd->attack1) {
+    game->light_pos = game->player.position;
+    game->light_update = true;
+  } else {
+    game->light_update = false;
+  }
 }

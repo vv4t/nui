@@ -133,7 +133,7 @@ out vec4 frag_color;\n\
 in vec2 vs_uv;\n\
 uniform sampler2D u_scene;\n\
 void set_frag(vec4 v) { frag_color = v; }\n\
-vec4 get_color(vec2 uv) { return texture(u_scene, vs_uv); }\n\
+vec4 get_color(vec2 uv) { return texture(u_scene, uv); }\n\
 vec2 get_uv() { return vs_uv; }";
   
   const char *frag_tail = "void main() { frag_pass(); }";

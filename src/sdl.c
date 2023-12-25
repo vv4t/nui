@@ -13,6 +13,7 @@ typedef struct {
 static sdl_t sdl;
 
 static void key_event(usercmd_t *usercmd, int key, int action);
+static void mouse_event(usercmd_t *usercmd, int button, int action);
 static void mouse_move(usercmd_t *usercmd, int d_x, int d_y);
 
 void sdl_lock(bool set_lock)
@@ -37,6 +38,12 @@ void sdl_poll(usercmd_t *usercmd)
     case SDL_KEYDOWN:
       key_event(usercmd, event.key.keysym.sym, 1);
       break;
+    case SDL_MOUSEBUTTONDOWN:
+      mouse_event(usercmd, event.button.button, 1);
+      break;
+    case SDL_MOUSEBUTTONUP:
+      mouse_event(usercmd, event.button.button, 0);
+      break;
     case SDL_MOUSEMOTION:
       mouse_move(usercmd, event.motion.xrel, event.motion.yrel);
       break;
@@ -56,6 +63,12 @@ static void key_event(usercmd_t *usercmd, int key, int action)
     usercmd->back = action;
   if (key == ' ')
     usercmd->jump = action;
+}
+
+static void mouse_event(usercmd_t *usercmd, int button, int action)
+{
+  if (button == 1)
+    usercmd->attack1 = action;
 }
 
 static void mouse_move(usercmd_t *usercmd, int d_x, int d_y)

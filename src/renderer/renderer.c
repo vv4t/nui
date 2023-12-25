@@ -90,12 +90,14 @@ static void renderer_init_gl()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
-  // glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void renderer_render()
 {
+  if (renderer.game->light_update) {
+    light_sub_point(1, renderer.game->light_pos, 16.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+  }
+  
   defer_begin();
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
