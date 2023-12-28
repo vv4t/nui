@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "sdl.h"
-#include "common/log.h"
-#include "game/game.h"
-#include "game/map.h"
-#include "renderer/gl.h"
-#include "renderer/renderer.h"
+#include "../common/log.h"
+#include "../game/game.h"
+#include "../game/map.h"
+#include "../renderer/gl.h"
+#include "../renderer/renderer.h"
 
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>

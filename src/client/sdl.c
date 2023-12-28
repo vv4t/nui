@@ -1,7 +1,7 @@
 #include "sdl.h"
 
 #include <stdbool.h>
-#include "common/log.h"
+#include "../common/log.h"
 #include <SDL2/SDL.h>
 
 typedef struct {

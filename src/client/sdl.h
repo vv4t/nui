@@ -1,7 +1,7 @@
 #ifndef SDL_H
 #define SDL_H
 
-#include "game/game.h"
+#include "../game/game.h"
 
 bool sdl_init(int width, int height, const char *title);
 void sdl_poll(usercmd_t *usercmd);
