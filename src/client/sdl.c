@@ -2,12 +2,17 @@
 
 #include <stdbool.h>
 #include "../common/log.h"
+#include "../ngui/ngui.h"
 #include <SDL2/SDL.h>
 
 typedef struct {
-  SDL_Window    *window;
+  SDL_Window *window;
   SDL_GLContext gl_context;
-  bool          quit;
+  
+  bool focus_gui;
+  bool focus_game;
+  
+  bool quit;
 } sdl_t;
 
 static sdl_t sdl;
@@ -15,6 +20,7 @@ static sdl_t sdl;
 static void key_event(usercmd_t *usercmd, int key, int action);
 static void mouse_event(usercmd_t *usercmd, int button, int action);
 static void mouse_move(usercmd_t *usercmd, int d_x, int d_y);
+static void text_input_event(const char *text);
 
 void sdl_lock(bool set_lock)
 {
@@ -31,6 +37,9 @@ void sdl_poll(usercmd_t *usercmd)
     switch (event.type) {
     case SDL_QUIT:
       sdl.quit = true;
+      break;
+    case SDL_TEXTINPUT:
+      text_input_event(event.text.text);
       break;
     case SDL_KEYUP:
       key_event(usercmd, event.key.keysym.sym, 0);
@@ -51,18 +60,49 @@ void sdl_poll(usercmd_t *usercmd)
   }
 }
 
+static void text_input_event(const char *text)
+{
+  if (sdl.focus_gui) {
+    ngui_text_input(text);
+  }
+}
+
 static void key_event(usercmd_t *usercmd, int key, int action)
 {
-  if (key == 'a')
-    usercmd->left = action;
-  if (key == 'd')
-    usercmd->right = action;
-  if (key == 'w')
-    usercmd->forward = action;
-  if (key == 's')
-    usercmd->back = action;
-  if (key == ' ')
-    usercmd->jump = action;
+  if (key == '`' && !sdl.focus_gui) {
+    sdl.focus_gui = true;
+    sdl.focus_game = false;
+    SDL_StartTextInput();
+  } else if (sdl.focus_gui) {
+    ngui_key_event(key, action);
+  }
+  
+  if (key == 27) {
+    sdl.focus_game = true;
+    sdl.focus_gui = false;
+    ngui_unfocus();
+    SDL_StopTextInput();
+  }
+  
+  if (sdl.focus_game) {
+    switch (key) {
+    case 'w':
+      usercmd->forward = action;
+      break;
+    case 'a':
+      usercmd->left = action;
+      break;
+    case 's':
+      usercmd->back = action;
+      break;
+    case 'd':
+      usercmd->right = action;
+      break;
+    case ' ':
+      usercmd->jump = action;
+      break;
+    }
+  }
 }
 
 static void mouse_event(usercmd_t *usercmd, int button, int action)
@@ -109,6 +149,9 @@ bool sdl_init(int width, int height, const char *title)
     LOG_ERROR("failed to create GL context");
     return false;
   }
+  
+  sdl.focus_gui = false;
+  sdl.focus_game = true;
   
   return true;
 }

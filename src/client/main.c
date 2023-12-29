@@ -6,6 +6,7 @@
 #include "../game/map.h"
 #include "../renderer/gl.h"
 #include "../renderer/renderer.h"
+#include "../ngui/ngui.h"
 
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>
@@ -38,17 +39,23 @@ int main()
 
 bool nui_init()
 {
-  if (!sdl_init(1280, 720, "nui"))
+  if (!sdl_init(1280, 720, "nui")) {
     return false;
+  }
   
-  if (!gl_init())
+  if (!gl_init()) {
     return false;
+  }
   
   nui.usercmd = (usercmd_t) {0};
   game_init(&nui.game);
   sdl_lock(true);
   
   if (!renderer_init(&nui.game)) {
+    return false;
+  }
+  
+  if (!ngui_init(1280, 720)) {
     return false;
   }
   

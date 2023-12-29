@@ -61,6 +61,23 @@ bool mesh_buffer_new(mesh_t *mesh, const vertex_t  *vertices, int num_vertices)
   return true;
 }
 
+bool mesh_buffer_sub(mesh_t *mesh, const vertex_t *vertices, int offset, int num_vertices)
+{
+  if (offset + num_vertices > mesh->count) {
+    LOG_ERROR("mesh sub too big %i/%i", offset + num_vertices, mesh->count);
+    return false;
+  }
+  
+  glBufferSubData(
+    GL_ARRAY_BUFFER,
+    (mesh->offset + offset) * sizeof(vertex_t),
+    num_vertices * sizeof(vertex_t),
+    vertices
+  );
+  
+  return true;
+}
+
 void mesh_draw(mesh_t mesh)
 {
   glDrawArrays(GL_TRIANGLES, mesh.offset, mesh.count);

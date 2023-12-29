@@ -20,6 +20,7 @@
 #include "frame.h"
 #include "quad.h"
 #include "defer.h"
+#include "../ngui/ngui.h"
 
 typedef struct {
   view_t view;
@@ -90,6 +91,7 @@ static void renderer_init_gl()
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 }
 
 void renderer_render()
@@ -114,9 +116,14 @@ void renderer_render()
   frame_draw(renderer.dither, 0);
   frame_end();
   
+  glEnable(GL_BLEND);
+  
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT);
   frame_draw(renderer.hdr, 1);
+  ngui_render();
+  
+  glDisable(GL_BLEND);
 }
 
 void renderer_scene_pass()
