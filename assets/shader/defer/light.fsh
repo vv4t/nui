@@ -162,7 +162,7 @@ vec3 calc_light(int id)
   
   float shadow = (1.0 - calc_point_shadow(id, light_dir, frag_normal));
   
-  return (light_color + fog_color) * shadow;
+  return light_color * shadow + fog_color;
 }
 
 void frag_pass()
@@ -180,5 +180,5 @@ void frag_pass()
   light += vec3(0.1, 0.1, 0.1);
   light *= calc_occlusion();
   
-  set_frag(vec4(vec3(1.0) * light, 1.0));
+  set_frag(vec4(1.0) * vec4(light, 1.0));
 }

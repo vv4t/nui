@@ -97,7 +97,7 @@ static void renderer_init_gl()
 void renderer_render()
 {
   if (renderer.game->light_update) {
-    light_sub_point(1, renderer.game->light_pos, 16.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+    light_sub_point(1, renderer.game->light_pos, 36.0, vec4_init(1.0, 0.0, 1.0, 1.0));
   }
   
   defer_begin();

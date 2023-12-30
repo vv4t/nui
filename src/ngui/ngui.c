@@ -68,7 +68,7 @@ static bool ngui_load_text(const char *text, vec2_t pos)
 {
   int num_char = strlen(text);
   
-  float scale = 0.025;
+  float scale = 0.03;
   float x_pos = 0.0;
   
   for (int i = 0; i < num_char; i++) {

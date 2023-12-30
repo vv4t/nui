@@ -73,8 +73,6 @@ static void key_event(usercmd_t *usercmd, int key, int action)
     sdl.focus_gui = true;
     sdl.focus_game = false;
     SDL_StartTextInput();
-  } else if (sdl.focus_gui) {
-    ngui_key_event(key, action);
   }
   
   if (key == 27) {
@@ -102,6 +100,10 @@ static void key_event(usercmd_t *usercmd, int key, int action)
       usercmd->jump = action;
       break;
     }
+  }
+  
+  if (sdl.focus_gui) {
+    ngui_key_event(key, action);
   }
 }
 
@@ -152,6 +154,8 @@ bool sdl_init(int width, int height, const char *title)
   
   sdl.focus_gui = false;
   sdl.focus_game = true;
+  
+  SDL_StopTextInput();
   
   return true;
 }
