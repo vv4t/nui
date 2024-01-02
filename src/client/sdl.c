@@ -72,6 +72,7 @@ static void key_event(usercmd_t *usercmd, int key, int action)
   if (key == '`' && !sdl.focus_gui) {
     sdl.focus_gui = true;
     sdl.focus_game = false;
+    ngui_focus();
     SDL_StartTextInput();
   }
   

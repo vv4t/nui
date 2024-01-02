@@ -180,5 +180,5 @@ void frag_pass()
   light += vec3(0.1, 0.1, 0.1);
   light *= calc_occlusion();
   
-  set_frag(vec4(1.0) * vec4(light, 1.0));
+  set_frag(get_diffuse() * vec4(light, 1.0));
 }

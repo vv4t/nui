@@ -59,7 +59,9 @@ bool ngui_init(int width, int height)
     return false;
   }
   
-  ngui.console_input.text[0] = 0;
+  ngui.console_input.text[0] = '>';
+  ngui.console_input.text[1] = ' ';
+  ngui.console_input.text[2] = 0;
   
   return true;
 }
@@ -87,6 +89,16 @@ static bool ngui_load_text(const char *text, vec2_t pos)
   return true;
 }
 
+void ngui_focus()
+{
+  ngui.console_input.text[0] = '>';
+  ngui.console_input.text[1] = ' ';
+  ngui.console_input.text[2] = 0;
+  
+  quad_buffer_reset(&ngui.quad_buffer);
+  ngui_load_text(ngui.console_input.text, vec2_init(0.01, 0.01));
+}
+
 void ngui_text_input(const char *text)
 {
   quad_buffer_reset(&ngui.quad_buffer);
@@ -102,7 +114,7 @@ void ngui_key_event(int key, int action)
   }
   
   if (key == 8) {
-    if (strlen(ngui.console_input.text) > 0) {
+    if (strlen(ngui.console_input.text) > 2) {
       ngui.console_input.text[strlen(ngui.console_input.text) - 1] = 0;
       
       quad_buffer_reset(&ngui.quad_buffer);
@@ -111,7 +123,7 @@ void ngui_key_event(int key, int action)
   }
   
   if (key == 13) {
-    ngui.console_input.text[0] = 0;
+    ngui.console_input.text[2] = 0;
     
     quad_buffer_reset(&ngui.quad_buffer);
     ngui_load_text(ngui.console_input.text, vec2_init(0.01, 0.01));
