@@ -158,11 +158,11 @@ vec3 calc_light(int id)
   float b = dot(frag_pos, view_dir) - c;
   float fog = atan(b / h) / h - atan(a / h) / h;
   
-  vec3 fog_color = vec3(fog) * 0.2;
+  vec3 fog_color = vec3(0.01 * fog * fog + 0.05 * fog);
   
   float shadow = (1.0 - calc_point_shadow(id, light_dir, frag_normal));
   
-  return light_color * shadow + fog_color;
+  return light_color * shadow + points[id].color.xyz * fog_color;
 }
 
 void frag_pass()

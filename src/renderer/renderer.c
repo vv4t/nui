@@ -5,7 +5,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 3
+#define VIEW_SCALE 4
 
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
 #define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
@@ -82,7 +82,7 @@ bool renderer_init(const game_t *game)
 
 static void renderer_init_scene()
 {
-  light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 120.0, vec4_init(0.0, 1.0, 1.0, 1.0));
+  light_sub_point(0, vec3_init(0.0, 15.0, 0.0), 60.0, vec4_init(0.2, 1.0, 1.0, 1.0));
   light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
 }
 
@@ -97,7 +97,7 @@ static void renderer_init_gl()
 void renderer_render()
 {
   if (renderer.game->light_update) {
-    light_sub_point(1, renderer.game->light_pos, 36.0, vec4_init(1.0, 0.0, 1.0, 1.0));
+    light_sub_point(1, renderer.game->light_pos, 20.0, vec4_init(1.0, 0.2, 1.0, 1.0));
   }
   
   defer_begin();
