@@ -77,6 +77,8 @@ static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const ver
     
     path_new(mdl_file->path, vertex_group.material.diffuse);
     
+    material_new(&subgroup->material);
+    
     if (!texture_load(&subgroup->material.diffuse, mdl_file->path)) {
       return false;
     }

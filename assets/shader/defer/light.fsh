@@ -151,6 +151,22 @@ vec3 calc_light(int id)
   
   vec3 light_color = points[id].color.xyz * intensity;
   
+  float shadow = (1.0 - calc_point_shadow(id, light_dir, frag_normal));
+  
+  return light_color * shadow;
+}
+
+vec3 calc_fog(int id)
+{
+  vec3 frag_pos = get_world_pos();
+  vec3 frag_normal = get_frag_normal();
+  
+  vec3 delta_pos = points[id].pos - frag_pos;
+  vec3 light_dir = normalize(delta_pos);
+  
+  vec3 view_dir = normalize(frag_pos - view_pos);
+  vec3 reflect_dir = reflect(-light_dir, frag_normal);
+  
   vec3 h_dir = normalize(light_dir - view_dir * dot(light_dir, view_dir));
   float h = dot(points[id].pos, h_dir) - dot(view_pos, h_dir);
   float c = dot(points[id].pos, view_dir);
@@ -158,16 +174,13 @@ vec3 calc_light(int id)
   float b = dot(frag_pos, view_dir) - c;
   float fog = atan(b / h) / h - atan(a / h) / h;
   
-  vec3 fog_color = vec3(0.01 * fog * fog + 0.05 * fog);
-  
-  float shadow = (1.0 - calc_point_shadow(id, light_dir, frag_normal));
-  
-  return points[id].color.xyz * fog_color;
+  return points[id].color.xyz * vec3(0.01 * fog * fog + 0.05 * fog);
 }
 
 void frag_pass()
 {
   vec3 light = vec3(0.0);
+  vec3 fog = vec3(0.0);
   
   for (int i = 0; i < MAX_POINTS; i++) {
     if (points[i].intensity <= 0.0) {
@@ -175,10 +188,11 @@ void frag_pass()
     }
     
     light += calc_light(i);
+    fog += calc_fog(i);
   }
   
   light += vec3(0.1, 0.1, 0.1);
   light *= calc_occlusion();
   
-  set_frag(get_diffuse() * vec4(light, 1.0));
+  set_frag(get_diffuse() * vec4(light, 1.0) + vec4(fog, 1.0));
 }
