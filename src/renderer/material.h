@@ -6,6 +6,7 @@
 
 typedef struct {
   texture_t diffuse;
+  texture_t normal;
   vec3_t color;
   float specular;
 } material_t;

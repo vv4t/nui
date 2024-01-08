@@ -125,13 +125,21 @@ static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, cons
 {
   material_new(&subgroup->material);
   
+  path_t path;
+  path_copy(path, map->path);
+  
   if (map_subgroup->material.diffuse[0]) {
-    path_t path;
-    path_copy(path, map->path);
-    
     path_new(path, map_subgroup->material.diffuse);
     
     if (!texture_load(&subgroup->material.diffuse, path)) {
+      return false;
+    }
+  }
+  
+  if (map_subgroup->material.diffuse[0]) {
+    path_new(path, map_subgroup->material.normal);
+    
+    if (!texture_load(&subgroup->material.normal, path)) {
       return false;
     }
   }
@@ -174,7 +182,7 @@ static vertex_t *model_load_map_vertices(const map_t *map, const map_subgroup_t 
 
 static void vertex_planar_map(vertex_t *v)
 {
-  vec3_t p = vec3_mulf(v->pos, 0.5);
+  vec3_t p = vec3_mulf(v->pos, 0.25);
   
   if (fabs(v->normal.x) > fabs(v->normal.y)) {
     if (fabs(v->normal.z) > fabs(v->normal.x)) {

@@ -45,6 +45,9 @@ bool shader_load(GLuint *shader, const char *name, const char *define)
   GLuint ul_color = glGetUniformLocation(*shader, "u_color");
   glUniform1i(ul_color, 0);
   
+  GLuint ul_normal = glGetUniformLocation(*shader, "u_normal");
+  glUniform1i(ul_normal, 1);
+  
   GLuint ubl_camera = glGetUniformBlockIndex(*shader, "ub_camera");
   glUniformBlockBinding(*shader, ubl_camera, 0);
   
@@ -122,6 +125,9 @@ void set_frag(vec4 v) { frag_color = v; }";
   
   GLuint ul_color = glGetUniformLocation(*shader, "u_color");
   glUniform1i(ul_color, 0);
+  
+  GLuint ul_normal = glGetUniformLocation(*shader, "u_normal");
+  glUniform1i(ul_normal, 1);
   
   GLuint ubl_camera = glGetUniformBlockIndex(*shader, "ub_camera");
   glUniformBlockBinding(*shader, ubl_camera, 0);

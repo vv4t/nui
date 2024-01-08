@@ -29,6 +29,7 @@ typedef struct {
 
 typedef struct {
   char diffuse[64];
+  char normal[64];
   vec3_t color;
   float specular;
 } map_material_t;

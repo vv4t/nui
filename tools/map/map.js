@@ -54,9 +54,10 @@ export class map_bsp_node_t {
 };
 
 export class map_material_t {
-  constructor(diffuse, color, specular)
+  constructor(diffuse, normal, color, specular)
   {
     this.diffuse = diffuse;
+    this.normal = normal;
     this.color = color;
     this.specular = specular;
   }
@@ -99,8 +100,8 @@ function map_load(obj)
     
     const face_count = map.faces.length - face_offset;
     
-    const { diffuse, color, specular } = obj.materials[material];
-    const map_material = new map_material_t(diffuse, color, specular);
+    const { diffuse, normal, color, specular } = obj.materials[material];
+    const map_material = new map_material_t(diffuse, normal, color, specular);
     
     map.subgroups.push(new map_subgroup_t(map_material, face_offset, face_count));
   }
@@ -205,6 +206,7 @@ function map_write(map, map_name)
   
   for (const subgroup of map.subgroups) {
     write.write_s32(subgroup.material.diffuse);
+    write.write_s32(subgroup.material.normal);
     write.write_vec3(subgroup.material.color);
     write.write_f32(subgroup.material.specular);
     write.write_u32(subgroup.face_offset);
@@ -217,6 +219,13 @@ function map_write(map, map_name)
       const diffuse_copy = "../../assets/map/" + map_name + "/" + subgroup.material.diffuse;
       
       fs.copyFile(diffuse_path, diffuse_copy, (err) => console.log(err));
+    }
+    
+    if (subgroup.material.normal != "") {
+      const normal_path = "obj/" + map_name + "/" + subgroup.material.normal;
+      const normal_copy = "../../assets/map/" + map_name + "/" + subgroup.material.normal;
+      
+      fs.copyFile(normal_path, normal_copy, (err) => console.log(err));
     }
   }
   
