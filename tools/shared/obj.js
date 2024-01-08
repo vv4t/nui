@@ -113,6 +113,8 @@ export class obj_material_t {
   {
     this.name = name;
     this.diffuse = "";
+    this.color = new vec3_t(1.0, 1.0, 1.0);
+    this.specular = 0.0;
   }
 };
 
@@ -152,6 +154,10 @@ class mtllib_t {
         material = new obj_material_t(args[1]);
       } else if (args[0] == "map_Kd") {
         material.diffuse = args[1];
+      } else if (args[0] == "Kd") {
+        material.color = new vec3_t(parseFloat(args[1]), parseFloat(args[2]), parseFloat(args[3]));
+      } else if (args[0] == "Ns") {
+        material.specular = parseFloat(args[1]);
       }
     }
     

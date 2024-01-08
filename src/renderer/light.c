@@ -100,7 +100,7 @@ static void light_init_uniform_location()
   glUniform1i(ul_depth_map, 4);
   
   GLuint ubl_light = glGetUniformBlockIndex(light.shader, "ub_light");
-  glUniformBlockBinding(light.shader, ubl_light, 1);
+  glUniformBlockBinding(light.shader, ubl_light, 2);
 }
 
 static void light_init_uniform_buffer()
@@ -110,7 +110,7 @@ static void light_init_uniform_buffer()
   glGenBuffers(1, &light.ubo_light);
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_light_t), &ub_light, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 1, light.ubo_light); 
+  glBindBufferBase(GL_UNIFORM_BUFFER, 2, light.ubo_light); 
 }
 
 static bool shadow_init()
@@ -132,9 +132,6 @@ static bool shadow_init()
   if (!shader_load(&shadow.shader, "shadow")) {
     return false;
   }
-  
-  GLuint ubl_camera = glGetUniformBlockIndex(shadow.shader, "ub_camera");
-  glUniformBlockBinding(shadow.shader, ubl_camera, 0);
   
   return true;
 }

@@ -36,7 +36,22 @@ bool shader_load(GLuint *shader, const char *name, const char *define)
   cfg_fsh.head = "";
   cfg_fsh.tail = "";
   
-  return shader_load_each(shader, name, &cfg_vsh, &cfg_fsh);
+  if (!shader_load_each(shader, name, &cfg_vsh, &cfg_fsh)) {
+    return false;
+  }
+  
+  glUseProgram(*shader);
+  
+  GLuint ul_color = glGetUniformLocation(*shader, "u_color");
+  glUniform1i(ul_color, 0);
+  
+  GLuint ubl_camera = glGetUniformBlockIndex(*shader, "ub_camera");
+  glUniformBlockBinding(*shader, ubl_camera, 0);
+  
+  GLuint ubl_material = glGetUniformBlockIndex(*shader, "ub_material");
+  glUniformBlockBinding(*shader, ubl_material, 1);
+  
+  return true;
 }
 
 bool forward_shader_load(GLuint *shader, const char *name)
@@ -78,7 +93,7 @@ uniform sampler2D u_color;\n\
 \n\
 vec3 get_frag_pos() { return vs_pos; }\n\
 vec3 get_frag_normal() { return vs_normal; }\n\
-vec4 get_diffuse() { return texture(u_color, vs_uv); }\n\
+vec4 get_diffuse() { return texture(u_color, vs_uv) * vec4(m_color, 1.0); }\n\
 void set_frag(vec4 v) { frag_color = v; }";
   
   const char *frag_tail = "void main() { frag_pass(); }";
@@ -110,6 +125,9 @@ void set_frag(vec4 v) { frag_color = v; }";
   
   GLuint ubl_camera = glGetUniformBlockIndex(*shader, "ub_camera");
   glUniformBlockBinding(*shader, ubl_camera, 0);
+  
+  GLuint ubl_material = glGetUniformBlockIndex(*shader, "ub_material");
+  glUniformBlockBinding(*shader, ubl_material, 1);
   
   return true;
 }
@@ -279,11 +297,18 @@ layout (std140) uniform ub_camera {\n\
   mat4 mat_look;\n\
   vec3 view_pos;\n\
 };";
+
+  const char *ub_material = "\
+layout (std140) uniform ub_material {\n\
+  vec3 m_color;\n\
+  float m_specular;\n\
+};";
   
   const char *full_src[] = {
     glsl_version, "\n",
     glsl_precision, "\n",
     ub_camera, "\n",
+    ub_material, "\n",
     cfg_shader->head, "\n",
     src, "\n",
     cfg_shader->tail

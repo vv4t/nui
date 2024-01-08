@@ -121,14 +121,23 @@ bool model_load_map(model_t *model, const map_t *map)
 
 static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, const map_subgroup_t *map_subgroup)
 {
-  path_t path;
-  path_copy(path, map->path);
+  material_new(&subgroup->material);
   
-  path_new(path, map_subgroup->material.diffuse);
-  
-  if (!texture_load(&subgroup->material.diffuse, path)) {
-    return false;
+  if (map_subgroup->material.diffuse[0]) {
+    path_t path;
+    path_copy(path, map->path);
+    
+    path_new(path, map_subgroup->material.diffuse);
+    
+    if (!texture_load(&subgroup->material.diffuse, path)) {
+      return false;
+    }
   }
+  
+  subgroup->material.color = map_subgroup->material.color;
+  subgroup->material.specular = map_subgroup->material.specular;
+  
+  vec3_print(subgroup->material.color);
   
   int num_vertices = map_subgroup->face_count * 3;
   vertex_t *vertices = model_load_map_vertices(map, map_subgroup);

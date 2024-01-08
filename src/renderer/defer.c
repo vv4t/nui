@@ -58,9 +58,6 @@ bool defer_init(int width, int height)
     return false;
   }
   
-  GLuint ubl_camera = glGetUniformBlockIndex(defer.shader, "ub_camera");
-  glUniformBlockBinding(defer.shader, ubl_camera, 0);
-  
   defer.width = width;
   defer.height = height;
   

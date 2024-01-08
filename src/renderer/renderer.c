@@ -43,8 +43,10 @@ static void renderer_scene_render();
 bool renderer_init(const game_t *game)
 {
   renderer_init_gl();
+  
   mesh_buffer_init(1024 * 1024);
   frame_init(VIEW_WIDTH, VIEW_HEIGHT);
+  material_init();
   
   if (!quad_init()) {
     return false;
@@ -97,7 +99,7 @@ static void renderer_init_gl()
 void renderer_render()
 {
   if (renderer.game->light_update) {
-    light_sub_point(1, renderer.game->light_pos, 20.0, vec4_init(1.0, 0.2, 1.0, 1.0));
+    light_sub_point(1, renderer.game->light_pos, 6.0, vec4_init(1.0, 0.2, 1.0, 1.0));
   }
   
   defer_begin();

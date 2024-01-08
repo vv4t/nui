@@ -162,7 +162,7 @@ vec3 calc_light(int id)
   
   float shadow = (1.0 - calc_point_shadow(id, light_dir, frag_normal));
   
-  return light_color * shadow + points[id].color.xyz * fog_color;
+  return points[id].color.xyz * fog_color;
 }
 
 void frag_pass()
