@@ -5,6 +5,7 @@
 #include "../gl/mesh.h"
 #include "../gl/quad_buffer.h"
 #include "../common/log.h"
+#include "../common/file.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -12,6 +13,9 @@
 #define NUM_GLYPHS 128
 #define GLYPH_SIZE 64
 #define GLYPH_MAP_WIDTH (GLYPH_SIZE * NUM_GLYPHS)
+
+const char *glsl_version = "#version 300 es";
+const char *glsl_precision = "precision mediump float;";
 
 typedef struct {
   vec2_t uv;
@@ -55,7 +59,7 @@ bool ngui_init(int width, int height)
     return false;
   }
   
-  if (!shader_load(&ngui.shader, "ngui")) {
+  if (!shader_load_from_file(&ngui.shader, "ngui")) {
     return false;
   }
   

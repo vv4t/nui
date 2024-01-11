@@ -3,6 +3,8 @@
 #include "../gl/gl.h"
 #include "../gl/shader.h"
 #include "camera.h"
+#include "material.h"
+#include "api.h"
 
 typedef struct {
   int width;
@@ -54,9 +56,18 @@ bool defer_init(int width, int height)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&defer.shader, "g_buffer")) {
+  const char *ext[] = {
+    camera_shader_ext(),
+    material_shader_ext(),
+    NULL
+  };
+  
+  if (!custom_shader_load(&defer.shader, "g_buffer", ext)) {
     return false;
   }
+  
+  camera_shader_ext_setup(defer.shader);
+  material_shader_ext_setup(defer.shader);
   
   defer.width = width;
   defer.height = height;

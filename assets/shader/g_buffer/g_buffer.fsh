@@ -9,9 +9,6 @@ in vec3 vs_normal;
 
 in mat3 vs_TBN;
 
-uniform sampler2D u_color;
-uniform sampler2D u_normal;
-
 void main()
 {
   float view_dist = length(vs_world_pos - view_pos);

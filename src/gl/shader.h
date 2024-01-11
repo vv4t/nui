@@ -3,9 +3,7 @@
 
 #include "gl.h"
 
-bool forward_shader_load(GLuint *shader, const char *name);
-bool shader_load(GLuint *shader, const char *name);
-bool fx_shader_load(GLuint *shader, const char *name);
-bool defer_shader_load(GLuint *shader, const char *name);
+bool shader_load(GLuint *shader, const char *name, const char *vsh_src[], const char *fsh_src[]);
+bool shader_load_from_file(GLuint *shader, const char *name);
 
 #endif

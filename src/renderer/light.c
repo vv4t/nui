@@ -5,7 +5,7 @@
 #define SHADOW_SIZE 512
 
 #include "camera.h"
-#include "renderer_api.h"
+#include "api.h"
 #include "../gl/gl.h"
 #include "../gl/shader.h"
 #include "../common/log.h"
@@ -129,9 +129,16 @@ static bool shadow_init()
   glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  if (!shader_load(&shadow.shader, "shadow")) {
+  const char *ext[] = {
+    camera_shader_ext(),
+    NULL
+  };
+  
+  if (!custom_shader_load(&shadow.shader, "shadow", ext)) {
     return false;
   }
+  
+  camera_shader_ext_setup(shadow.shader);
   
   return true;
 }

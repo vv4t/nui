@@ -1,6 +1,5 @@
 #include "renderer.h"
 
-
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
@@ -13,7 +12,7 @@
 #include "camera.h"
 #include "model.h"
 #include "material.h"
-#include "renderer_api.h"
+#include "api.h"
 #include "frame.h"
 #include "defer.h"
 #include "../gl/gl.h"

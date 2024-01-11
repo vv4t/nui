@@ -147,8 +147,6 @@ static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, cons
   subgroup->material.color = map_subgroup->material.color;
   subgroup->material.specular = map_subgroup->material.specular;
   
-  vec3_print(subgroup->material.color);
-  
   int num_vertices = map_subgroup->face_count * 3;
   vertex_t *vertices = model_load_map_vertices(map, map_subgroup);
   
