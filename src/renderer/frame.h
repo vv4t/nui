@@ -1,7 +1,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include "gl.h"
+#include "../gl/gl.h"
 
 void frame_init(int width, int height);
 void frame_begin(int frame_num);

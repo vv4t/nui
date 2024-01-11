@@ -4,7 +4,7 @@
 #include "../common/log.h"
 #include "../game/game.h"
 #include "../game/map.h"
-#include "../renderer/gl.h"
+#include "../gl/gl.h"
 #include "../renderer/renderer.h"
 #include "../ngui/ngui.h"
 

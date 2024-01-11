@@ -1,8 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "mesh.h"
 #include "material.h"
+#include "../gl/mesh.h"
 #include "../game/map.h"
 
 #define MAX_SUBGROUPS 32

@@ -1,7 +1,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "gl.h"
+#include "../gl/gl.h"
 #include "../common/nui_math.h"
 
 typedef struct {

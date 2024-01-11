@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include "gl.h"
+#include "../gl/gl.h"
 #include "../common/nui_math.h"
 
 bool light_init();

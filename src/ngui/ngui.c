@@ -1,9 +1,9 @@
 #include "ngui.h"
 
-#include "../renderer/gl.h"
-#include "../renderer/shader.h"
-#include "../renderer/mesh.h"
-#include "../renderer/quad_buffer.h"
+#include "../gl/gl.h"
+#include "../gl/shader.h"
+#include "../gl/mesh.h"
+#include "../gl/quad_buffer.h"
 #include "../common/log.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H

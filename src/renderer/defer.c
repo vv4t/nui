@@ -1,7 +1,7 @@
 #include "defer.h"
 
-#include "gl.h"
-#include "shader.h"
+#include "../gl/gl.h"
+#include "../gl/shader.h"
 #include "camera.h"
 
 typedef struct {

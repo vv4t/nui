@@ -1,6 +1,5 @@
 #include "renderer.h"
 
-#include "gl.h"
 
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
@@ -15,11 +14,12 @@
 #include "model.h"
 #include "material.h"
 #include "renderer_api.h"
-#include "shader.h"
-#include "mesh.h"
 #include "frame.h"
-#include "quad.h"
 #include "defer.h"
+#include "../gl/gl.h"
+#include "../gl/quad.h"
+#include "../gl/mesh.h"
+#include "../gl/shader.h"
 #include "../ngui/ngui.h"
 
 typedef struct {

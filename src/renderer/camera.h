@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "gl.h"
+#include "../gl/gl.h"
 #include "../common/nui_math.h"
 
 typedef struct {

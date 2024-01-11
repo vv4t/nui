@@ -1,8 +1,8 @@
 #include "frame.h"
 
-#include "mesh.h"
 #include "camera.h"
-#include "quad.h"
+#include "../gl/mesh.h"
+#include "../gl/quad.h"
 
 #define FRAME_MAX 2
 

@@ -4,10 +4,10 @@
 #define POINTS_MAX 2
 #define SHADOW_SIZE 512
 
-#include "gl.h"
-#include "shader.h"
 #include "camera.h"
 #include "renderer_api.h"
+#include "../gl/gl.h"
+#include "../gl/shader.h"
 #include "../common/log.h"
 
 typedef struct {
