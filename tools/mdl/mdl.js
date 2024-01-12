@@ -5,7 +5,7 @@ import path from "path";
 import { write_t } from "../shared/write.js";
 import { obj_parse } from "../shared/obj.js";
 
-class mdl_vertex_group {
+class mdl_subgroup {
   constructor(material, offset, count)
   {
     this.material = material;
@@ -23,10 +23,20 @@ class mdl_vertex_t {
   }
 };
 
-class mdl_t {
-  constructor(vertex_groups, vertices)
+class mdl_material_t {
+  constructor(diffuse, normal, color, specular)
   {
-    this.vertex_groups = vertex_groups;
+    this.diffuse = diffuse;
+    this.normal = normal;
+    this.color = color;
+    this.specular = specular;
+  }
+};
+
+class mdl_t {
+  constructor(subgroups, vertices)
+  {
+    this.subgroups = subgroups;
     this.vertices = vertices;
   }
 };
@@ -50,26 +60,34 @@ function main()
 
 function write_mdl(write, mdl, mdl_name)
 {
-  write.write_u32(mdl.vertex_groups.length);
+  write.write_u32(mdl.subgroups.length);
   write.write_u32(mdl.vertices.length);
   
-  for (const vertex_group of mdl.vertex_groups) {
-    write.write_s32(vertex_group.material.diffuse);
-    write.write_u32(vertex_group.offset);
-    write.write_u32(vertex_group.count);
+  for (const subgroup of mdl.subgroups) {
+    write.write_s32(subgroup.material.diffuse);
+    write.write_s32(subgroup.material.normal);
+    write.write_vec3(subgroup.material.color);
+    write.write_f32(subgroup.material.specular);
+    write.write_u32(subgroup.offset);
+    write.write_u32(subgroup.count);
   }
   
   for (const vertex of mdl.vertices) {
     write.write_vertex(vertex);
   }
   
-  // fs.writeFileSync(out_mdl, Buffer.from(write.data()));
-  
-  for (const vertex_group of mdl.vertex_groups) {
-    const diffuse_path = "obj/" + mdl_name + "/" + vertex_group.material.diffuse;
-    const diffuse_copy = "../../assets/mdl/" + mdl_name + "/" + vertex_group.material.diffuse;
+  for (const subgroup of mdl.subgroups) {
+    if (subgroup.material.diffuse != "") {
+      const diffuse_path = "obj/" + mdl_name + "/" + subgroup.material.diffuse;
+      const diffuse_copy = "../../assets/map/" + mdl_name + "/" + subgroup.material.diffuse;
+      fs.copyFile(diffuse_path, diffuse_copy, (err) => console.log(err));
+    }
     
-    fs.copyFile(diffuse_path, diffuse_copy, (err) => console.log(err));
+    if (subgroup.material.normal != "") {
+      const normal_path = "obj/" + mdl_name + "/" + subgroup.material.normal;
+      const normal_copy = "../../assets/map/" + mdl_name + "/" + subgroup.material.normal;
+      fs.copyFile(normal_path, normal_copy, (err) => console.log(err));
+    }
   }
   
   fs.mkdir("../../assets/mdl/" + mdl_name, (err) => console.log(err));
@@ -90,7 +108,7 @@ function obj_to_mdl(obj)
   }
   
   const vertices = [];
-  const vertex_groups = [];
+  const subgroups = [];
   
   for (const [material, objects] of Object.entries(object_groups)) {
     const offset = vertices.length;
@@ -105,10 +123,13 @@ function obj_to_mdl(obj)
     
     const count = vertices.length - offset;
     
-    vertex_groups.push(new mdl_vertex_group(obj.materials[material], offset, count));
+    const { diffuse, normal, color, specular } = obj.materials[material];
+    const mdl_material = new mdl_material_t(diffuse, normal, color, specular);
+    
+    subgroups.push(new mdl_subgroup(mdl_material, offset, count));
   }
   
-  return new mdl_t(vertex_groups, vertices);
+  return new mdl_t(subgroups, vertices);
 }
 
 main();

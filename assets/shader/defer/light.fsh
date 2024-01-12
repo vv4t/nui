@@ -191,7 +191,7 @@ void frag_pass()
     fog += calc_fog(i);
   }
   
-  light += vec3(0.1, 0.1, 0.1);
+  light += 0.01;
   light *= calc_occlusion();
   
   set_frag(get_diffuse() * vec4(light, 1.0) + vec4(fog, 1.0));

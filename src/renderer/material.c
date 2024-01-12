@@ -45,7 +45,7 @@ void normal_map_init()
   float data[] = { 0.5, 0.5, 1.0, 1.0 };
   
   glGenTextures(1, &material_def.empty_normal);
-  glBindTexture(GL_TEXTURE_2D, material_def.empty_diffuse);
+  glBindTexture(GL_TEXTURE_2D, material_def.empty_normal);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -56,6 +56,7 @@ void normal_map_init()
 void material_new(material_t *material)
 {
   material->diffuse = material_def.empty_diffuse;
+  material->normal = material_def.empty_normal;
   material->color = vec3_init(1.0, 1.0, 1.0);
   material->specular = 1.0;
 }

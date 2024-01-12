@@ -5,13 +5,16 @@
 
 typedef struct {
   char diffuse[64];
+  char normal[64];
+  vec3_t color;
+  float specular;
 } mdl_material_t;
 
 typedef struct {
   mdl_material_t material;
   int offset;
   int count;
-} mdl_vertex_group_t;
+} mdl_subgroup_t;
 
 typedef struct {
   vec3_t pos;
@@ -21,10 +24,8 @@ typedef struct {
 
 typedef struct {
   path_t path;
-  
-  int num_vertex_groups;
-  mdl_vertex_group_t *vertex_groups;
-  
+  int num_subgroups;
+  mdl_subgroup_t *subgroups;
   int num_vertices;
   mdl_vertex_t *vertices;
 } mdl_file_t;
@@ -53,7 +54,7 @@ bool model_load(model_t *model, const char *name)
     return false;
   }
   
-  model->num_subgroups = mdl_file->num_vertex_groups;
+  model->num_subgroups = mdl_file->num_subgroups;
   
   mdl_file_free(mdl_file);
   free(vertices);
@@ -71,21 +72,37 @@ void model_draw(const model_t *model)
 
 static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const vertex_t *vertices)
 {
-  for (int i = 0; i < mdl_file->num_vertex_groups; i++) {
+  path_t path;
+  path_copy(path, mdl_file->path);
+  
+  for (int i = 0; i < mdl_file->num_subgroups; i++) {
     subgroup_t *subgroup = &model->subgroups[i];
-    mdl_vertex_group_t vertex_group = mdl_file->vertex_groups[i];
-    
-    path_new(mdl_file->path, vertex_group.material.diffuse);
+    mdl_subgroup_t mdl_subgroup = mdl_file->subgroups[i];
     
     material_new(&subgroup->material);
     
-    if (!texture_load(&subgroup->material.diffuse, mdl_file->path)) {
-      return false;
+    if (mdl_subgroup.material.diffuse[0]) {
+      path_new(path, mdl_subgroup.material.diffuse);
+      
+      if (!texture_load(&subgroup->material.diffuse, path)) {
+        return false;
+      }
     }
     
-    const vertex_t *vertex_offset = &vertices[vertex_group.offset];
+    if (mdl_subgroup.material.normal[0]) {
+      path_new(path, mdl_subgroup.material.normal);
+      
+      if (!texture_load(&subgroup->material.normal, path)) {
+        return false;
+      }
+    }
     
-    if (!mesh_buffer_new(&subgroup->mesh, vertex_offset, vertex_group.count)) {
+    subgroup->material.color = mdl_subgroup.material.color;
+    subgroup->material.specular = mdl_subgroup.material.specular;
+    
+    const vertex_t *vertex_offset = &vertices[mdl_subgroup.offset];
+    
+    if (!mesh_buffer_new(&subgroup->mesh, vertex_offset, mdl_subgroup.count)) {
       return false;
     }
   }
@@ -136,7 +153,7 @@ static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, cons
     }
   }
   
-  if (map_subgroup->material.diffuse[0]) {
+  if (map_subgroup->material.normal[0]) {
     path_new(path, map_subgroup->material.normal);
     
     if (!texture_load(&subgroup->material.normal, path)) {
@@ -180,7 +197,7 @@ static vertex_t *model_load_map_vertices(const map_t *map, const map_subgroup_t 
 
 static void vertex_planar_map(vertex_t *v)
 {
-  vec3_t p = vec3_mulf(v->pos, 0.25);
+  vec3_t p = vec3_mulf(v->pos, 0.45);
   
   if (fabs(v->normal.x) > fabs(v->normal.y)) {
     if (fabs(v->normal.z) > fabs(v->normal.x)) {
@@ -229,14 +246,14 @@ mdl_file_t *mdl_file_load(path_t path)
   
   mdl_file_t *mdl_file = malloc(sizeof(mdl_file_t));
   
-  fread(&mdl_file->num_vertex_groups, sizeof(int), 1, file); 
+  fread(&mdl_file->num_subgroups, sizeof(int), 1, file); 
   fread(&mdl_file->num_vertices, sizeof(int), 1, file); 
   
-  mdl_file->vertex_groups = calloc(mdl_file->num_vertex_groups, sizeof(mdl_vertex_group_t));
+  mdl_file->subgroups = calloc(mdl_file->num_subgroups, sizeof(mdl_subgroup_t));
   mdl_file->vertices = calloc(mdl_file->num_vertices, sizeof(mdl_vertex_t));
   path_copy(mdl_file->path, path);
   
-  fread(mdl_file->vertex_groups, sizeof(mdl_vertex_group_t), mdl_file->num_vertex_groups, file);
+  fread(mdl_file->subgroups, sizeof(mdl_subgroup_t), mdl_file->num_subgroups, file);
   fread(mdl_file->vertices, sizeof(mdl_vertex_t), mdl_file->num_vertices, file);
   
   return mdl_file;
@@ -244,7 +261,7 @@ mdl_file_t *mdl_file_load(path_t path)
 
 void mdl_file_free(mdl_file_t *mdl_file)
 {
-  free(mdl_file->vertex_groups);
+  free(mdl_file->subgroups);
   free(mdl_file->vertices);
   free(mdl_file);
 }
