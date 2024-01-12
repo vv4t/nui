@@ -2,6 +2,9 @@
 
 #define LOOK_SENSITIVITY 0.005
 
+void player_move(player_t *player, const bsp_t *bsp, const usercmd_t *usercmd);
+void player_free_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd);
+void player_look(player_t *player, const usercmd_t *usercmd);
 vec3_t player_move_dir(const player_t *p, const usercmd_t *usercmd);
 void player_slide(player_t *p, const bsp_t *bsp);
 void player_accelerate(player_t *p, vec3_t wish_dir, float accel, float wish_speed);
@@ -17,15 +20,15 @@ void player_init(player_t *p)
   
   float w = 0.4;
   float h = 1.7;
-  float l = 0.3;
+  float l = 0.1;
   
   p->hull = (hull_t) {
     .pos = { .x = 0.0, .y = 0.0, .z = 0.0 },
     .vertices = {
-      { .x = -w, .y = +h, .z = -w },
-      { .x = +w, .y = +h, .z = -w },
-      { .x = -w, .y = +h, .z = +w },
-      { .x = +w, .y = +h, .z = +w },
+      { .x = -w, .y = +l, .z = -w },
+      { .x = +w, .y = +l, .z = -w },
+      { .x = -w, .y = +l, .z = +w },
+      { .x = +w, .y = +l, .z = +w },
       { .x = -w, .y = -h, .z = -w },
       { .x = +w, .y = -h, .z = -w },
       { .x = -w, .y = -h, .z = +w },
@@ -34,7 +37,7 @@ void player_init(player_t *p)
     .num_vertices = 8,
     .planes = {
       { .normal = { .x =  1.0, .y =  0.0, .z =  0.0 }, .distance = w },
-      { .normal = { .x =  0.0, .y =  1.0, .z =  0.0 }, .distance = h },
+      { .normal = { .x =  0.0, .y =  1.0, .z =  0.0 }, .distance = l },
       { .normal = { .x =  0.0, .y =  0.0, .z =  1.0 }, .distance = w },
       { .normal = { .x = -1.0, .y =  0.0, .z =  0.0 }, .distance = w },
       { .normal = { .x =  0.0, .y = -1.0, .z =  0.0 }, .distance = h },
@@ -42,6 +45,29 @@ void player_init(player_t *p)
     },
     .num_planes = 6
   };
+}
+
+void player_update(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
+{
+  player_look(p, usercmd);
+  player_move(p, bsp, usercmd);
+}
+
+void player_free_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
+{
+  vec3_t cmd_dir = vec3_init(usercmd->right - usercmd->left, 0.0f, usercmd->forward - usercmd->back);
+  vec3_t wish_dir = vec3_rotate(cmd_dir, p->rotation);
+  vec3_t move_dir = vec3_normalize(wish_dir);
+  
+  vec3_t delta_pos = vec3_mulf(move_dir, 0.05);
+  
+  p->position = vec3_add(p->position, delta_pos);
+  p->hull.pos = p->position;
+  
+  trace_t trace;
+  bsp_clip(&trace, bsp, &p->hull);
+  
+  p->position = p->hull.pos;
 }
 
 void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
@@ -74,26 +100,18 @@ void player_slide(player_t *p, const bsp_t *bsp)
   bsp_clip(&trace, bsp, &p->hull);
   
   for (int i = 0; i < trace.num_clips; i++) {
-    vec3_t depth_v = hull_furthest_in(&p->hull, trace.clips[i].plane.normal);
+    float lambda = -vec3_dot(p->velocity, trace.clips[i].plane.normal);
     
-    float pos_shift = -plane_depth(trace.clips[i].plane, depth_v);
-    float vel_shift = -vec3_dot(p->velocity, trace.clips[i].plane.normal);
-    
-    vec3_t pos_slide = vec3_mulf(trace.clips[i].plane.normal, pos_shift);
-    vec3_t vel_slide = vec3_mulf(trace.clips[i].plane.normal, vel_shift);
+    if (lambda > 0) {
+      p->velocity = vec3_add(p->velocity, vec3_mulf(trace.clips[i].plane.normal, lambda));
+    }
     
     if (trace.clips[i].plane.normal.y > 0.4) {
       p->ground = true;
     }
-    
-    if (vel_shift > 0) {
-      p->velocity = vec3_add(p->velocity, vel_slide);
-    }
-    
-    if (pos_shift > 0) {
-      p->position = vec3_add(p->position, pos_slide);
-    }
   }
+  
+  p->position = p->hull.pos;
 }
 
 vec3_t player_move_dir(const player_t *p, const usercmd_t *usercmd)

@@ -32,6 +32,6 @@ typedef struct {
 } trace_t;
 
 void bsp_load(bsp_t *bsp, const map_t *map);
-void bsp_clip(trace_t *trace, const bsp_t *bsp, const hull_t *hull);
+void bsp_clip(trace_t *trace, const bsp_t *bsp, hull_t *hull);
 
 #endif

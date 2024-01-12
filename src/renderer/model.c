@@ -197,7 +197,7 @@ static vertex_t *model_load_map_vertices(const map_t *map, const map_subgroup_t 
 
 static void vertex_planar_map(vertex_t *v)
 {
-  vec3_t p = vec3_mulf(v->pos, 0.45);
+  vec3_t p = vec3_mulf(v->pos, 0.5);
   
   if (fabs(v->normal.x) > fabs(v->normal.y)) {
     if (fabs(v->normal.z) > fabs(v->normal.x)) {

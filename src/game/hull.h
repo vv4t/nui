@@ -8,10 +8,8 @@
 
 typedef struct {
   vec3_t pos;
-  
   int num_vertices;
   vec3_t vertices[MAX_VERTICES];
-  
   int num_planes;
   plane_t planes[MAX_PLANES];
 } hull_t;

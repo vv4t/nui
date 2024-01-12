@@ -1,11 +1,24 @@
 #include "bsp.h"
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include "../common/log.h"
+
+typedef struct {
+  plane_t plane;
+  vec3_t contact;
+  float depth;
+} hull_clip_t;
+
+typedef struct {
+  int hulls[16];
+  int num_hulls;
+} bsp_trace_t;
 
 static void bsp_free(bsp_t *bsp);
-static void bsp_clip_R(trace_t *trace, const bsp_t *bsp, const hull_t *hull, int node_num);
-static void hull_clip_bsp_hull(trace_t *trace, const bsp_t *bsp, map_hull_t bsp_hull, const hull_t *hull);
+static void bsp_clip_R(bsp_trace_t *trace, const bsp_t *bsp, const hull_t *hull, int node_num);
+static bool hull_clip_bsp_hull(hull_clip_t *clip, const bsp_t *bsp, map_hull_t bsp_hull, hull_t *hull);
 plane_t hull_calc_plane(const hull_t *hull, int plane_num);
 vec3_t hull_furthest_in(const hull_t *hull, vec3_t d);
 vec3_t bsp_hull_furthest_in(const bsp_t *bsp, map_hull_t hull, vec3_t d);
@@ -30,13 +43,34 @@ void bsp_load(bsp_t *bsp, const map_t *map)
   memcpy(bsp->nodes, map->nodes, map->num_nodes* sizeof(map_bsp_node_t));
 }
 
-void bsp_clip(trace_t *trace, const bsp_t *bsp, const hull_t *hull)
+void bsp_clip(trace_t *trace, const bsp_t *bsp, hull_t *hull)
 {
   trace->num_clips = 0;
-  bsp_clip_R(trace, bsp, hull, 0);
+  
+  bsp_trace_t bsp_trace;
+  bsp_trace.num_hulls = 0;
+  bsp_clip_R(&bsp_trace, bsp, hull, 0);
+  
+  for (int i = 0; i < bsp_trace.num_hulls; i++) {
+    int clip_hull = bsp_trace.hulls[i];
+    
+    hull_clip_t clip;
+    
+    if (hull_clip_bsp_hull(&clip, bsp, bsp->hulls[clip_hull], hull)) {
+      float lambda = -(clip.depth - 0.001);
+      
+      if (lambda > 0) {
+        hull->pos = vec3_add(hull->pos, vec3_mulf(clip.plane.normal, lambda));
+        
+        trace->clips[trace->num_clips].plane = clip.plane;
+        trace->clips[trace->num_clips].depth = clip.depth;
+        trace->num_clips++;
+      }
+    }
+  }
 }
 
-static void bsp_clip_R(trace_t *trace, const bsp_t *bsp, const hull_t *hull, int node_num)
+static void bsp_clip_R(bsp_trace_t *trace, const bsp_t *bsp, const hull_t *hull, int node_num)
 {
   if (node_num == -1) {
     return;
@@ -57,17 +91,16 @@ static void bsp_clip_R(trace_t *trace, const bsp_t *bsp, const hull_t *hull, int
   
   if (min_depth < 0) {
     if (node.behind == -1) {
-      hull_clip_bsp_hull(trace, bsp, bsp->hulls[node.hull], hull);
+      trace->hulls[trace->num_hulls++] = node.hull;
     }
     
     bsp_clip_R(trace, bsp, hull, node.behind);
   }
 }
 
-static void hull_clip_bsp_hull(trace_t *trace, const bsp_t *bsp, map_hull_t bsp_hull, const hull_t *hull)
+static bool hull_clip_bsp_hull(hull_clip_t *clip, const bsp_t *bsp, map_hull_t bsp_hull, hull_t *hull)
 {
-  float min_depth = -10000.0;
-  plane_t min_plane;
+  clip->depth = -10000.0;
   
   for (int i = bsp_hull.plane_offset; i < bsp_hull.plane_offset + bsp_hull.plane_count; i++) {
     plane_t plane = bsp->planes[i];
@@ -76,10 +109,11 @@ static void hull_clip_bsp_hull(trace_t *trace, const bsp_t *bsp, map_hull_t bsp_
     float depth = plane_depth(plane, vertex);
     
     if (depth > 0) {
-      return;
-    } else if (depth > min_depth) {
-      min_depth = depth;
-      min_plane = plane;
+      return false;
+    } else if (depth > clip->depth) {
+      clip->depth = depth;
+      clip->plane = plane;
+      clip->contact = vertex;
     }
   }
   
@@ -90,16 +124,15 @@ static void hull_clip_bsp_hull(trace_t *trace, const bsp_t *bsp, map_hull_t bsp_
     float depth = plane_depth(plane, vertex);
     
     if (depth > 0) {
-      return;
-    } else if (depth > min_depth) {
-      min_depth = depth;
-      min_plane = plane;
+      return false;
+    } else if (depth > clip->depth) {
+      clip->depth = depth;
+      clip->plane = (plane_t) { .normal = vec3_mulf(plane.normal, -1), .distance = plane.distance };
+      clip->contact = vertex;
     }
   }
   
-  int clip_num = trace->num_clips++;
-  trace->clips[clip_num].plane = min_plane;
-  trace->clips[clip_num].depth = min_depth;
+  return true;
 }
 
 static void bsp_free(bsp_t *bsp)

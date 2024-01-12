@@ -21,7 +21,6 @@ typedef struct {
 } player_t;
 
 void player_init(player_t *player);
-void player_move(player_t *player, const bsp_t *bsp, const usercmd_t *usercmd);
-void player_look(player_t *player, const usercmd_t *usercmd);
+void player_update(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd);
 
 #endif

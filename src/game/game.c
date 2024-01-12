@@ -14,8 +14,7 @@ void game_map_load(game_t *game, map_t *map)
 
 void game_update(game_t *game, const usercmd_t *usercmd)
 {
-  player_look(&game->player, usercmd);
-  player_move(&game->player, &game->bsp, usercmd);
+  player_update(&game->player, &game->bsp, usercmd);
   
   if (usercmd->attack1) {
     vec3_t d = vec3_rotate(vec3_init(0.0, 0.0, 4.0), game->player.rotation);
