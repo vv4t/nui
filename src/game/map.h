@@ -41,6 +41,12 @@ typedef struct {
 } map_subgroup_t;
 
 typedef struct {
+  vec3_t pos;
+  vec3_t color;
+  float intensity;
+} map_light_t;
+
+typedef struct {
   path_t          path;
   
   int             num_vertices;
@@ -60,6 +66,9 @@ typedef struct {
   
   int             num_subgroups;
   map_subgroup_t  *subgroups;
+  
+  int             num_lights;
+  map_light_t     *lights;
 } map_t;
 
 map_t *map_load(const char *path);

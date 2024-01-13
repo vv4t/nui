@@ -26,6 +26,7 @@ map_t *map_load(const char *name)
   fread(&map->num_hulls, sizeof(int), 1, file); 
   fread(&map->num_nodes, sizeof(int), 1, file); 
   fread(&map->num_subgroups, sizeof(int), 1, file); 
+  fread(&map->num_lights, sizeof(int), 1, file); 
   
   map->vertices = calloc(map->num_vertices, sizeof(map_vertex_t));
   map->planes = calloc(map->num_planes, sizeof(plane_t));
@@ -33,6 +34,7 @@ map_t *map_load(const char *name)
   map->hulls = calloc(map->num_hulls, sizeof(map_hull_t));
   map->nodes = calloc(map->num_nodes, sizeof(map_bsp_node_t));
   map->subgroups = calloc(map->num_subgroups, sizeof(map_subgroup_t));
+  map->lights = calloc(map->num_lights, sizeof(map_light_t));
   
   fread(map->vertices, sizeof(map_vertex_t), map->num_vertices, file);
   fread(map->planes, sizeof(plane_t), map->num_planes, file);
@@ -40,6 +42,7 @@ map_t *map_load(const char *name)
   fread(map->hulls, sizeof(map_hull_t), map->num_hulls, file);
   fread(map->nodes, sizeof(map_bsp_node_t), map->num_nodes, file);
   fread(map->subgroups, sizeof(map_subgroup_t), map->num_subgroups, file);
+  fread(map->lights, sizeof(map_light_t), map->num_lights, file);
   
   return map;
 }
@@ -51,5 +54,6 @@ void map_free(map_t *map)
   free(map->hulls);
   free(map->nodes);
   free(map->subgroups);
+  free(map->lights);
   free(map);
 }

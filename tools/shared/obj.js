@@ -20,6 +20,7 @@ export function obj_parse(str_path)
   
   let material = 0;
   let object = null;
+  let name = "";
   
   let mtllib = new mtllib_t();
   
@@ -79,14 +80,16 @@ export function obj_parse(str_path)
       materials.push(...mtllib.materials);
     } else if (args[0] == "o") {
       if (face_buf.length > 0) {
-        objects.push(new obj_object_t(material, face_buf));
+        objects.push(new obj_object_t(name, material, face_buf));
         face_buf = [];
       }
+      
+      name = args[1];
     }
   }
   
   if (face_buf.length > 0) {
-    objects.push(new obj_object_t(material, face_buf));
+    objects.push(new obj_object_t(name, material, face_buf));
   }
   
   return new obj_t(materials, objects);
@@ -120,8 +123,9 @@ export class obj_material_t {
 };
 
 export class obj_object_t {
-  constructor(material, faces)
+  constructor(name, material, faces)
   {
+    this.name = name;
     this.material = material;
     this.faces = faces;
   }

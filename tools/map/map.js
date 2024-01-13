@@ -6,11 +6,21 @@ import { write_t } from "../shared/write.js";
 import { plane_t } from "../shared/math.js";
 import { obj_parse } from "../shared/obj.js";
 import { bsp_face_t, bsp_load } from "./bsp.js";
+import { vec3_t } from "../shared/math.js";
 
 export class map_vertex_t {
   constructor(pos)
   {
     this.pos = pos;
+  }
+};
+
+export class map_light_t {
+  constructor(pos, color, intensity)
+  {
+    this.pos = pos;
+    this.color = color;
+    this.intensity = intensity;
   }
 };
 
@@ -72,6 +82,7 @@ export class map_t {
     this.hulls = [];
     this.nodes = [];
     this.subgroups = [];
+    this.lights = [];
   }
 };
 
@@ -88,7 +99,7 @@ function map_load(obj)
   }
   
   for (const object of obj.objects) {
-    load_object(map, subgroups, bsp, object);
+    load_object(map, subgroups, bsp, obj, object);
   }
   
   for (const [material, objects] of Object.entries(subgroups)) {
@@ -111,8 +122,13 @@ function map_load(obj)
   return map;
 }
 
-function load_object(map, subgroups, bsp, object)
+function load_object(map, subgroups, bsp, obj, object)
 {
+  if (object.name.startsWith("light")) {
+    load_light(map, object, obj.materials[object.material]);
+    return;
+  }
+  
   const faces = [];
   
   const plane_map = {};
@@ -163,6 +179,21 @@ function load_face(faces, map, bsp, plane_map, vertex_map, hull, face)
   bsp.push(new bsp_face_t(bsp_vertices, face.normal, plane_map[id], hull));
 }
 
+function load_light(map, object, material)
+{
+  let light_pos = new vec3_t(0.0, 0.0, 0.0);
+  
+  for (const face of object.faces) {
+    for (const vertex of face.vertices) {
+      light_pos = light_pos.add(vertex.pos);
+    }
+  }
+  
+  light_pos = light_pos.mulf(1.0 / (object.faces.length * 3));
+  
+  map.lights.push(new map_light_t(light_pos, material.color, 20.0));
+}
+
 function map_write(map, map_name)
 {
   const write = new write_t();
@@ -173,6 +204,7 @@ function map_write(map, map_name)
   write.write_u32(map.hulls.length);
   write.write_u32(map.nodes.length);
   write.write_u32(map.subgroups.length);
+  write.write_u32(map.lights.length);
   
   for (const vertex of map.vertices) {
     write.write_vec3(vertex.pos);
@@ -211,6 +243,12 @@ function map_write(map, map_name)
     write.write_f32(subgroup.material.specular);
     write.write_u32(subgroup.face_offset);
     write.write_u32(subgroup.face_count);
+  }
+  
+  for (const light of map.lights) {
+    write.write_vec3(light.pos);
+    write.write_vec3(light.color);
+    write.write_f32(light.intensity);
   }
   
   for (const subgroup of map.subgroups) {

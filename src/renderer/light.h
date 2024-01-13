@@ -6,6 +6,6 @@
 
 bool light_init();
 void light_bind();
-void light_sub_point(int id, vec3_t pos, float intensity, vec4_t color);
+void light_sub_point(int id, vec3_t pos, float intensity, vec3_t color);
 
 #endif

@@ -1,7 +1,7 @@
 #include "light.h"
 
 #define CUBE_FACES 6
-#define POINTS_MAX 2
+#define POINTS_MAX 8
 #define SHADOW_SIZE 512
 
 #include "camera.h"
@@ -143,12 +143,12 @@ static bool shadow_init()
   return true;
 }
 
-void light_sub_point(int id, vec3_t pos, float intensity, vec4_t color)
+void light_sub_point(int id, vec3_t pos, float intensity, vec3_t color)
 {
   ub_point_t point = {
     .pos = pos,
     .intensity = intensity,
-    .color = color
+    .color = vec4_init(color.x, color.y, color.z, 1.0)
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);

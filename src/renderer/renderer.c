@@ -20,6 +20,7 @@
 #include "../gl/mesh.h"
 #include "../gl/shader.h"
 #include "../ngui/ngui.h"
+#include "../common/log.h"
 
 typedef struct {
   view_t view;
@@ -36,7 +37,6 @@ typedef struct {
 static renderer_t renderer;
 
 static void renderer_init_gl();
-static void renderer_init_scene();
 static void renderer_scene_render();
 
 bool renderer_init(const game_t *game)
@@ -81,12 +81,6 @@ bool renderer_init(const game_t *game)
   return true;
 }
 
-static void renderer_init_scene()
-{
-  light_sub_point(0, vec3_init(2.0, 2.0, 2.0), 30.0, vec4_init(0.2, 1.0, 1.0, 1.0));
-  light_sub_point(1, vec3_init(23.0, 15.0, -23.0), 120.0, vec4_init(1.0, 0.0, 1.0, 1.0));
-}
-
 static void renderer_init_gl()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -98,7 +92,7 @@ static void renderer_init_gl()
 void renderer_render()
 {
   if (renderer.game->light_update) {
-    light_sub_point(1, renderer.game->light_pos, 6.0, vec4_init(1.0, 0.2, 1.0, 1.0));
+    light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
   
   defer_begin();
@@ -147,5 +141,8 @@ void renderer_shadow_pass()
 void renderer_map_load(const map_t *map)
 {
   model_load_map(&renderer.map_model, map);
-  renderer_init_scene();
+  
+  for (int i = 0; i < map->num_lights; i++) {
+    light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
+  }
 }

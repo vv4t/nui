@@ -1,5 +1,5 @@
 #define CUBE_FACES 6
-#define MAX_POINTS 2
+#define MAX_POINTS 8
 
 struct point_t {
   vec3  pos;
