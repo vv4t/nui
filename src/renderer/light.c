@@ -41,7 +41,6 @@ typedef struct {
 
 static bool shadow_init();
 
-static bool light_init_shader();
 static void light_init_uniform_buffer();
 static void light_init_uniform_location();
 static void light_init_ambient();
@@ -49,24 +48,9 @@ static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
-  if (!light_init_shader()) {
-    return false;
-  }
-  
-  light_init_uniform_location();
-  light_init_ambient();
   light_init_uniform_buffer();
   
   if (!shadow_init()) {
-    return false;
-  }
-  
-  return true;
-}
-
-static bool light_init_shader()
-{
-  if (!defer_shader_load(&light.shader, "light")) {
     return false;
   }
   
@@ -129,16 +113,18 @@ static bool shadow_init()
   glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  const char *ext[] = {
-    camera_shader_ext(),
-    NULL
-  };
+  shader_setup_t shader_setup;
+  shader_setup_init(&shader_setup, "shadow");
+  shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
+  shader_setup_source(&shader_setup, "shadow");
   
-  if (!custom_shader_load(&shadow.shader, "shadow", ext)) {
+  if (!shader_setup_compile(&shadow.shader, &shader_setup)) {
     return false;
   }
   
-  camera_shader_ext_setup(shadow.shader);
+  camera_shader_setup(shadow.shader);
+  
+  shader_setup_free(&shader_setup);
   
   return true;
 }

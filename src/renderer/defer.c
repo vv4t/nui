@@ -1,10 +1,11 @@
 #include "defer.h"
 
-#include "../gl/gl.h"
-#include "../gl/shader.h"
 #include "camera.h"
 #include "material.h"
 #include "api.h"
+#include "../gl/gl.h"
+#include "../gl/shader.h"
+#include "../common/path.h"
 
 typedef struct {
   int width;
@@ -56,18 +57,18 @@ bool defer_init(int width, int height)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
-  const char *ext[] = {
-    camera_shader_ext(),
-    material_shader_ext(),
-    NULL
-  };
+  shader_setup_t shader_setup;
+  shader_setup_init(&shader_setup, "g_buffer");
+  shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
+  shader_setup_import(&shader_setup, SHADER_BOTH, "material");
+  shader_setup_source(&shader_setup, "g_buffer");
   
-  if (!custom_shader_load(&defer.shader, "g_buffer", ext)) {
+  if (!shader_setup_compile(&defer.shader, &shader_setup)) {
     return false;
   }
   
-  camera_shader_ext_setup(defer.shader);
-  material_shader_ext_setup(defer.shader);
+  camera_shader_setup(defer.shader);
+  material_shader_setup(defer.shader);
   
   defer.width = width;
   defer.height = height;
@@ -101,4 +102,26 @@ void defer_bind()
   
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, defer.g_albedo);
+}
+
+void defer_shader_source(shader_setup_t *shader_setup, const char *name)
+{
+  path_t path_defer;
+  path_create(path_defer, "assets/shader/defer/%s.frag", name);
+  
+  shader_setup_import(shader_setup, SHADER_FRAGMENT, "defer");
+  shader_setup_source_each(shader_setup, "assets/shader/defer/defer.vert", path_defer); 
+}
+
+void defer_shader_setup(GLuint shader)
+{
+  glUseProgram(shader);
+  
+  GLuint ul_pos = glGetUniformLocation(shader, "u_pos");
+  GLuint ul_normal = glGetUniformLocation(shader, "u_normal");
+  GLuint ul_albedo = glGetUniformLocation(shader, "u_albedo");
+  
+  glUniform1i(ul_pos, 0);
+  glUniform1i(ul_normal, 1);
+  glUniform1i(ul_albedo, 2);
 }

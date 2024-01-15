@@ -86,23 +86,7 @@ mat4x4_t camera_get_view_project()
   return camera.mat_projection;
 }
 
-const char *camera_shader_ext()
-{
-  return "\
-layout (std140) uniform ub_camera {\n\
-  mat4 mat_mvp;\n\
-  mat4 mat_model;\n\
-  mat4 mat_view;\n\
-  mat4 mat_look;\n\
-  vec3 view_pos;\n\
-};\n\
-#define get_mvp() mat_mvp\n\
-#define get_model() mat_model\n\
-#define get_view() mat_view\n\
-#define get_view_pos() view_pos\n";
-}
-
-void camera_shader_ext_setup(GLuint shader)
+void camera_shader_setup(GLuint shader)
 {
   glUseProgram(shader);
   

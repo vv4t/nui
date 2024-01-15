@@ -16,7 +16,6 @@ void material_init();
 void material_new(material_t *material);
 void material_bind(material_t material);
 
-const char *material_shader_ext();
-void material_shader_ext_setup(GLuint shader);
+void material_shader_setup(GLuint shader);
 
 #endif

@@ -2,7 +2,9 @@
 
 #include "camera.h"
 #include "../gl/mesh.h"
+#include "../gl/shader.h"
 #include "../gl/quad.h"
+#include "../common/path.h"
 
 #define FRAME_MAX 2
 
@@ -64,4 +66,28 @@ void frame_draw(GLuint shader, int frame_num)
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   quad_draw();
+}
+
+void frame_shader_source(shader_setup_t *shader_setup, const char *name)
+{
+  path_t path_frame;
+  path_create(path_frame, "assets/shader/frame/%s.frag", name);
+  
+  shader_setup_import(shader_setup, SHADER_FRAGMENT, "frame");
+  shader_setup_source_each(shader_setup, "assets/shader/frame/frame.vert", path_frame); 
+}
+
+bool frame_shader_load(GLuint *shader, const char *name)
+{
+  shader_setup_t shader_setup;
+  shader_setup_init(&shader_setup, name);
+  frame_shader_source(&shader_setup, name);
+  
+  if (!shader_setup_compile(shader, &shader_setup)) {
+    return false;
+  }
+  
+  shader_setup_free(&shader_setup);
+  
+  return true;
 }

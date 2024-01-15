@@ -1,13 +1,5 @@
 #include "renderer.h"
 
-#define SCR_WIDTH 1280
-#define SCR_HEIGHT 720
-
-#define VIEW_SCALE 2
-
-#define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
-#define VIEW_HEIGHT (SCR_HEIGHT / VIEW_SCALE)
-
 #include "light.h"
 #include "camera.h"
 #include "model.h"
@@ -15,6 +7,7 @@
 #include "api.h"
 #include "frame.h"
 #include "defer.h"
+#include "pipeline1.h"
 #include "../gl/gl.h"
 #include "../gl/quad.h"
 #include "../gl/mesh.h"
@@ -23,6 +16,8 @@
 #include "../common/log.h"
 
 typedef struct {
+  GLuint shader;
+  
   view_t view;
   
   GLuint dither;
@@ -41,11 +36,17 @@ static void renderer_scene_render();
 
 bool renderer_init(const game_t *game)
 {
-  renderer_init_gl();
+  renderer.game = game;
   
-  mesh_buffer_init(1024 * 1024);
-  frame_init(VIEW_WIDTH, VIEW_HEIGHT);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_SCISSOR_TEST);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+  
+  mesh_buffer_init(10000);
   material_init();
+  frame_init(VIEW_WIDTH, VIEW_HEIGHT);
+  camera_init();
   
   if (!quad_init()) {
     return false;
@@ -55,42 +56,26 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  if (!fx_shader_load(&renderer.dither, "dither")) {
-    return false;
-  }
-  
-  if (!fx_shader_load(&renderer.hdr, "hdr")) {
-    return false;
-  }
-  
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }
-  
-  camera_init();
   
   if (!model_load(&renderer.fumo_model, "venus")) {
     return false;
   }
   
-  renderer.game = game;
+  view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
   
-  float aspect_ratio = (float) SCR_HEIGHT/ (float) SCR_WIDTH;
-  view_set_perspective(&renderer.view, aspect_ratio, to_radians(90.0), 0.1, 100.0);
+  if (!pipeline1_init()) {
+    return false;
+  }
   
   return true;
 }
 
-static void renderer_init_gl()
-{
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_SCISSOR_TEST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-}
-
 void renderer_render()
 {
+  /*
   if (renderer.game->light_update) {
     light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
@@ -119,6 +104,12 @@ void renderer_render()
   ngui_render();
   
   glDisable(GL_BLEND);
+  */
+  
+  camera_set_view(renderer.view);
+  camera_move(renderer.game->player.position, renderer.game->player.rotation);
+  
+  pipeline1_pass();
 }
 
 void renderer_scene_pass()
@@ -143,6 +134,6 @@ void renderer_map_load(const map_t *map)
   model_load_map(&renderer.map_model, map);
   
   for (int i = 0; i < map->num_lights; i++) {
-    light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
+    // light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
   }
 }

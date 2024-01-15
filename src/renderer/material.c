@@ -78,23 +78,7 @@ void material_bind(material_t material)
   glBindTexture(GL_TEXTURE_2D, material.normal);
 }
 
-const char *material_shader_ext()
-{
-  return "\
-uniform sampler2D u_color;\n\
-uniform sampler2D u_normal;\n\
-\n\
-layout (std140) uniform ub_material {\n\
-  vec3 m_color;\n\
-  float m_specular;\n\
-};\n\
-#define get_color() vec4(m_color, 1.0)\n\
-#define get_specular() m_specular\n\
-#define get_diffuse() (texture(u_color, vs_uv) * get_color())\n\
-";
-}
-
-void material_shader_ext_setup(GLuint shader)
+void material_shader_setup(GLuint shader)
 {
   glUseProgram(shader);
   

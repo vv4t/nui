@@ -6,50 +6,104 @@
 #include "../common/path.h"
 #include "../common/file.h"
 
-typedef struct {
-  const char *src;
-  const char *head;
-  const char *tail;
-} cfg_shader_t;
-
 static bool shader_compile(GLuint *shader, const char *name, const char *src[], GLuint type);
 
-bool shader_load_from_file(GLuint *shader, const char *name)
+void shader_setup_init(shader_setup_t *shader_setup, const char *name)
+{
+  shader_setup->name = name;
+  
+  shader_setup->vert_src[0] = strdup("#version 300 es\n");
+  shader_setup->vert_src[1] = strdup("precision mediump float;\n");
+  shader_setup->vert_src[2] = NULL;
+  shader_setup->num_vert_src = 2;
+  
+  shader_setup->frag_src[0] = strdup("#version 300 es\n");
+  shader_setup->frag_src[1] = strdup("precision mediump float;\n");
+  shader_setup->frag_src[2] = NULL;
+  shader_setup->num_frag_src = 2;
+}
+
+void shader_setup_use(shader_setup_t *shader_setup, shader_flag_t shaders, const char *text)
+{
+  if ((shaders & SHADER_VERTEX) > 0) {
+    shader_setup->vert_src[shader_setup->num_vert_src++] = strdup(text);
+    shader_setup->vert_src[shader_setup->num_vert_src] = NULL;
+  }
+  
+  if ((shaders & SHADER_FRAGMENT) > 0) {
+    shader_setup->frag_src[shader_setup->num_frag_src++] = strdup(text);
+    shader_setup->frag_src[shader_setup->num_frag_src] = NULL;
+  }
+}
+
+bool shader_setup_import(shader_setup_t *shader_setup, shader_flag_t shaders, const char *shader_import)
+{
+  path_t path_import;
+  path_create(path_import, "assets/shader/import/%s.glsl", shader_import);
+  
+  char *import_text = file_read_all(path_import);
+  
+  if (!import_text) {
+    return false;
+  }
+  
+  shader_setup_use(shader_setup, shaders, import_text);
+  
+  return true;
+}
+
+bool shader_setup_source_each(shader_setup_t *shader_setup, const char *vert_path, const char *frag_path)
+{
+  char *vert_src = file_read_all(vert_path);
+  
+  if (!vert_src) {
+    return false;
+  }
+  
+  char *frag_src = file_read_all(frag_path);
+  
+  if (!frag_src) {
+    return false;
+  }
+  
+  shader_setup->vert_src[shader_setup->num_vert_src++] = vert_src;
+  shader_setup->vert_src[shader_setup->num_vert_src] = NULL;
+  
+  shader_setup->frag_src[shader_setup->num_frag_src++] = frag_src;
+  shader_setup->frag_src[shader_setup->num_frag_src] = NULL;
+  
+  return true;
+}
+
+bool shader_setup_source(shader_setup_t *shader_setup, const char *name)
 {
   path_t path_vert;
   path_t path_frag;
   
-  path_create(path_vert, "assets/shader/%s/%s.vsh", name, name);
-  path_create(path_frag, "assets/shader/%s/%s.fsh", name, name);
+  path_create(path_vert, "assets/shader/%s/%s.vert", name, name);
+  path_create(path_frag, "assets/shader/%s/%s.frag", name, name);
   
-  char *vsh = file_read_all(path_vert);
-  
-  if (!vsh) {
-    return false;
+  return shader_setup_source_each(shader_setup, path_vert, path_frag);
+}
+
+bool shader_setup_compile(GLuint *shader, const shader_setup_t *shader_setup)
+{
+  return shader_load(
+    shader,
+    shader_setup->name,
+    (const char **) shader_setup->vert_src,
+    (const char **) shader_setup->frag_src
+  );
+}
+
+void shader_setup_free(shader_setup_t *shader_setup)
+{
+  for (int i = 0; i < shader_setup->num_vert_src; i++) {
+    free(shader_setup->vert_src[i]);
   }
   
-  char *fsh = file_read_all(path_frag);
-  
-  if (!fsh) {
-    return false;
-  }
-  
-  const char *vsh_src[] = {
-    "#version 300 es\n",
-    "precision mediump float;\n",
-    vsh,
-    NULL
-  };
-  
-  const char *fsh_src[] = {
-    "#version 300 es\n",
-    "precision mediump float;\n",
-    fsh,
-    NULL
-  };
-  
-  if (!shader_load(shader, name, vsh_src, fsh_src)) {
-    return false;
+  for (int i = 0; i < shader_setup->num_frag_src; i++) {
+    free(shader_setup->frag_src[i]);
   }
 }
 
@@ -130,4 +184,59 @@ static bool shader_compile(GLuint *shader, const char *name, const char *src[], 
   }
   
   return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool shader_load_from_file(GLuint *shader, const char *name)
+{
+  path_t path_vert;
+  path_t path_frag;
+  
+  path_create(path_vert, "assets/shader/%s/%s.vsh", name, name);
+  path_create(path_frag, "assets/shader/%s/%s.fsh", name, name);
+  
+  char *vsh = file_read_all(path_vert);
+  
+  if (!vsh) {
+    return false;
+  }
+  
+  char *fsh = file_read_all(path_frag);
+  
+  if (!fsh) {
+    return false;
+  }
+  
+  const char *vsh_src[] = {
+    "#version 300 es\n",
+    "precision mediump float;\n",
+    vsh,
+    NULL
+  };
+  
+  const char *fsh_src[] = {
+    "#version 300 es\n",
+    "precision mediump float;\n",
+    fsh,
+    NULL
+  };
+  
+  if (!shader_load(shader, name, vsh_src, fsh_src)) {
+    return false;
+  }
 }

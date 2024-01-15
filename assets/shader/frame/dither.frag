@@ -8,7 +8,7 @@ float bayer_matrix[16] = float[] (
 float color_range = 8.0;
 float bayer_r = 0.125;
 
-void frag_pass()
+void main()
 {
   ivec2 uv = ivec2(vs_uv * vec2(textureSize(u_scene, 0)));
 

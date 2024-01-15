@@ -17,8 +17,6 @@ void camera_move(vec3_t view_offset, quat_t view_angle);
 void camera_look_at(vec3_t at, vec3_t from, vec3_t up);
 void camera_model(mat4x4_t model_matrix);
 mat4x4_t camera_get_view_project();
-
-const char *camera_shader_ext();
-void camera_shader_ext_setup(GLuint shader);
+void camera_shader_setup(GLuint shader);
 
 #endif

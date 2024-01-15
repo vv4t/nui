@@ -1,8 +1,7 @@
-
-void frag_pass()
+void main()
 {
   const float gamma = 0.6;
-  const float exposure = 4.1;
+  const float exposure = 2.1;
   
   vec3 hdr_color = get_color(get_uv()).rgb;
   
