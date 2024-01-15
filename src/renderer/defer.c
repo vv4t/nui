@@ -4,6 +4,7 @@
 #include "material.h"
 #include "api.h"
 #include "../gl/gl.h"
+#include "../gl/quad.h"
 #include "../gl/shader.h"
 #include "../common/path.h"
 
@@ -92,8 +93,10 @@ void defer_end()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void defer_bind()
+void defer_draw(GLuint shader)
 {
+  glUseProgram(shader);
+  
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, defer.g_pos);
   
@@ -102,6 +105,9 @@ void defer_bind()
   
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, defer.g_albedo);
+  
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  quad_draw();
 }
 
 void defer_shader_source(shader_setup_t *shader_setup, const char *name)

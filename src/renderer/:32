@@ -46,16 +46,10 @@ static void light_update_point_shadow(int id, vec3_t pos);
 
 bool light_init()
 {
-  ub_light_t ub_light = {0};
-  
   glGenBuffers(1, &light.ubo_light);
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_light_t), &ub_light, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_light_t), NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 2, light.ubo_light); 
-  
-  if (!shadow_init()) {
-    return false;
-  }
   
   return true;
 }
@@ -68,10 +62,62 @@ void light_shader_setup(GLuint shader)
   glUniformBlockBinding(shader, ubl_light, 2);
 }
 
+/*
 void light_shader_setup_shadow(GLuint shader)
 {
   GLuint ul_depth_map = glGetUniformLocation(shader, "u_depth_map");
   glUniform1i(ul_depth_map, 4);
+}
+
+static void light_init_ambient()
+{
+  glUseProgram(light.shader);
+  
+  vec3_t samples[64];
+  
+  for (int i = 0; i < 64; i++) {
+    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float z = (rand() % 256) / 256.0f;
+    float t = (rand() % 256) / 256.0f;
+    
+    samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
+  }
+  
+  GLuint ul_samples = glGetUniformLocation(light.shader, "u_samples");
+  glUniform3fv(ul_samples, 64, (float*) samples);
+}
+
+static bool shadow_init()
+{
+  glGenTextures(1, &shadow.depth_map);
+  glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
+  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, POINTS_MAX * SHADOW_SIZE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  
+  glGenFramebuffers(1, &shadow.depth_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depth_map, 0);
+  glDrawBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  
+  shader_setup_t shader_setup;
+  shader_setup_init(&shader_setup, "shadow");
+  shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
+  shader_setup_source(&shader_setup, "shadow");
+  
+  if (!shader_setup_compile(&shadow.shader, &shader_setup)) {
+    return false;
+  }
+  
+  camera_shader_setup(shadow.shader);
+  
+  shader_setup_free(&shader_setup);
+  
+  return true;
 }
 
 void light_sub_point(int id, vec3_t pos, float intensity, vec3_t color)
@@ -132,64 +178,10 @@ void light_update_point_shadow(int id, vec3_t pos)
   glBufferSubData(GL_UNIFORM_BUFFER, offsetof(ub_light_t, point_shadows) + id * sizeof(point_shadow), sizeof(point_shadow), &point_shadow);
 }
 
-void light_bind_depth_map(GLuint shader)
+void light_bind()
 {
-  glUseProgram(shader);
+  glUseProgram(light.shader);
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
 }
-
-static bool shadow_init()
-{
-  glGenTextures(1, &shadow.depth_map);
-  glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
-  glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, POINTS_MAX * SHADOW_SIZE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  
-  glGenFramebuffers(1, &shadow.depth_fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depth_map, 0);
-  glDrawBuffer(GL_NONE);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
-  shader_setup_t shader_setup;
-  shader_setup_init(&shader_setup, "shadow");
-  shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
-  shader_setup_source(&shader_setup, "shadow");
-  
-  if (!shader_setup_compile(&shadow.shader, &shader_setup)) {
-    return false;
-  }
-  
-  camera_shader_setup(shadow.shader);
-  
-  shader_setup_free(&shader_setup);
-  
-  return true;
-}
-
-/*
-
-static void light_init_ambient()
-{
-  glUseProgram(light.shader);
-  
-  vec3_t samples[64];
-  
-  for (int i = 0; i < 64; i++) {
-    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
-    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
-    float z = (rand() % 256) / 256.0f;
-    float t = (rand() % 256) / 256.0f;
-    
-    samples[i] = vec3_mulf(vec3_normalize(vec3_init(x, y, z)), t);
-  }
-  
-  GLuint ul_samples = glGetUniformLocation(light.shader, "u_samples");
-  glUniform3fv(ul_samples, 64, (float*) samples);
-}
-
 */

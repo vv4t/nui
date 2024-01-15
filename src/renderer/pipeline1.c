@@ -5,6 +5,7 @@
 #include "material.h"
 #include "defer.h"
 #include "frame.h"
+#include "light.h"
 #include "../gl/quad.h"
 #include "../gl/gl.h"
 #include "../gl/shader.h"
@@ -18,16 +19,20 @@ struct {
 bool pipeline1_init()
 {
   shader_setup_t shader_setup;
-  shader_setup_init(&shader_setup, "flat");
+  shader_setup_init(&shader_setup, "pipeline1");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
-  defer_shader_source(&shader_setup, "flat");
+  shader_setup_import(&shader_setup, SHADER_BOTH, "material");
+  shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
+  shader_setup_source(&shader_setup, "light");
   
   if (!shader_setup_compile(&pipeline1.shader, &shader_setup)) {
     return false;
   }
   
   camera_shader_setup(pipeline1.shader);
-  defer_shader_setup(pipeline1.shader);
+  material_shader_setup(pipeline1.shader);
+  light_shader_setup(pipeline1.shader);
+  light_shader_setup_shadow(pipeline1.shader);
   
   shader_setup_free(&shader_setup);
   
@@ -44,14 +49,12 @@ bool pipeline1_init()
 
 void pipeline1_pass()
 {
-  defer_begin();
-  renderer_scene_pass();
-  defer_end();
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   
   frame_begin(0);
-  defer_bind();
   glUseProgram(pipeline1.shader);
-  quad_draw();
+  light_bind_depth_map(pipeline1.shader);
+  renderer_scene_pass();
   frame_end();
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);

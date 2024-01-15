@@ -75,11 +75,11 @@ bool renderer_init(const game_t *game)
 
 void renderer_render()
 {
-  /*
   if (renderer.game->light_update) {
     light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
   
+  /*
   defer_begin();
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
@@ -134,6 +134,6 @@ void renderer_map_load(const map_t *map)
   model_load_map(&renderer.map_model, map);
   
   for (int i = 0; i < map->num_lights; i++) {
-    // light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
+    light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
   }
 }
