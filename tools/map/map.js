@@ -191,7 +191,7 @@ function load_light(map, object, material)
   
   light_pos = light_pos.mulf(1.0 / (object.faces.length * 3));
   
-  map.lights.push(new map_light_t(light_pos, material.color, 60.0));
+  map.lights.push(new map_light_t(light_pos, material.color, 20.0));
 }
 
 function map_write(map, map_name)

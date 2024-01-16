@@ -43,7 +43,7 @@ bool renderer_init(const game_t *game)
   glEnable(GL_SCISSOR_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
   
-  mesh_buffer_init(10000);
+  mesh_buffer_init(100000);
   material_init();
   frame_init(VIEW_WIDTH, VIEW_HEIGHT);
   camera_init();
@@ -79,33 +79,6 @@ void renderer_render()
   if (renderer.game->light_update) {
     light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
-  
-  /*
-  defer_begin();
-  camera_set_view(renderer.view);
-  camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  renderer_scene_pass();
-  defer_end();
-  
-  frame_begin(0);
-  defer_bind();
-  light_bind();
-  quad_draw();
-  frame_end();
-  
-  frame_begin(1);
-  frame_draw(renderer.dither, 0);
-  frame_end();
-  
-  glEnable(GL_BLEND);
-  
-  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  frame_draw(renderer.hdr, 1);
-  ngui_render();
-  
-  glDisable(GL_BLEND);
-  */
   
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);

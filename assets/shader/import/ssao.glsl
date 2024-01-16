@@ -1,17 +1,12 @@
-uniform vec3 u_samples[64];
+#define NUM_SAMPLES 64
 
-float rand()
-{
-  return fract(sin(dot(vs_uv, vec2(12.9898, 78.233))) * 43758.5453);
-}
+uniform vec3 u_samples[NUM_SAMPLES];
 
-float calc_occlusion()
+float calc_ssao(sampler2D u_pos, vec3 frag_pos, vec3 normal)
 {
-  vec3 normal = get_frag_normal();
+  vec3 new_dir = normal + normal.zyx;
   
-  vec3 rand_vec = normal + vec3(rand(), rand() + 1.0, rand() + 2.0);
-  
-  vec3 tangent = normalize(rand_vec - normal * dot(rand_vec, normal));
+  vec3 tangent = normalize(new_dir - normal * dot(new_dir, normal));
   vec3 bitangent = cross(tangent, normal);
   mat3 TBN = mat3(tangent, bitangent, normal);
   
@@ -21,8 +16,8 @@ float calc_occlusion()
   float bias = 0.03;
   
   for (int i = 0; i < 64; i++) {
-    vec3 sample_pos = get_world_pos() + (TBN * u_samples[i]) * radius;
-    vec4 offset = mat_mvp * vec4(sample_pos, 1.0);
+    vec3 sample_pos = frag_pos + (TBN * u_samples[i]) * radius;
+    vec4 offset = get_mvp() * vec4(sample_pos, 1.0);
     vec2 screen_pos = (offset.xy / offset.w) * 0.5 + 0.5;
     
     if (
@@ -40,9 +35,4 @@ float calc_occlusion()
   }
   
   return 1.0 - occlusion / 64.0;
-}
-
-void frag_pass()
-{
-  set_frag(vec4(vec3(1.0) * calc_occlusion(), 1.0));
 }

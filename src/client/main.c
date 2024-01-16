@@ -59,7 +59,7 @@ bool nui_init()
     return false;
   }
   
-  map_t *map = map_load("nk_test");
+  map_t *map = map_load("nk_arch");
   
   game_map_load(&nui.game, map);
   renderer_map_load(map);

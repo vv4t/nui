@@ -114,3 +114,21 @@ float calc_point_shadow(int id, vec3 frag_pos)
   
   return shadow;
 }
+
+vec3 calc_fog(vec3 frag_pos, vec3 frag_normal, int id)
+{
+  vec3 delta_pos = points[id].pos - frag_pos;
+  vec3 light_dir = normalize(delta_pos);
+  
+  vec3 view_dir = normalize(frag_pos - view_pos);
+  vec3 reflect_dir = reflect(-light_dir, frag_normal);
+  
+  vec3 dir = normalize(light_dir - view_dir * dot(light_dir, view_dir));
+  float h = dot(points[id].pos, dir) - dot(view_pos, dir);
+  float c = dot(points[id].pos, view_dir);
+  float a = dot(view_pos, view_dir) - c;
+  float b = dot(frag_pos, view_dir) - c;
+  float fog = atan(b / h) / h - atan(a / h) / h;
+  
+  return points[id].color.xyz * vec3(0.01 * fog * fog + 0.05 * fog);
+}
