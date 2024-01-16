@@ -30,12 +30,7 @@ typedef struct {
 } ub_point_t;
 
 typedef struct {
-  mat4x4_t light_matrices[CUBE_FACES];
-} ub_point_shadow_t;
-
-typedef struct {
   ub_point_t points[POINTS_MAX];
-  ub_point_shadow_t point_shadows[POINTS_MAX];
 } ub_light_t;
 
 static bool shadow_init();
@@ -114,22 +109,15 @@ void light_update_point_shadow(int id, vec3_t pos)
   view_t view;
   view_set_perspective(&view, 1.0, to_radians(90.0), 0.1, 100.0);
   
-  ub_point_shadow_t point_shadow;
-  
   for (int i = 0; i < CUBE_FACES; i++) {
     camera_set_viewport(i * SHADOW_SIZE, id * SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE);
     camera_set_view(view);
     camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
     
-    point_shadow.light_matrices[i] = camera_get_view_project();
-    
     renderer_shadow_pass();
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
-  glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
-  glBufferSubData(GL_UNIFORM_BUFFER, offsetof(ub_light_t, point_shadows) + id * sizeof(point_shadow), sizeof(point_shadow), &point_shadow);
 }
 
 void light_bind_depth_map(GLuint shader)

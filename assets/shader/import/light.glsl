@@ -7,13 +7,8 @@ struct point_t {
   vec4  color;
 };
 
-struct point_shadow_t {
-  mat4 light_matrices[CUBE_FACES];
-};
-
 layout (std140) uniform ub_light {
   point_t points[MAX_POINTS];
-  point_shadow_t point_shadows[MAX_POINTS];
 };
 
 uniform sampler2D u_depth_map;
@@ -38,55 +33,84 @@ vec3 calc_light(vec3 frag_pos, vec3 frag_normal, int id)
   return light_color;
 }
 
-float calc_point_shadow_face(int id, int face, vec3 light_dir, vec3 frag_pos)
+struct cube_sample_t { float face; vec2 uv; vec3 axis; };
+
+// https://gist.github.com/hypernewbie/f80958de2cb262f8de2d00e52e1a0052
+cube_sample_t cube_sample_cube(vec3 v, vec2 poisson)
 {
-  vec4 shadow_pos = point_shadows[id].light_matrices[face] * vec4(frag_pos, 1.0);
-  vec3 shadow_coord = shadow_pos.xyz / shadow_pos.w * 0.5 + vec3(0.5, 0.5, 0.5);
+  cube_sample_t cube_sample;
   
-  if (shadow_coord.z < 0.0 || shadow_coord.z > 1.0) {
-    return 0.0;
+  vec3 vAbs = abs(v);
+  float ma;
+  
+  if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y) {
+    cube_sample.face = v.z < 0.0 ? 5.0 : 4.0;
+    ma = 0.5 / vAbs.z;
+    cube_sample.uv = vec2(v.z > 0.0 ? -v.x : v.x, -v.y);
+    cube_sample.axis = vec3(0.0, 0.0, v.z > 0.0 ? 1.0 : -1.0);
+  } else if (vAbs.y >= vAbs.x) {
+    cube_sample.face = v.y < 0.0 ? 3.0 : 2.0;
+    ma = 0.5 / vAbs.y;
+    cube_sample.uv = vec2(-v.x, v.y < 0.0 ? -v.z : v.z);
+    cube_sample.axis = vec3(0.0, v.y > 0.0 ? 1.0 : -1.0, 0.0);
+  } else {
+    cube_sample.face = v.x < 0.0 ? 1.0 : 0.0;
+    ma = 0.5 / vAbs.x;
+    cube_sample.uv = vec2(v.x > 0.0 ? v.z : -v.z, -v.y);
+    cube_sample.axis = vec3(v.x > 0.0 ? 1.0 : -1.0, 0.0, 0.0);
   }
+
+  cube_sample.uv = cube_sample.uv * ma + 0.5 + poisson;
+  cube_sample.uv.x = clamp(cube_sample.uv.x, 0.001, 0.999);
+  cube_sample.uv.y = clamp(cube_sample.uv.y, 0.001, 0.999);
   
-  vec2 shadow_uv = shadow_coord.xy;
+  return cube_sample;
+}
+
+float depth_cube_cube_sample(int id, cube_sample_t cube_sample)
+{
+  vec2 uv = cube_sample.uv;  
   
-  if (shadow_uv.x > 0.0 && shadow_uv.x < 1.0 && shadow_uv.y > 0.0 && shadow_uv.y < 1.0) {
-    shadow_uv.x = clamp(shadow_uv.x, 0.001, 0.999);
-    shadow_uv.y = clamp(shadow_uv.y, 0.001, 0.999);
-    
-    shadow_uv.x = (shadow_uv.x + float(face)) / float(CUBE_FACES);
-    shadow_uv.y = (shadow_uv.y + float(id)) / float(MAX_POINTS);
-    
-    float closest_depth = texture(u_depth_map, shadow_uv).z;
-    float current_depth = shadow_coord.z;
-    
-    float beta = 0.001 / shadow_pos.z;
-    float bias = clamp(beta * 5.0, 0.0, beta);
-    
-    if (current_depth - bias > closest_depth) {
-      return 1.0;
-    }
-  }
+  uv.x = (uv.x + cube_sample.face) / float(CUBE_FACES);
+  uv.y = (uv.y + float(id)) / float(MAX_POINTS);
   
-  return 0.0;
+  return texture(u_depth_map, uv).z;
 }
 
 float calc_point_shadow(int id, vec3 frag_pos)
 {
-  vec3 delta_pos = points[id].pos - frag_pos;
+  vec3 delta_pos = frag_pos - points[id].pos;
   vec3 light_dir = normalize(delta_pos);
   
-  // https://gist.github.com/hypernewbie/f80958de2cb262f8de2d00e52e1a0052
+  float near = 0.1;
+  float far = 100.0;
+  float z_scale = (-near - far) / (near - far);
+  float z_offset = (2.0 * far * near) / (near - far);
   
-	vec3 v = abs(light_dir);
-  int face_id = 0;
+  float shadow = 0.0;
   
-	if(v.z >= v.x && v.z >= v.y) {
-		face_id = (light_dir.z < 0.0) ? 4 : 5;
-	} else if(v.y >= v.x) {
-		face_id = light_dir.y < 0.0 ? 2 : 3;
-	} else {
-		face_id = light_dir.x < 0.0 ? 0 : 1;
-	}
+  vec2 poisson_disk[4] = vec2[](
+    vec2( -0.94201624, -0.39906216 ),
+    vec2( 0.94558609, -0.76890725 ),
+    vec2( -0.094184101, -0.92938870 ),
+    vec2( 0.34495938, 0.29387760 )
+  );
   
-  return calc_point_shadow_face(id, face_id, light_dir, frag_pos);
+  for (int k = 0; k < 4; k++) {
+    cube_sample_t cube_sample = cube_sample_cube(light_dir, poisson_disk[k] / 700.0);
+    
+    float z_view = dot(delta_pos, cube_sample.axis);
+    float z_depth = (z_view * z_scale + z_offset) / z_view;
+    
+    float closest_depth = depth_cube_cube_sample(id, cube_sample);
+    float current_depth = z_depth * 0.5 + 0.5;
+    
+    float bias = 0.001 / z_view;
+    
+    if (current_depth - bias > closest_depth) {
+      shadow += 0.25;
+    }
+  }
+  
+  return shadow;
 }

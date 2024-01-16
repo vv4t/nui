@@ -9,3 +9,4 @@ layout (std140) uniform ub_material {
 #define get_color() vec4(m_color, 1.0)
 #define get_specular() m_specular
 #define get_diffuse() (texture(u_color, vs_uv) * get_color())
+#define get_normal(uv, TBN) normalize(TBN * (texture(u_normal, vs_uv).rgb * 2.0 - 1.0))

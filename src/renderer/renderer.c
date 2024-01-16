@@ -69,6 +69,7 @@ bool renderer_init(const game_t *game)
   if (!pipeline1_init()) {
     return false;
   }
+  light_sub_point(0, vec3_init(0.0, 0.0, 0.0), 6.0, vec3_init(1.0, 0.2, 1.0));
   
   return true;
 }
