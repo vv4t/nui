@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-bool pipeline1_init();
-void pipeline1_pass();
+bool defer_pipeline_init();
+void defer_pipeline_pass();
 
 #endif

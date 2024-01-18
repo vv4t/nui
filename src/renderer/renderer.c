@@ -7,7 +7,8 @@
 #include "api.h"
 #include "frame.h"
 #include "defer.h"
-#include "pipeline1.h"
+#include "../pipeline/defer_pipeline.h"
+#include "../pipeline/forward_pipeline.h"
 #include "../gl/gl.h"
 #include "../gl/quad.h"
 #include "../gl/mesh.h"
@@ -28,6 +29,14 @@ typedef struct {
   
   const game_t *game;
 } renderer_t;
+
+struct {
+  bool (*init)();
+  void (*pass)();
+} render_pipeline = {
+  defer_pipeline_init,
+  defer_pipeline_pass
+};
 
 static renderer_t renderer;
 
@@ -66,10 +75,9 @@ bool renderer_init(const game_t *game)
   
   view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
   
-  if (!pipeline1_init()) {
+  if (!render_pipeline.init()) {
     return false;
   }
-  light_sub_point(0, vec3_init(0.0, 0.0, 0.0), 6.0, vec3_init(1.0, 0.2, 1.0));
   
   return true;
 }
@@ -83,7 +91,7 @@ void renderer_render()
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   
-  pipeline1_pass();
+  render_pipeline.pass();
 }
 
 void renderer_scene_pass()

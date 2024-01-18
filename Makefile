@@ -12,7 +12,7 @@ defualt: nui run
 nui: $(OBJ)
 	gcc $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-bin/%.o: src/%.c $(SRC_H) | bin/common/ bin/game/ bin/client/ bin/renderer/ bin/gl/ bin/ngui/
+bin/%.o: src/%.c $(SRC_H) | bin/common/ bin/game/ bin/client/ bin/renderer/ bin/pipeline/ bin/gl/ bin/ngui/
 	gcc $(INCLUDE) $(CFLAGS) -c -o $@ $<
 
 bin/common/: | bin/
@@ -25,6 +25,9 @@ bin/client/: | bin/
 	mkdir -p $@
 
 bin/renderer/: | bin/
+	mkdir -p $@
+
+bin/pipeline/: | bin/
 	mkdir -p $@
 
 bin/gl/: | bin/
