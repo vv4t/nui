@@ -99,7 +99,7 @@ static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const ver
     }
     
     subgroup->material.color = mdl_subgroup.material.color;
-    subgroup->material.specular = mdl_subgroup.material.specular;
+    subgroup->material.specular = mdl_subgroup.material.specular / 1000.0;
     subgroup->material.alpha = mdl_subgroup.material.alpha;
     
     const vertex_t *vertex_offset = &vertices[mdl_subgroup.offset];
@@ -164,7 +164,7 @@ static bool model_load_map_subgroup(subgroup_t *subgroup, const map_t *map, cons
   }
   
   subgroup->material.color = map_subgroup->material.color;
-  subgroup->material.specular = map_subgroup->material.specular;
+  subgroup->material.specular = map_subgroup->material.specular / 1000.0;
   
   int num_vertices = map_subgroup->face_count * 3;
   vertex_t *vertices = model_load_map_vertices(map, map_subgroup);

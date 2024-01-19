@@ -13,7 +13,7 @@ layout (std140) uniform ub_light {
 
 uniform sampler2D u_depth_map;
 
-vec3 calc_light(vec3 frag_pos, vec3 frag_normal, int id)
+vec3 calc_light(vec3 frag_pos, vec3 frag_normal, float frag_specular, int id)
 {
   vec3 delta_pos = points[id].pos - frag_pos;
   vec3 light_dir = normalize(delta_pos);
@@ -21,7 +21,7 @@ vec3 calc_light(vec3 frag_pos, vec3 frag_normal, int id)
   vec3 view_dir = normalize(frag_pos - view_pos);
   vec3 reflect_dir = reflect(-light_dir, frag_normal);
   
-  float specular = 0.4 * pow(max(dot(-view_dir, reflect_dir), 0.0), 32.0);
+  float specular = frag_specular * pow(max(dot(-view_dir, reflect_dir), 0.0), 32.0);
   float diffuse = max(dot(frag_normal, light_dir), 0.0);
   float delta_dist = length(delta_pos);
   

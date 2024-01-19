@@ -9,4 +9,5 @@ layout (std140) uniform ub_camera {
 #define get_mvp() mat_mvp
 #define get_model() mat_model
 #define get_view() mat_view
+#define get_look() mat_look
 #define get_view_pos() view_pos

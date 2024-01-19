@@ -1,5 +1,6 @@
 #include "test_pipeline.h"
 
+#include "../renderer/skybox.h"
 #include "../renderer/camera.h"
 #include "../renderer/material.h"
 #include "../renderer/defer.h"
@@ -27,6 +28,10 @@ bool test_pipeline_init()
     return false;
   }
   
+  if (!skybox_init("night")) {
+    return false;
+  }
+  
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "test_pipeline");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
@@ -42,6 +47,9 @@ bool test_pipeline_init()
   material_shader_setup(test_pipeline.shader);
   light_shader_setup(test_pipeline.shader);
   light_shader_setup_shadow(test_pipeline.shader);
+  
+  GLuint ul_skybox = glGetUniformLocation(test_pipeline.shader, "u_skybox");
+  glUniform1i(ul_skybox, 5);
   
   shader_setup_free(&shader_setup);
   
@@ -69,7 +77,11 @@ void test_pipeline_pass()
   wave_update(&test_pipeline.wave);
   
   frame_begin(0);
+  skybox_render();
+  glUseProgram(test_pipeline.shader);
   light_bind_depth_map(test_pipeline.shader);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_get_texture());
   renderer_scene_pass();
   model_draw(&test_pipeline.model);
   frame_end();
