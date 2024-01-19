@@ -8,6 +8,7 @@ typedef struct {
   char normal[64];
   vec3_t color;
   float specular;
+  float alpha;
 } mdl_material_t;
 
 typedef struct {
@@ -99,6 +100,7 @@ static bool model_load_subgroups(model_t *model, mdl_file_t *mdl_file, const ver
     
     subgroup->material.color = mdl_subgroup.material.color;
     subgroup->material.specular = mdl_subgroup.material.specular;
+    subgroup->material.alpha = mdl_subgroup.material.alpha;
     
     const vertex_t *vertex_offset = &vertices[mdl_subgroup.offset];
     

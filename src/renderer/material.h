@@ -9,6 +9,7 @@ typedef struct {
   texture_t normal;
   vec3_t color;
   float specular;
+  float alpha;
 } material_t;
 
 void material_init();

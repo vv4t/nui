@@ -119,6 +119,7 @@ export class obj_material_t {
     this.normal = "";
     this.color = new vec3_t(1.0, 1.0, 1.0);
     this.specular = 0.0;
+    this.alpha = 1.0;
   }
 };
 
@@ -165,6 +166,8 @@ class mtllib_t {
         material.color = new vec3_t(parseFloat(args[1]), parseFloat(args[2]), parseFloat(args[3]));
       } else if (args[0] == "Ns") {
         material.specular = parseFloat(args[1]);
+      } else if (args[0] == "d") {
+        material.alpha = parseFloat(args[1]);
       }
     }
     

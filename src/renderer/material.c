@@ -3,6 +3,7 @@
 typedef struct {
   vec3_t color;
   float specular;
+  float alpha;
 } ub_material_t;
 
 typedef struct {
@@ -59,13 +60,15 @@ void material_new(material_t *material)
   material->normal = material_def.empty_normal;
   material->color = vec3_init(1.0, 1.0, 1.0);
   material->specular = 1.0;
+  material->alpha = 1.0;
 }
 
 void material_bind(material_t material)
 {
   ub_material_t ub_material = {
     .color = material.color,
-    .specular = material.specular
+    .specular = material.specular,
+    .alpha = material.alpha
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, material_def.ubo_material);

@@ -9,6 +9,7 @@
 #include "defer.h"
 #include "../pipeline/defer_pipeline.h"
 #include "../pipeline/forward_pipeline.h"
+#include "../pipeline/test_pipeline.h"
 #include "../gl/gl.h"
 #include "../gl/quad.h"
 #include "../gl/mesh.h"
@@ -24,7 +25,6 @@ typedef struct {
   GLuint dither;
   GLuint hdr;
   
-  model_t fumo_model;
   model_t map_model;
   
   const game_t *game;
@@ -34,8 +34,8 @@ struct {
   bool (*init)();
   void (*pass)();
 } render_pipeline = {
-  defer_pipeline_init,
-  defer_pipeline_pass
+  test_pipeline_init,
+  test_pipeline_pass
 };
 
 static renderer_t renderer;
@@ -50,6 +50,7 @@ bool renderer_init(const game_t *game)
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_SCISSOR_TEST);
+  glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
   
   mesh_buffer_init(100000);
@@ -66,10 +67,6 @@ bool renderer_init(const game_t *game)
   }
   
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
-    return false;
-  }
-  
-  if (!model_load(&renderer.fumo_model, "venus")) {
     return false;
   }
   
@@ -97,7 +94,6 @@ void renderer_render()
 void renderer_scene_pass()
 {
   camera_model(mat4x4_init_identity());
-  model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }
 
@@ -106,8 +102,6 @@ void renderer_shadow_pass()
   glClear(GL_DEPTH_BUFFER_BIT);
   
   camera_model(mat4x4_init_identity());
-  
-  model_draw(&renderer.fumo_model);
   model_draw(&renderer.map_model);
 }
 

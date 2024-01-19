@@ -24,12 +24,13 @@ class mdl_vertex_t {
 };
 
 class mdl_material_t {
-  constructor(diffuse, normal, color, specular)
+  constructor(diffuse, normal, color, specular, alpha)
   {
     this.diffuse = diffuse;
     this.normal = normal;
     this.color = color;
     this.specular = specular;
+    this.alpha = alpha;
   }
 };
 
@@ -68,6 +69,7 @@ function write_mdl(write, mdl, mdl_name)
     write.write_s32(subgroup.material.normal);
     write.write_vec3(subgroup.material.color);
     write.write_f32(subgroup.material.specular);
+    write.write_f32(subgroup.material.alpha);
     write.write_u32(subgroup.offset);
     write.write_u32(subgroup.count);
   }
@@ -123,8 +125,8 @@ function obj_to_mdl(obj)
     
     const count = vertices.length - offset;
     
-    const { diffuse, normal, color, specular } = obj.materials[material];
-    const mdl_material = new mdl_material_t(diffuse, normal, color, specular);
+    const { diffuse, normal, color, specular, alpha } = obj.materials[material];
+    const mdl_material = new mdl_material_t(diffuse, normal, color, specular, alpha);
     
     subgroups.push(new mdl_subgroup(mdl_material, offset, count));
   }
