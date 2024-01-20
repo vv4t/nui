@@ -6,6 +6,11 @@ void main()
 {
   if (get_frag_pos().z < 0.0) {
     frag_color = texture(u_skybox, vs_ray);
+    
+    for (int i = 0; i < MAX_POINTS; i++) {
+      frag_color.xyz += calc_fog(vs_ray * 1000.0 + get_view_pos(), i);
+    }
+    
     return;
   }
   
@@ -25,15 +30,15 @@ void main()
     
     float shadow = 1.0 - calc_point_shadow(i, frag_pos);
     
-    light += calc_light(frag_pos, frag_normal, 0.3, i) * shadow;
-    fog += calc_fog(frag_pos, frag_normal, i);
+    light += calc_light(frag_pos, frag_normal, get_specular(), i) * shadow;
+    fog += calc_fog(frag_pos, i);
   }
   
   float ao = calc_ssao(u_pos, frag_pos, frag_normal);
   
-  light += 0.01;
+  light += 0.1;
   light *= ao * ao;
-  light += 0.01 * texture(u_skybox, R).rgb;
+  light += get_specular() * texture(u_skybox, R).rgb;
   
   frag_color = get_diffuse() * vec4(light, 1.0) + vec4(fog, 1.0);
 }

@@ -29,7 +29,7 @@ bool test_pipeline_init()
     return false;
   }
   
-  if (!skybox_init("stars")) {
+  if (!skybox_init("night")) {
     return false;
   }
   

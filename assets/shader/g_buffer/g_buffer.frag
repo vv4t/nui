@@ -17,7 +17,7 @@ void main()
   normal = normal * 2.0 - 1.0;
   normal = normalize(vs_TBN * normal);
   
-  g_pos = vec4(vs_pos, 1.0);
-  g_normal = vec4(normal, view_dist);
-  g_albedo = get_diffuse();
+  g_pos = vec4(vs_pos, view_dist);
+  g_normal = vec4(normal, 1.0);
+  g_albedo = vec4(get_diffuse().xyz, get_specular());
 }
