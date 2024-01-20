@@ -35,8 +35,8 @@ void wave_new(wave_t *wave, int width, int height)
   glGenTextures(1, &wave->normal);
   glBindTexture(GL_TEXTURE_2D, wave->normal);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   
   glGenFramebuffers(2, wave->fbo);
   glGenTextures(2, wave->buffer);

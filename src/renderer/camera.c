@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include "api.h"
+
 typedef struct {
   mat4x4_t mat_mvp;
   mat4x4_t mat_model;
@@ -24,7 +26,7 @@ void camera_init()
   glGenBuffers(1, &camera.ubo_camera);
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_camera);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_camera_t), NULL, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 0, camera.ubo_camera);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBO_CAMERA_BINDING, camera.ubo_camera);
 }
 
 void camera_set_view(view_t view)
@@ -91,7 +93,7 @@ void camera_shader_setup(GLuint shader)
   glUseProgram(shader);
   
   GLuint ubl_camera = glGetUniformBlockIndex(shader, "ub_camera");
-  glUniformBlockBinding(shader, ubl_camera, 0);
+  glUniformBlockBinding(shader, ubl_camera, UBO_CAMERA_BINDING);
 }
 
 void view_set_perspective(view_t *view, float aspect_ratio, float fov, float near, float far)

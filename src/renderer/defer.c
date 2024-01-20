@@ -50,11 +50,12 @@ bool defer_init(int width, int height)
   unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
   glDrawBuffers(3, attachments);
   
-  glGenRenderbuffers(1, &defer.rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, defer.rbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, defer.rbo);
+  glGenTextures(1, &defer.rbo);
+  glBindTexture(GL_TEXTURE_2D, defer.rbo);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, defer.rbo, 0);
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
@@ -84,7 +85,7 @@ void defer_begin()
   camera_set_viewport(0, 0, defer.width, defer.height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  static const float transparent[] = { 10000, 10000, 10000, 1 };
+  static const float transparent[] = { 0, 0, -1.0, 0 };
   glClearBufferfv(GL_COLOR, 0, transparent);
 }
 
@@ -130,4 +131,9 @@ void defer_shader_setup(GLuint shader)
   glUniform1i(ul_pos, 0);
   glUniform1i(ul_normal, 1);
   glUniform1i(ul_albedo, 2);
+}
+
+GLuint defer_get_fbo()
+{
+  return defer.g_buffer;
 }

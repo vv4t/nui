@@ -26,8 +26,8 @@ void main()
     light += calc_light(vs_pos, normal, get_specular(), i) * shadow;
   }
   
-  light += 0.1;
+  light += 0.01;
   light += get_specular() * texture(u_skybox, R).rgb * get_alpha();
   
-  frag_color = get_diffuse() * vec4(light, 1.0);
+  frag_color = get_diffuse() * get_alpha() * vec4(light, 1.0);
 }

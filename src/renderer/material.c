@@ -1,5 +1,7 @@
 #include "material.h"
 
+#include "api.h"
+
 typedef struct {
   vec3_t color;
   float specular;
@@ -25,7 +27,7 @@ void material_init()
   glGenBuffers(1, &material_def.ubo_material);
   glBindBuffer(GL_UNIFORM_BUFFER, material_def.ubo_material);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_material_t), NULL, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 1, material_def.ubo_material);
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBO_MATERIAL_BINDING, material_def.ubo_material);
 }
 
 void diffuse_map_init()
@@ -74,10 +76,10 @@ void material_bind(material_t material)
   glBindBuffer(GL_UNIFORM_BUFFER, material_def.ubo_material);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_material), &ub_material);
   
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + TEXTURE_DIFFUSE_BINDING);
   glBindTexture(GL_TEXTURE_2D, material.diffuse);
   
-  glActiveTexture(GL_TEXTURE1);
+  glActiveTexture(GL_TEXTURE0 + TEXTURE_NORMAL_BINDING);
   glBindTexture(GL_TEXTURE_2D, material.normal);
 }
 
@@ -86,11 +88,11 @@ void material_shader_setup(GLuint shader)
   glUseProgram(shader);
   
   GLuint ul_color = glGetUniformLocation(shader, "u_color");
-  glUniform1i(ul_color, 0);
+  glUniform1i(ul_color, TEXTURE_DIFFUSE_BINDING);
   
   GLuint ul_normal = glGetUniformLocation(shader, "u_normal");
-  glUniform1i(ul_normal, 1);
+  glUniform1i(ul_normal, TEXTURE_NORMAL_BINDING);
   
   GLuint ubl_material = glGetUniformBlockIndex(shader, "ub_material");
-  glUniformBlockBinding(shader, ubl_material, 1);
+  glUniformBlockBinding(shader, ubl_material, UBO_MATERIAL_BINDING);
 }

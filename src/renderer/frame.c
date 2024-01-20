@@ -33,11 +33,12 @@ void frame_init(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, frame.fbo[i]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame.buffer[i], 0);
     
-    glGenRenderbuffers(1, &frame.rbo[i]);
-    glBindRenderbuffer(GL_RENDERBUFFER, frame.rbo[i]);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, frame.rbo[i]);
+    glGenTextures(1, &frame.rbo[i]);
+    glBindTexture(GL_TEXTURE_2D, frame.rbo[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, frame.rbo[i], 0);
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
@@ -90,4 +91,9 @@ bool frame_shader_load(GLuint *shader, const char *name)
   shader_setup_free(&shader_setup);
   
   return true;
+}
+
+GLuint frame_get_fbo(int frame_num)
+{
+  return frame.fbo[frame_num];
 }

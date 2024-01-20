@@ -46,7 +46,7 @@ bool light_init()
   glGenBuffers(1, &light.ubo_light);
   glBindBuffer(GL_UNIFORM_BUFFER, light.ubo_light);
   glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_light_t), &ub_light, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 2, light.ubo_light); 
+  glBindBufferBase(GL_UNIFORM_BUFFER, UBO_LIGHT_BINDING, light.ubo_light); 
   
   if (!shadow_init()) {
     return false;

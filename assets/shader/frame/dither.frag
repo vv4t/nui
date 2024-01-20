@@ -5,7 +5,7 @@ float bayer_matrix[16] = float[] (
    0.4375,  -0.0625,  0.3125, -0.1875
 );
 
-float color_range = 16.0;
+float color_range = 32.0;
 float bayer_r = 1.0 / 8.0;
 
 void main()
