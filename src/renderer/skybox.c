@@ -184,6 +184,21 @@ void skybox_render()
   glDepthMask(GL_TRUE);
 }
 
+void skybox_render_texture(GLuint texture)
+{
+  glDepthMask(GL_FALSE);
+  
+  glUseProgram(skybox.shader);
+  
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+  
+  camera_model(mat4x4_init_identity());
+  mesh_draw(skybox.mesh);
+  
+  glDepthMask(GL_TRUE);
+}
+
 GLuint skybox_get_texture()
 {
   return skybox.texture;

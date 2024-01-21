@@ -43,8 +43,8 @@ void wave_new(wave_t *wave, int width, int height)
   
   float *data = calloc(width * height * 4, sizeof(float));
   
-  for (int i = 0; i < 10; i++) {
-    int size = 20;
+  for (int i = 0; i < 40; i++) {
+    int size = 90;
     int xd = rand() % (wave->width - size);
     int yd = rand() % (wave->width - size);
   

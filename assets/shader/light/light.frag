@@ -5,7 +5,7 @@ in vec3 vs_normal;
 in vec2 vs_uv;
 in mat3 vs_TBN;
 
-uniform samplerCube u_skybox;
+uniform samplerCube u_cubemap;
 
 void main()
 {
@@ -27,7 +27,7 @@ void main()
   }
   
   light += 0.1;
-  light += get_specular() * texture(u_skybox, R).rgb * get_alpha();
+  light += get_specular() * texture(u_cubemap, vec3(-R.x, R.y, R.z)).rgb * get_alpha();
   
   frag_color = get_diffuse() * get_alpha() * vec4(light, 1.0);
 }

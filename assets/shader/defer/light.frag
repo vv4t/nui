@@ -1,11 +1,12 @@
 out vec4 frag_color;
 
 uniform samplerCube u_skybox;
+uniform samplerCube u_cubemap;
 
 void main()
 {
   if (get_frag_pos().z < 0.0) {
-    frag_color = texture(u_skybox, vs_ray);
+    frag_color = texture(u_skybox, vec3(-vs_ray.x, vs_ray.y, vs_ray.z));
     
     for (int i = 0; i < MAX_POINTS; i++) {
       frag_color.xyz += calc_fog(vs_ray * 1000.0 + get_view_pos(), i);
@@ -38,7 +39,7 @@ void main()
   
   light += 0.1;
   light *= ao * ao;
-  light += get_specular() * texture(u_skybox, R).rgb;
+  light += get_specular() * texture(u_cubemap, vec3(-R.x, R.y, R.z)).rgb;
   
   frag_color = get_diffuse() * vec4(light, 1.0) + vec4(fog, 1.0);
 }

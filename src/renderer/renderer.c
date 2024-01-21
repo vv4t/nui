@@ -7,9 +7,11 @@
 #include "api.h"
 #include "frame.h"
 #include "defer.h"
+#include "cubemap.h"
 #include "../pipeline/defer_pipeline.h"
 #include "../pipeline/forward_pipeline.h"
 #include "../pipeline/test_pipeline.h"
+#include "../pipeline/test2_pipeline.h"
 #include "../gl/gl.h"
 #include "../gl/quad.h"
 #include "../gl/mesh.h"
@@ -84,6 +86,8 @@ void renderer_render()
   if (renderer.game->light_update) {
     light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
+  
+  cubemap_pass(renderer.game->player.position);
   
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);

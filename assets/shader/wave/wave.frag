@@ -14,11 +14,13 @@ void main()
   float u = p.r;
   float u_t = p.g;
   
-  float du_dx_1 = u - texelFetch(wave_in, ivec2(uv.x - 1, uv.y), 0).x;
-  float du_dy_1 = u - texelFetch(wave_in, ivec2(uv.x, uv.y - 1), 0).x;
+  int d = 3;
   
-  float du_dx_2 = texelFetch(wave_in, ivec2(uv.x + 1, uv.y), 0).x - u;
-  float du_dy_2 = texelFetch(wave_in, ivec2(uv.x, uv.y + 1), 0).x - u;
+  float du_dx_1 = u - texelFetch(wave_in, ivec2(uv.x - d, uv.y), 0).x;
+  float du_dy_1 = u - texelFetch(wave_in, ivec2(uv.x, uv.y - d), 0).x;
+  
+  float du_dx_2 = texelFetch(wave_in, ivec2(uv.x + d, uv.y), 0).x - u;
+  float du_dy_2 = texelFetch(wave_in, ivec2(uv.x, uv.y + d), 0).x - u;
   
   float d2u_dx2 = du_dx_2 - du_dx_1;
   float d2u_dy2 = du_dy_2 - du_dy_1;
@@ -29,7 +31,7 @@ void main()
   
   float u_0 = u * 2.0 - u_t + c * d2u_dt2;
   
-  float s = 10.0;
+  float s = 30.0;
   vec3 u1 = vec3(s, 0.0, du_dx_2);
   vec3 u2 = vec3(0.0, s, du_dy_2);
   
