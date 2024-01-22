@@ -7,9 +7,7 @@
 #include "api.h"
 #include "frame.h"
 #include "defer.h"
-#include "../pipeline/defer_pipeline.h"
-#include "../pipeline/forward_pipeline.h"
-#include "../pipeline/test_pipeline.h"
+#include "../pipeline/pipeline.h"
 #include "../gl/gl.h"
 #include "../gl/quad.h"
 #include "../gl/mesh.h"
@@ -18,25 +16,11 @@
 #include "../common/log.h"
 
 typedef struct {
-  GLuint shader;
-  
   view_t view;
-  
-  GLuint dither;
-  GLuint hdr;
-  
   model_t map_model;
-  
+  pipeline_t pipeline;
   const game_t *game;
 } renderer_t;
-
-struct {
-  bool (*init)();
-  void (*pass)();
-} render_pipeline = {
-  test_pipeline_init,
-  test_pipeline_pass
-};
 
 static renderer_t renderer;
 
@@ -72,7 +56,9 @@ bool renderer_init(const game_t *game)
   
   view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
   
-  if (!render_pipeline.init()) {
+  renderer.pipeline = pipeline_chise;
+  
+  if (!renderer.pipeline.init()) {
     return false;
   }
   
@@ -85,10 +71,12 @@ void renderer_render()
     light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
   }
   
+  renderer.pipeline.setup();
+  
   camera_set_view(renderer.view);
   camera_move(renderer.game->player.position, renderer.game->player.rotation);
   
-  render_pipeline.pass();
+  renderer.pipeline.pass();
 }
 
 void renderer_scene_pass()
