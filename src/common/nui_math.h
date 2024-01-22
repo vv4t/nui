@@ -290,16 +290,16 @@ inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from, vec3_t up)
 {
   vec3_t z_axis = vec3_normalize(vec3_sub(at, from));
   vec3_t x_axis = vec3_normalize(vec3_cross(up, z_axis));
-  vec3_t y_axis = vec3_normalize(vec3_cross(z_axis, x_axis));
+  vec3_t y_axis = vec3_normalize(up);
   
   float x_eye = -vec3_dot(x_axis, from);
   float y_eye = -vec3_dot(y_axis, from);
   float z_eye = -vec3_dot(z_axis, from);
   
   mat4x4_t m;
-  m.m[0]  = x_axis.x; m.m[4]  = y_axis.x; m.m[8]  = z_axis.x; m.m[12] = x_eye;
-  m.m[1]  = x_axis.y; m.m[5]  = y_axis.y; m.m[9]  = z_axis.y; m.m[13] = y_eye;
-  m.m[2]  = x_axis.z; m.m[6]  = y_axis.z; m.m[10] = z_axis.z; m.m[14] = z_eye;
+  m.m[0]  = x_axis.x; m.m[4]  = x_axis.y; m.m[8]  = x_axis.z; m.m[12] = x_eye;
+  m.m[1]  = y_axis.x; m.m[5]  = y_axis.y; m.m[9]  = y_axis.z; m.m[13] = y_eye;
+  m.m[2]  = z_axis.x; m.m[6]  = z_axis.y; m.m[10] = z_axis.z; m.m[14] = z_eye;
   m.m[3]  = 0;        m.m[7]  = 0;        m.m[11] = 0;        m.m[15] = 1;
   return m;
 }
@@ -307,10 +307,10 @@ inline static mat4x4_t mat4x4_init_look_at(vec3_t at, vec3_t from, vec3_t up)
 inline static mat4x4_t mat4x4_init_perspective(float aspect_ratio, float fov, float near, float far)
 {
   float tan_fov = 1 / tan(fov / 2);
-  float ar_tan_fov = aspect_ratio * tan_fov;
-  
-  float z_scale = (-near - far) / (near - far);
-  float z_offset = (2 * far * near) / (near - far);
+  float ar_tan_fov = aspect_ratio * tan_fov;  
+
+  float z_scale = (-far + -near) / (-far - -near);
+  float z_offset = (2 * -far * -near) / (-far - -near);
   
   mat4x4_t m;
   m.m[0]  = ar_tan_fov; m.m[4]  = 0;        m.m[8]  = 0;        m.m[12] = 0;

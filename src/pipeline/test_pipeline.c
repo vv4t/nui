@@ -52,7 +52,7 @@ bool test_pipeline_init()
   
   glUseProgram(test_pipeline.shader);
   GLuint ul_skybox = glGetUniformLocation(test_pipeline.shader, "u_skybox");
-  glUniform1i(ul_skybox, 5);
+  glUniform1i(ul_skybox, TEXTURE_SKYBOX_BINDING);
   
   shader_setup_free(&shader_setup);
   
@@ -74,7 +74,7 @@ bool test_pipeline_init()
   
   glUseProgram(test_pipeline.forward_shader);
   ul_skybox = glGetUniformLocation(test_pipeline.forward_shader, "u_skybox");
-  glUniform1i(ul_skybox, 5);
+  glUniform1i(ul_skybox, TEXTURE_SKYBOX_BINDING);
   
   shader_setup_free(&forward_shader_setup);
   
@@ -109,7 +109,7 @@ void test_pipeline_pass()
   
   frame_begin(0);
   
-  glActiveTexture(GL_TEXTURE5);
+  glActiveTexture(GL_TEXTURE0 + TEXTURE_SKYBOX_BINDING);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_get_texture());
   light_bind_depth_map(test_pipeline.shader);
   defer_draw(test_pipeline.shader);

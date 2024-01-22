@@ -85,7 +85,7 @@ void defer_begin()
   camera_set_viewport(0, 0, defer.width, defer.height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  static const float transparent[] = { 0, 0, -1.0, 0 };
+  static const float transparent[] = { 0, 0, -1, 0 };
   glClearBufferfv(GL_COLOR, 0, transparent);
 }
 
@@ -98,13 +98,13 @@ void defer_draw(GLuint shader)
 {
   glUseProgram(shader);
   
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + G_BUFFER_POS_BINDING);
   glBindTexture(GL_TEXTURE_2D, defer.g_pos);
   
-  glActiveTexture(GL_TEXTURE1);
+  glActiveTexture(GL_TEXTURE0 + G_BUFFER_NORMAL_BINDING);
   glBindTexture(GL_TEXTURE_2D, defer.g_normal);
   
-  glActiveTexture(GL_TEXTURE2);
+  glActiveTexture(GL_TEXTURE0 + G_BUFFER_ALBEDO_BINDING);
   glBindTexture(GL_TEXTURE_2D, defer.g_albedo);
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -128,9 +128,9 @@ void defer_shader_setup(GLuint shader)
   GLuint ul_normal = glGetUniformLocation(shader, "u_normal");
   GLuint ul_albedo = glGetUniformLocation(shader, "u_albedo");
   
-  glUniform1i(ul_pos, 0);
-  glUniform1i(ul_normal, 1);
-  glUniform1i(ul_albedo, 2);
+  glUniform1i(ul_pos, G_BUFFER_POS_BINDING);
+  glUniform1i(ul_normal, G_BUFFER_NORMAL_BINDING);
+  glUniform1i(ul_albedo, G_BUFFER_ALBEDO_BINDING);
 }
 
 GLuint defer_get_fbo()

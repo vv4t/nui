@@ -60,13 +60,13 @@ void light_shader_setup(GLuint shader)
   glUseProgram(shader);
   
   GLuint ubl_light = glGetUniformBlockIndex(shader, "ub_light");
-  glUniformBlockBinding(shader, ubl_light, 2);
+  glUniformBlockBinding(shader, ubl_light, UBO_LIGHT_BINDING);
 }
 
 void light_shader_setup_shadow(GLuint shader)
 {
   GLuint ul_depth_map = glGetUniformLocation(shader, "u_depth_map");
-  glUniform1i(ul_depth_map, 4);
+  glUniform1i(ul_depth_map, TEXTURE_DEPTH_BINDING);
 }
 
 void light_sub_point(int id, vec3_t pos, float intensity, vec3_t color)
@@ -123,7 +123,7 @@ void light_update_point_shadow(int id, vec3_t pos)
 void light_bind_depth_map(GLuint shader)
 {
   glUseProgram(shader);
-  glActiveTexture(GL_TEXTURE4);
+  glActiveTexture(GL_TEXTURE0 + TEXTURE_DEPTH_BINDING);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
 }
 
