@@ -25,6 +25,8 @@ static struct {
   GLuint shader;
   GLuint hdr;
   GLuint dither;
+  frame_t frame_1;
+  frame_t frame_2;
 } akariin;
 
 static bool akariin_init()
@@ -32,6 +34,9 @@ static bool akariin_init()
   if (!skybox_init("night")) {
     return false;
   }
+  
+  frame_new(&akariin.frame_1, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_new(&akariin.frame_2, VIEW_WIDTH, VIEW_HEIGHT);
   
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "akariin");
@@ -78,17 +83,17 @@ static void akariin_pass()
 {
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   
-  frame_begin(0);
+  frame_begin(akariin.frame_1);
   skybox_render();
   light_bind_depth_map(akariin.shader);
   renderer_scene_pass();
   frame_end();
   
-  frame_begin(1);
-  frame_draw(akariin.dither, 0);
+  frame_begin(akariin.frame_2);
+  frame_draw(akariin.dither, akariin.frame_1);
   frame_end();
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-  frame_draw(akariin.hdr, 1);
+  frame_draw(akariin.hdr, akariin.frame_2);
 }

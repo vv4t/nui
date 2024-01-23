@@ -39,7 +39,6 @@ bool renderer_init(const game_t *game)
   
   mesh_buffer_init(100000);
   material_init();
-  frame_init(VIEW_WIDTH, VIEW_HEIGHT);
   camera_init();
   
   if (!quad_init()) {
@@ -56,7 +55,7 @@ bool renderer_init(const game_t *game)
   
   view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
   
-  renderer.pipeline = pipeline_chise;
+  renderer.pipeline = pipeline_misaki;
   
   if (!renderer.pipeline.init()) {
     return false;

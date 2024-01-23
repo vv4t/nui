@@ -6,50 +6,36 @@
 #include "../gl/quad.h"
 #include "../common/path.h"
 
-#define FRAME_MAX 2
-
-typedef struct {
-  int width;
-  int height;
-  GLuint buffer[FRAME_MAX];
-  GLuint fbo[FRAME_MAX];
-  GLuint rbo[FRAME_MAX];
-} frame_t;
-
-static frame_t frame;
-
-void frame_init(int width, int height)
+void frame_new(frame_t *frame, int width, int height)
 {
-  for (int i = 0; i < FRAME_MAX; i++) {
-    glGenTextures(1, &frame.buffer[i]);
-    glBindTexture(GL_TEXTURE_2D, frame.buffer[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    glGenFramebuffers(1, &frame.fbo[i]);
-    glBindFramebuffer(GL_FRAMEBUFFER, frame.fbo[i]);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame.buffer[i], 0);
-    
-    glGenTextures(1, &frame.rbo[i]);
-    glBindTexture(GL_TEXTURE_2D, frame.rbo[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, frame.rbo[i], 0);
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  }
+  glGenTextures(1, &frame->texture);
+  glBindTexture(GL_TEXTURE_2D, frame->texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   
-  frame.width = width;
-  frame.height = height;
+  glGenFramebuffers(1, &frame->fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, frame->fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame->texture, 0);
+  
+  glGenTextures(1, &frame->rbo);
+  glBindTexture(GL_TEXTURE_2D, frame->rbo);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, frame->rbo, 0);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  
+  frame->width = width;
+  frame->height = height;
 }
 
-void frame_begin(int frame_num)
+void frame_begin(frame_t frame)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, frame.fbo[frame_num]);
+  glBindFramebuffer(GL_FRAMEBUFFER, frame.fbo);
   camera_set_viewport(0, 0, frame.width, frame.height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -59,11 +45,11 @@ void frame_end()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void frame_draw(GLuint shader, int frame_num)
+void frame_draw(GLuint shader, frame_t frame)
 {
   glUseProgram(shader);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, frame.buffer[frame_num]);
+  glBindTexture(GL_TEXTURE_2D, frame.texture);
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   quad_draw();
@@ -91,9 +77,4 @@ bool frame_shader_load(GLuint *shader, const char *name)
   shader_setup_free(&shader_setup);
   
   return true;
-}
-
-GLuint frame_get_fbo(int frame_num)
-{
-  return frame.fbo[frame_num];
 }

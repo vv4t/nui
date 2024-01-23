@@ -26,10 +26,15 @@ static struct {
   GLuint shader;
   GLuint hdr;
   GLuint dither;
+  frame_t frame_1;
+  frame_t frame_2;
 } misaki;
 
 static bool misaki_init()
 {
+  frame_new(&misaki.frame_1, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_new(&misaki.frame_2, VIEW_WIDTH, VIEW_HEIGHT);
+  
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "misaki");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
@@ -80,18 +85,18 @@ static void misaki_pass()
   renderer_scene_pass();
   defer_end();
   
-  frame_begin(0);
+  frame_begin(misaki.frame_1);
   glActiveTexture(GL_TEXTURE0 + TEXTURE_SKYBOX_BINDING);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_get_texture());
   light_bind_depth_map(misaki.shader);
   defer_draw(misaki.shader);
   frame_end();
   
-  frame_begin(1);
-  frame_draw(misaki.dither, 0);
+  frame_begin(misaki.frame_2);
+  frame_draw(misaki.dither, misaki.frame_1);
   frame_end();
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-  frame_draw(misaki.hdr, 1);
+  frame_draw(misaki.hdr, misaki.frame_2);
 }

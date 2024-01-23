@@ -30,6 +30,8 @@ static struct {
   GLuint forward_shader;
   GLuint hdr;
   GLuint dither;
+  frame_t frame_1;
+  frame_t frame_2;
   wave_t wave;
   model_t model;
 } chise;
@@ -43,6 +45,9 @@ static bool chise_init()
   if (!skybox_init("night")) {
     return false;
   }
+  
+  frame_new(&chise.frame_1, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_new(&chise.frame_2, VIEW_WIDTH, VIEW_HEIGHT);
   
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "defer_shader");
@@ -127,7 +132,7 @@ static void chise_pass()
   renderer_scene_pass();
   defer_end();
   
-  frame_begin(0);
+  frame_begin(chise.frame_1);
   
   glActiveTexture(GL_TEXTURE0 + TEXTURE_SKYBOX_BINDING);
   glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_get_texture());
@@ -135,7 +140,7 @@ static void chise_pass()
   defer_draw(chise.shader);
   
   glBindFramebuffer(GL_READ_FRAMEBUFFER, defer_get_fbo());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_get_fbo(0));
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, chise.frame_1.fbo);
   glBlitFramebuffer(0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
   
   glEnable(GL_BLEND);
@@ -151,15 +156,15 @@ static void chise_pass()
   
   frame_end();
   
-  frame_begin(1);
-  frame_draw(chise.dither, 0);
+  frame_begin(chise.frame_2);
+  frame_draw(chise.dither, chise.frame_1);
   frame_end();
   
   glEnable(GL_BLEND);
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-  frame_draw(chise.hdr, 1);
+  frame_draw(chise.hdr, chise.frame_2);
   
   ngui_render();
   
