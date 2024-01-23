@@ -63,7 +63,10 @@ bool defer_init(int width, int height)
   shader_setup_init(&shader_setup, "g_buffer");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_BOTH, "material");
-  shader_setup_source(&shader_setup, "g_buffer");
+  
+  if (!shader_setup_source(&shader_setup, "assets/shader/g_buffer", "g_buffer")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&defer.shader, &shader_setup)) {
     return false;
@@ -111,13 +114,14 @@ void defer_draw(GLuint shader)
   quad_draw();
 }
 
-void defer_shader_source(shader_setup_t *shader_setup, const char *name)
+bool defer_shader_source(shader_setup_t *shader_setup, const char *path, const char *name)
 {
   path_t path_defer;
-  path_create(path_defer, "assets/shader/defer/%s.frag", name);
+  path_create(path_defer, "%s/%s.frag", path, name);
   
   shader_setup_import(shader_setup, SHADER_FRAGMENT, "defer");
-  shader_setup_source_each(shader_setup, "assets/shader/defer/defer.vert", path_defer); 
+  
+  return shader_setup_source_each(shader_setup, "assets/shader/defer/defer.vert", path_defer); 
 }
 
 void defer_shader_setup(GLuint shader)

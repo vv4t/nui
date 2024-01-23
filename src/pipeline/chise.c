@@ -10,6 +10,7 @@
 #include "../renderer/wave.h"
 #include "../renderer/api.h"
 #include "../renderer/model.h"
+#include "../ngui/ngui.h"
 #include "../gl/quad.h"
 #include "../gl/gl.h"
 #include "../gl/shader.h"
@@ -44,11 +45,14 @@ static bool chise_init()
   }
   
   shader_setup_t shader_setup;
-  shader_setup_init(&shader_setup, "chise");
+  shader_setup_init(&shader_setup, "defer_shader");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "ssao");
-  defer_shader_source(&shader_setup, "light");
+  
+  if (!defer_shader_source(&shader_setup, "assets/pipeline/chise", "defer")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&chise.shader, &shader_setup)) {
     return false;
@@ -71,7 +75,10 @@ static bool chise_init()
   shader_setup_import(&forward_shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&forward_shader_setup, SHADER_BOTH, "material");
   shader_setup_import(&forward_shader_setup, SHADER_FRAGMENT, "light");
-  shader_setup_source(&forward_shader_setup, "light");
+  
+  if (!shader_setup_source(&forward_shader_setup, "assets/pipeline/akariin", "forward")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&chise.forward_shader, &forward_shader_setup)) {
     return false;
@@ -148,7 +155,13 @@ static void chise_pass()
   frame_draw(chise.dither, 0);
   frame_end();
   
+  glEnable(GL_BLEND);
+  
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   frame_draw(chise.hdr, 1);
+  
+  ngui_render();
+  
+  glDisable(GL_BLEND);
 }

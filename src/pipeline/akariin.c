@@ -6,6 +6,7 @@
 #include "../renderer/frame.h"
 #include "../renderer/light.h"
 #include "../renderer/api.h"
+#include "../renderer/skybox.h"
 #include "../gl/quad.h"
 #include "../gl/gl.h"
 #include "../gl/shader.h"
@@ -37,7 +38,10 @@ static bool akariin_init()
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_BOTH, "material");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
-  shader_setup_source(&shader_setup, "light");
+  
+  if (!shader_setup_source(&shader_setup, "assets/pipeline/akariin", "forward")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&akariin.shader, &shader_setup)) {
     return false;

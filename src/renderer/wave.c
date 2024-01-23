@@ -14,7 +14,10 @@ bool wave_init()
 {
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "wave");
-  shader_setup_source(&shader_setup, "wave");
+  
+  if (!shader_setup_source(&shader_setup, "assets/shader/wave", "wave")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&wave_def.shader, &shader_setup)) {
     return false;

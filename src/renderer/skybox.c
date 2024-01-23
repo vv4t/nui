@@ -43,7 +43,10 @@ static bool skybox_shader_init()
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "skybox");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
-  shader_setup_source(&shader_setup, "skybox");
+  
+  if (!shader_setup_source(&shader_setup, "assets/shader/skybox", "skybox")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&skybox.shader, &shader_setup)) {
     return false;

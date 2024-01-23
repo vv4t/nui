@@ -35,7 +35,10 @@ static bool misaki_init()
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "ssao");
-  defer_shader_source(&shader_setup, "assets/misaki");
+  
+  if (!defer_shader_source(&shader_setup, "assets/pipeline/misaki", "defer")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&misaki.shader, &shader_setup)) {
     return false;

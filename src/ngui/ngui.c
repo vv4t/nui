@@ -59,9 +59,15 @@ bool ngui_init(int width, int height)
     return false;
   }
   
-  if (!shader_load_from_file(&ngui.shader, "ngui")) {
+  shader_setup_t shader_setup;
+  shader_setup_init(&shader_setup, "ngui");
+  shader_setup_source(&shader_setup, "assets/shader/ngui", "ngui");
+  
+  if (!shader_setup_compile(&ngui.shader, &shader_setup)) {
     return false;
   }
+  
+  shader_setup_free(&shader_setup);
   
   ngui.console_input.text[0] = '>';
   ngui.console_input.text[1] = ' ';

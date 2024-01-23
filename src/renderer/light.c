@@ -146,7 +146,10 @@ static bool shadow_init()
   shader_setup_t shader_setup;
   shader_setup_init(&shader_setup, "shadow");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
-  shader_setup_source(&shader_setup, "shadow");
+  
+  if (!shader_setup_source(&shader_setup, "assets/shader/shadow", "shadow")) {
+    return false;
+  }
   
   if (!shader_setup_compile(&shadow.shader, &shader_setup)) {
     return false;
