@@ -40,7 +40,7 @@ static bool reflect_forward_setup();
 
 static bool reflect_init()
 {
-  if (!skybox_init("night")) {
+  if (!skybox_init("night2")) {
     return false;
   }
   
@@ -112,6 +112,7 @@ static bool reflect_forward_setup()
   shader_setup_init(&shader_setup, "forward_shader");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_BOTH, "material");
+  shader_setup_import(&shader_setup, SHADER_FRAGMENT, "ssr");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
   
   if (!shader_setup_source(&shader_setup, "assets/pipeline/reflect", "forward")) {
