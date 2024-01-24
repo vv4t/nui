@@ -29,7 +29,7 @@ void main()
   
   float u_0 = u * 2.0 - u_t + c * d2u_dt2;
   
-  float s = 5.0;
+  float s = 60.0;
   vec3 u1 = vec3(s, 0.0, du_dx_2);
   vec3 u2 = vec3(0.0, s, du_dy_2);
   
