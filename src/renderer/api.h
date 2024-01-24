@@ -4,7 +4,7 @@
 #define SCR_WIDTH 1280
 #define SCR_HEIGHT 720
 
-#define VIEW_SCALE 2
+#define VIEW_SCALE 3
 
 #define UBO_CAMERA_BINDING 0
 #define UBO_MATERIAL_BINDING 1
