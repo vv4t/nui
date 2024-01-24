@@ -103,10 +103,8 @@ void defer_end()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void defer_draw(GLuint shader)
+void defer_bind()
 {
-  glUseProgram(shader);
-  
   glActiveTexture(GL_TEXTURE0 + G_BUFFER_POS_BINDING);
   glBindTexture(GL_TEXTURE_2D, defer.g_pos);
   
@@ -115,6 +113,13 @@ void defer_draw(GLuint shader)
   
   glActiveTexture(GL_TEXTURE0 + G_BUFFER_ALBEDO_BINDING);
   glBindTexture(GL_TEXTURE_2D, defer.g_albedo);
+}
+
+void defer_draw(GLuint shader)
+{
+  glUseProgram(shader);
+  
+  defer_bind();
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   quad_draw();

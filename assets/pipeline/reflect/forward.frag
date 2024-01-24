@@ -1,21 +1,31 @@
 out vec4 frag_color;
 
+in vec3 vs_pos;
+in vec3 vs_normal;
+in vec2 vs_uv;
+in mat3 vs_TBN;
+
+in vec4 vs_frag_pos;
+
 uniform samplerCube u_skybox;
 
-/*
-vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
+uniform sampler2D d_pos;
+uniform sampler2D d_normal;
+uniform sampler2D d_albedo;
+
+vec3 calc_ssr(vec3 frag_pos, vec2 frag_uv, vec3 frag_normal)
 {
-  vec3 I = normalize(frag_pos - get_view_pos());
+  vec3 I = normalize(vs_pos - get_view_pos());
   vec3 R = reflect(I, normalize(frag_normal));
   
   float ray_dist = 0.25;
   
-  vec2 ray_uv = vs_uv;
-  vec3 ray_pos = get_frag_pos();
+  vec2 ray_uv = frag_uv;
+  vec3 ray_pos = frag_pos;
   
-  vec2 texel = vec2(textureSize(u_pos, 0));
+  vec2 texel = vec2(textureSize(d_pos, 0));
   
-  vec4 reflect_pos = get_mvp() * vec4(frag_pos + R * ray_dist, 1.0);
+  vec4 reflect_pos = get_mvp() * vec4(vs_pos + R * ray_dist, 1.0);
   vec2 reflect_uv = (reflect_pos.xyz / reflect_pos.w).xy * 0.5 + 0.5;
   
   vec2 diff_uv = reflect_uv - ray_uv;
@@ -25,7 +35,7 @@ vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
     if (abs(diff_uv.x) < 1.0 / texel.x && abs(diff_uv.y) < 1.0 / texel.y) {
       ray_dist += 0.1;
       
-      reflect_pos = get_mvp() * vec4(frag_pos + R * ray_dist, 1.0);
+      reflect_pos = get_mvp() * vec4(vs_pos + R * ray_dist, 1.0);
       reflect_uv = (reflect_pos.xyz / reflect_pos.w).xy * 0.5 + 0.5;
       
       diff_uv = reflect_uv - ray_uv;
@@ -39,7 +49,7 @@ vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
     ray_uv += diff_uv;
     ray_pos += diff_pos;
     
-    float frag_depth = texture(u_pos, ray_uv).z;
+    float frag_depth = texture(d_pos, ray_uv).z;
     
     if (
       ray_uv.x < 0.0 || ray_uv.y < 0.0 ||
@@ -50,7 +60,7 @@ vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
     }
     
     if (frag_depth < ray_pos.z) {
-      if (frag_depth < get_frag_pos().z) {
+      if (frag_depth < frag_pos.z) {
         return texture(u_skybox, R).rgb;
       }
       
@@ -64,7 +74,7 @@ vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
       vec3 color = vec3(0.0);
       
       for (int k = 0; k < 4; k++) {
-        color += texture(u_albedo, ray_uv + poisson_disk[k] / 700.0).xyz * 0.25;
+        color += texture(d_albedo, ray_uv + poisson_disk[k] / 700.0).xyz * 0.25;
       }
       
       return color;
@@ -73,42 +83,32 @@ vec3 calc_ssr(vec3 frag_pos, vec3 frag_normal)
   
   return texture(u_skybox, R).rgb;
 }
-*/
 
 void main()
 {
-  if (get_frag_pos().z < 0.0) {
-    frag_color = texture(u_skybox, vs_ray);
-    
-    for (int i = 0; i < MAX_POINTS; i++) {
-      frag_color.xyz += calc_fog(vs_ray * 1000.0 + get_view_pos(), i);
-    }
-    
-    return;
-  }
-  
-  vec3 frag_normal = get_frag_normal();
-  vec3 frag_pos = get_world_pos();
+  vec3 normal = get_normal(vs_uv, vs_TBN);
   
   vec3 light = vec3(0.0);
-  vec3 fog = vec3(0.0);
+  
+  vec3 I = normalize(vs_pos - get_view_pos());
+  vec3 R = reflect(I, normalize(normal));
   
   for (int i = 0; i < MAX_POINTS; i++) {
     if (points[i].intensity <= 0.0) {
       continue;
     }
     
-    float shadow = 1.0 - calc_point_shadow(i, frag_pos);
+    float shadow = 1.0 - calc_point_shadow(i, vs_pos);
     
-    light += calc_light(frag_pos, frag_normal, get_specular(), i) * shadow;
-    fog += calc_fog(frag_pos, i);
+    light += calc_light(vs_pos, normal, get_specular(), i) * shadow;
   }
   
-  float ao = calc_ssao(u_pos, frag_pos, frag_normal);
+  vec3 screen_coord = vs_frag_pos.xyz / vs_frag_pos.w;
+  vec2 screen_uv = screen_coord.xy * 0.5 + 0.5;
   
   light += 0.1;
-  light *= ao * ao;
-  // light += calc_ssr(frag_pos, frag_normal) * get_specular() * 0.2;
+  light += get_specular() * texture(u_skybox, R).rgb * get_alpha();
+  light += calc_ssr(vs_frag_pos.xyz, screen_uv, normal) * get_specular() * 2.0;
   
-  frag_color = get_diffuse() * vec4(light, 1.0) + vec4(fog, 1.0);
+  frag_color = get_diffuse() * get_alpha() * vec4(light, 1.0);
 }

@@ -1,6 +1,7 @@
 #include "renderer.h"
 
 #include "light.h"
+#include "wave.h"
 #include "camera.h"
 #include "model.h"
 #include "material.h"
