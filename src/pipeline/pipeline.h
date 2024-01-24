@@ -11,6 +11,7 @@ typedef struct {
 
 extern pipeline_t pipeline_chise;
 extern pipeline_t pipeline_misaki;
-extern pipeline_t pipeline_akariin;
+extern pipeline_t pipeline_akarin;
+extern pipeline_t pipeline_reflect;
 
 #endif

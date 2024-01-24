@@ -4,7 +4,7 @@ uniform vec3 u_samples[NUM_SAMPLES];
 
 float calc_ssao(sampler2D u_pos, vec3 frag_pos, vec3 normal)
 {
-  vec3 new_dir = normal + normal.zyx;
+  vec3 new_dir = normal + normal.zyx + normal.yzx;
   
   vec3 tangent = normalize(new_dir - normal * dot(new_dir, normal));
   vec3 bitangent = cross(tangent, normal);

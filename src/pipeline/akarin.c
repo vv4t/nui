@@ -11,14 +11,14 @@
 #include "../gl/gl.h"
 #include "../gl/shader.h"
 
-static bool akariin_init();
-static void akariin_setup();
-static void akariin_pass();
+static bool akarin_init();
+static void akarin_setup();
+static void akarin_pass();
 
-pipeline_t pipeline_akariin = {
-  .init = akariin_init,
-  .setup = akariin_setup,
-  .pass = akariin_pass
+pipeline_t pipeline_akarin = {
+  .init = akarin_init,
+  .setup = akarin_setup,
+  .pass = akarin_pass
 };
 
 static struct {
@@ -27,73 +27,73 @@ static struct {
   GLuint dither;
   frame_t frame_1;
   frame_t frame_2;
-} akariin;
+} akarin;
 
-static bool akariin_init()
+static bool akarin_init()
 {
   if (!skybox_init("night")) {
     return false;
   }
   
-  frame_new(&akariin.frame_1, VIEW_WIDTH, VIEW_HEIGHT);
-  frame_new(&akariin.frame_2, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_new(&akarin.frame_1, VIEW_WIDTH, VIEW_HEIGHT);
+  frame_new(&akarin.frame_2, VIEW_WIDTH, VIEW_HEIGHT);
   
   shader_setup_t shader_setup;
-  shader_setup_init(&shader_setup, "akariin");
+  shader_setup_init(&shader_setup, "akarin");
   shader_setup_import(&shader_setup, SHADER_BOTH, "camera");
   shader_setup_import(&shader_setup, SHADER_BOTH, "material");
   shader_setup_import(&shader_setup, SHADER_FRAGMENT, "light");
   
-  if (!shader_setup_source(&shader_setup, "assets/pipeline/akariin", "forward")) {
+  if (!shader_setup_source(&shader_setup, "assets/pipeline/akarin", "forward")) {
     return false;
   }
   
-  if (!shader_setup_compile(&akariin.shader, &shader_setup)) {
+  if (!shader_setup_compile(&akarin.shader, &shader_setup)) {
     return false;
   }
   
-  camera_shader_setup(akariin.shader);
-  material_shader_setup(akariin.shader);
-  light_shader_setup(akariin.shader);
-  light_shader_setup_shadow(akariin.shader);
+  camera_shader_setup(akarin.shader);
+  material_shader_setup(akarin.shader);
+  light_shader_setup(akarin.shader);
+  light_shader_setup_shadow(akarin.shader);
   
-  glUseProgram(akariin.shader);
-  GLuint ul_skybox = glGetUniformLocation(akariin.shader, "u_skybox");
+  glUseProgram(akarin.shader);
+  GLuint ul_skybox = glGetUniformLocation(akarin.shader, "u_skybox");
   glUniform1i(ul_skybox, TEXTURE_SKYBOX_BINDING);
   
   shader_setup_free(&shader_setup);
   
-  if (!frame_shader_load(&akariin.hdr, "hdr")) {
+  if (!frame_shader_load(&akarin.hdr, "hdr")) {
     return false;
   }
   
-  if (!frame_shader_load(&akariin.dither, "dither")) {
+  if (!frame_shader_load(&akarin.dither, "dither")) {
     return false;
   }
   
   return true;
 }
 
-static void akariin_setup()
+static void akarin_setup()
 {
   
 }
 
-static void akariin_pass()
+static void akarin_pass()
 {
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   
-  frame_begin(akariin.frame_1);
+  frame_begin(akarin.frame_1);
   skybox_render();
-  light_bind_depth_map(akariin.shader);
+  light_bind_depth_map(akarin.shader);
   renderer_scene_pass();
   frame_end();
   
-  frame_begin(akariin.frame_2);
-  frame_draw(akariin.dither, akariin.frame_1);
+  frame_begin(akarin.frame_2);
+  frame_draw(akarin.dither, akarin.frame_1);
   frame_end();
   
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-  frame_draw(akariin.hdr, akariin.frame_2);
+  frame_draw(akarin.hdr, akarin.frame_2);
 }
