@@ -2,7 +2,7 @@
 
 #define CUBE_FACES 6
 #define POINTS_MAX 8
-#define SHADOW_SIZE 512
+#define SHADOW_SIZE 128
 
 #include "camera.h"
 #include "api.h"
@@ -65,6 +65,8 @@ void light_shader_setup(GLuint shader)
 
 void light_shader_setup_shadow(GLuint shader)
 {
+  glUseProgram(shader);
+  
   GLuint ul_depth_map = glGetUniformLocation(shader, "u_depth_map");
   glUniform1i(ul_depth_map, TEXTURE_DEPTH_BINDING);
 }
@@ -109,8 +111,12 @@ void light_update_point_shadow(int id, vec3_t pos)
   view_t view;
   view_set_perspective(&view, 1.0, to_radians(90.0), 0.1, 100.0);
   
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+  
   for (int i = 0; i < CUBE_FACES; i++) {
     camera_set_viewport(i * SHADOW_SIZE, id * SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE);
+    
     camera_set_view(view);
     camera_look_at(vec3_add(pos, at[i]), pos, up[i]);
     
@@ -129,18 +135,19 @@ void light_bind_depth_map(GLuint shader)
 
 static bool shadow_init()
 {
+  glGenFramebuffers(1, &shadow.depth_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
+  
   glGenTextures(1, &shadow.depth_map);
   glBindTexture(GL_TEXTURE_2D, shadow.depth_map);
   glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, CUBE_FACES * SHADOW_SIZE, POINTS_MAX * SHADOW_SIZE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  
-  glGenFramebuffers(1, &shadow.depth_fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, shadow.depth_fbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.depth_map, 0);
-  glDrawBuffer(GL_NONE);
+  
+  // glDrawBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   shader_setup_t shader_setup;

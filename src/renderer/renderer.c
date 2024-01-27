@@ -52,7 +52,6 @@ bool renderer_init(const game_t *game)
     return false;
   }
   
-  
   if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
     return false;
   }

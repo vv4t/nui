@@ -1,6 +1,6 @@
 #include "player.h"
 
-#define LOOK_SENSITIVITY 0.005
+#define LOOK_SENSITIVITY 0.0035
 
 void player_move(player_t *player, const bsp_t *bsp, const usercmd_t *usercmd);
 void player_free_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd);
@@ -75,7 +75,7 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
   vec3_t move_dir = player_move_dir(p, usercmd);
   
   if (p->ground) {
-    player_accelerate(p, move_dir, 9.0, 14.0);
+    player_accelerate(p, move_dir, 6.0, 13.0);
     p->velocity = vec3_mulf(p->velocity, 0.8f);
     
     if (usercmd->jump) {
@@ -83,7 +83,7 @@ void player_move(player_t *p, const bsp_t *bsp, const usercmd_t *usercmd)
     }
   } else {
     p->velocity.y -= 17.8 * 0.015;
-    player_air_accelerate(p, move_dir, 2.3);
+    player_air_accelerate(p, move_dir, 1.3);
   }
   
   p->position = vec3_add(p->position, vec3_mulf(p->velocity, 0.015));

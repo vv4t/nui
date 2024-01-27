@@ -25,7 +25,7 @@ void camera_init()
 {
   glGenBuffers(1, &camera.ubo_camera);
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_camera);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_camera_t), NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 512, NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, UBO_CAMERA_BINDING, camera.ubo_camera);
 }
 
@@ -80,7 +80,7 @@ void camera_model(mat4x4_t mat_model)
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo_camera);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_camera), &ub_camera);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ub_camera_t), &ub_camera);
 }
 
 mat4x4_t camera_get_view_project()

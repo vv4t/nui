@@ -26,7 +26,7 @@ void material_init()
   
   glGenBuffers(1, &material_def.ubo_material);
   glBindBuffer(GL_UNIFORM_BUFFER, material_def.ubo_material);
-  glBufferData(GL_UNIFORM_BUFFER, sizeof(ub_material_t), NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 512, NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, UBO_MATERIAL_BINDING, material_def.ubo_material);
 }
 

@@ -96,4 +96,13 @@ static void akarin_pass()
   camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   frame_draw(akarin.hdr, akarin.frame_2);
+  
+  /*
+  glUseProgram(akarin.hdr);
+  light_bind_depth_map(akarin.hdr);
+  
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  camera_set_viewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  quad_draw();
+  */
 }

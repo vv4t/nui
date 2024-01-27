@@ -74,7 +74,7 @@ float depth_cube_cube_sample(int id, cube_sample_t cube_sample)
   uv.x = (uv.x + cube_sample.face) / float(CUBE_FACES);
   uv.y = (uv.y + float(id)) / float(MAX_POINTS);
   
-  return texture(u_depth_map, uv).z;
+  return texture(u_depth_map, uv).r;
 }
 
 float calc_point_shadow(int id, vec3 frag_pos)

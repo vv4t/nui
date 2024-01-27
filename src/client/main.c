@@ -55,9 +55,11 @@ bool nui_init()
     return false;
   }
   
+  /*
   if (!ngui_init(1280, 720)) {
     return false;
   }
+  */
   
   map_t *map = map_load("nk_test");
   
