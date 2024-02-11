@@ -11,10 +11,12 @@
 typedef struct {
   int width;
   int height;
+  
   GLuint g_buffer;
   GLuint g_pos;
   GLuint g_normal;
   GLuint g_albedo;
+  
   GLuint rbo;
   GLuint shader;
 } defer_t;

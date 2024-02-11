@@ -21,4 +21,6 @@ void frame_draw(GLuint shader, frame_t frame);
 void frame_shader_source(shader_setup_t *shader_setup, const char *name);
 bool frame_shader_load(GLuint *shader, const char *name);
 
+void fbo_blit(GLuint dst, GLuint src, GLuint mask);
+
 #endif

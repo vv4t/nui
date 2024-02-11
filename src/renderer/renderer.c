@@ -58,7 +58,7 @@ bool renderer_init(const game_t *game)
   
   view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
   
-  renderer.pipeline = pipeline_reflect;
+  renderer.pipeline = pipeline_moom;
   
   if (!renderer.pipeline.init()) {
     return false;
@@ -70,7 +70,7 @@ bool renderer_init(const game_t *game)
 void renderer_render()
 {
   if (renderer.game->light_update) {
-    light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.2, 1.0));
+    light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.4, 1.0));
   }
   
   renderer.pipeline.setup();

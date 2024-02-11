@@ -2,7 +2,7 @@
 
 #define CUBE_FACES 6
 #define POINTS_MAX 8
-#define SHADOW_SIZE 128
+#define SHADOW_SIZE 512
 
 #include "camera.h"
 #include "api.h"

@@ -84,8 +84,8 @@ float calc_point_shadow(int id, vec3 frag_pos)
   
   float near = 0.1;
   float far = 100.0;
-  float z_scale = (-near - far) / (near - far);
-  float z_offset = (2.0 * far * near) / (near - far);
+  float z_scale = (-far + -near) / (-far - -near);
+  float z_offset = (2.0 * -far * -near) / (-far - -near);
   
   float shadow = 0.0;
   

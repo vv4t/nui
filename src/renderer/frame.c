@@ -78,3 +78,10 @@ bool frame_shader_load(GLuint *shader, const char *name)
   
   return true;
 }
+
+void fbo_blit(GLuint dst, GLuint src, GLuint mask)
+{
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, src);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst);
+  glBlitFramebuffer(0, 0, 1280, 720, 0, 0, 1280, 720, mask, GL_NEAREST);
+}
