@@ -10,7 +10,7 @@ SRC_H=$(wildcard src/*/*.h)
 defualt: nui run
 
 nui: $(OBJ)
-	gcc $(CFLAGS) $(LDFLAGS) $^ -o $@
+	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 bin/%.o: src/%.c $(SRC_H) | bin/common/ bin/game/ bin/client/ bin/renderer/ bin/pipeline/ bin/gl/ bin/ngui/
 	gcc $(INCLUDE) $(CFLAGS) -c -o $@ $<
@@ -38,6 +38,9 @@ bin/ngui/: | bin/
 
 bin/:
 	mkdir -p $@
+
+clean:
+	rm -f $(OBJ)
 
 run:
 	./nui
