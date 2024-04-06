@@ -1,105 +1,58 @@
-#include "renderer.h"
+#include <renderer/renderer.h>
 
-#include "light.h"
-#include "wave.h"
-#include "camera.h"
-#include "model.h"
-#include "material.h"
-#include "api.h"
-#include "frame.h"
-#include "defer.h"
-#include "../pipeline/pipeline.h"
-#include "../gl/gl.h"
-#include "../gl/quad.h"
-#include "../gl/mesh.h"
-#include "../gl/shader.h"
-#include "../ngui/ngui.h"
-#include "../common/log.h"
+#include <renderer/meshdata.h>
+#include <renderer/shaderdata.h>
+#include <renderer/shader.h>
+#include <renderer/vbuffer.h>
+#include <GL/glew.h>
 
-typedef struct {
-  view_t view;
-  model_t map_model;
-  pipeline_t pipeline;
-  const game_t *game;
-} renderer_t;
+#define MAX_VERTICES 1024
 
-static renderer_t renderer;
+struct {
+  mesh_t mesh;
+  shader_t shader;
+  GLuint u_mvp;
+} renderer;
 
-static void renderer_init_gl();
-static void renderer_scene_render();
-
-bool renderer_init(const game_t *game)
+void renderer_init()
 {
-  renderer.game = game;
+  vbuffer_init(MAX_VERTICES);
+  vbuffer_bind();
   
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_SCISSOR_TEST);
+  glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
   
-  mesh_buffer_init(100000);
-  material_init();
-  camera_init();
+  meshdata_t md = meshdata_create();
+  meshdata_add_quad(md, identity());
+  renderer.mesh = vbuffer_add(md);
   
-  if (!quad_init()) {
-    return false;
-  }
+  shaderdata_t sd = shaderdata_create();
+  shaderdata_source(sd, "assets/shader/shader.vert", S_VERT);
+  shaderdata_source(sd, "assets/shader/shader.frag", S_FRAG);
+  renderer.shader = shader_load(sd);
   
-  if (!light_init()) {
-    return false;
-  }
+  renderer.u_mvp = glGetUniformLocation(renderer.shader, "u_mvp");
   
-  if (!wave_init()) {
-    return false;
-  }
+  glUseProgram(renderer.shader);
   
-  if (!defer_init(VIEW_WIDTH, VIEW_HEIGHT)) {
-    return false;
-  }
-  
-  view_set_perspective(&renderer.view, (float) SCR_HEIGHT/ (float) SCR_WIDTH, to_radians(90.0), 0.1, 100.0);
-  
-  renderer.pipeline = pipeline_moom;
-  
-  if (!renderer.pipeline.init()) {
-    return false;
-  }
-  
-  return true;
+  meshdata_destroy(md);
+  shaderdata_destroy(sd);
 }
+
+float t = 0.0;
 
 void renderer_render()
 {
-  if (renderer.game->light_update) {
-    light_sub_point(0, renderer.game->light_pos, 6.0, vec3_init(1.0, 0.4, 1.0));
-  }
+  t += 0.015;
   
-  renderer.pipeline.setup();
+  matrix m = transform(vec3(cos(t), 0.0, 0.0), vec3(0.0, 0.0, t), vec3(0.5, 0.1, 0.1));
+  // matrix m = mdotm(scale(vec3(0.5, 0.1, 0.1)), mdotm(rotate_z(t), translate(vec3(cos(t), 0.0, 0.0))));
+  glUniformMatrix4fv(renderer.u_mvp, 1, GL_FALSE, m.m);
   
-  camera_set_view(renderer.view);
-  camera_move(renderer.game->player.position, renderer.game->player.rotation);
-  
-  renderer.pipeline.pass();
+  glClear(GL_COLOR_BUFFER_BIT);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void renderer_scene_pass()
+void renderer_deinit()
 {
-  camera_model(mat4x4_init_identity());
-  model_draw(&renderer.map_model);
-}
-
-void renderer_shadow_pass()
-{
-  glClear(GL_DEPTH_BUFFER_BIT);
-  
-  camera_model(mat4x4_init_identity());
-  model_draw(&renderer.map_model);
-}
-
-void renderer_map_load(const map_t *map)
-{
-  model_load_map(&renderer.map_model, map);
-  
-  for (int i = 0; i < map->num_lights; i++) {
-    light_sub_point(1 + i, map->lights[i].pos, map->lights[i].intensity, map->lights[i].color);
-  }
+  vbuffer_deinit();
 }
