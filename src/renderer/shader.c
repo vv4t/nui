@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-GLuint shader_compile(GLuint type, const char **src, int num_src);
+static GLuint shader_compile(GLuint type, const char **src, int num_src);
 
 GLuint shader_load(shaderdata_t sd)
 {
@@ -38,6 +38,16 @@ GLuint shader_load(shaderdata_t sd)
   glDeleteShader(frag_shader);
   
   return shader;
+}
+
+void shader_bind(shader_t shader)
+{
+  glUseProgram(shader);
+}
+
+void shader_destroy(shader_t shader)
+{
+  glDeleteProgram(shader);
 }
 
 GLuint shader_compile(GLuint type, const char **src, int num_src)

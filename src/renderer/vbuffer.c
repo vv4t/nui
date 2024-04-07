@@ -70,31 +70,12 @@ mesh_t vbuffer_add(meshdata_t md)
   return mesh;
 }
 
+void vbuffer_draw(mesh_t mesh)
+{
+  glDrawArrays(GL_TRIANGLES, mesh.offset, mesh.count);
+}
+
 void vbuffer_deinit()
 {
   glDeleteBuffers(1, &vbuffer.vbo);
 }
-
-/*
-bool vbuffer_sub(mesh_t *mesh, const vertex_t *vertices, int offset, int num_vertices)
-{
-  if (offset + num_vertices > mesh->count) {
-    LOG_ERROR("mesh sub too big %i/%i", offset + num_vertices, mesh->count);
-    return false;
-  }
-  
-  glBufferSubData(
-    GL_ARRAY_BUFFER,
-    (mesh->offset + offset) * sizeof(vertex_t),
-    num_vertices * sizeof(vertex_t),
-    vertices
-  );
-  
-  return true;
-}
-
-void mesh_draw(mesh_t mesh)
-{
-  glDrawArrays(GL_TRIANGLES, mesh.offset, mesh.count);
-}
-*/

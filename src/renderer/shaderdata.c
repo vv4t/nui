@@ -48,12 +48,18 @@ void shaderdata_source(shaderdata_t sd, const char *src, SHADERTYPE type)
   
   text[fsize] = 0;
  
-  shaderdata_add(sd, text, type);
+  shaderdata_text(sd, text, type);
   
   free(text);
 }
 
-void shaderdata_add(shaderdata_t sd, const char *text, SHADERTYPE type)
+void shaderdata_line(shaderdata_t sd, const char *text, SHADERTYPE type)
+{
+  shaderdata_text(sd, text, type);
+  shaderdata_text(sd, "\n", type);
+}
+
+void shaderdata_text(shaderdata_t sd, const char *text, SHADERTYPE type)
 {
   if (type & S_VERT) {
     if (sd->num_vert >= sd->max_vert) {

@@ -1,10 +1,10 @@
-#version 300 es
-
 layout(location = 0) in vec3 v_p;
 
-uniform mat4 u_mvp;
+layout(std140) uniform ub_camera {
+  mat4 mvp;
+};
 
 void main()
 {
-  gl_Position = u_mvp * vec4(v_p, 1.0);
+  gl_Position = mvp * vec4(v_p, 1.0);
 }

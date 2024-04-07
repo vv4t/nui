@@ -12,6 +12,7 @@ typedef struct {
 void vbuffer_init(int max_vertices);
 mesh_t vbuffer_add(meshdata_t md);
 void vbuffer_bind();
+void vbuffer_draw(mesh_t mesh);
 void vbuffer_deinit();
 
 #endif

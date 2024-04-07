@@ -111,6 +111,32 @@ inline static matrix scale(vector x)
   );
 }
 
+inline static matrix rotate_x(float t)
+{
+  float c = cos(t);
+  float s = sin(t);
+  
+  return mat4(
+    vec4(1,   0,    0,    0),
+    vec4(0,   c,   -s,    0),
+    vec4(0,   s,   +c,    0),
+    vec4(0,   0,    0,    1)
+  );
+}
+
+inline static matrix rotate_y(float t)
+{
+  float c = cos(t);
+  float s = sin(t);
+  
+  return mat4(
+    vec4(c,   0,    -s,   0),
+    vec4(0,   1,    0,    0),
+    vec4(s,   0,    +c,   0),
+    vec4(0,   0,    0,    1)
+  );
+}
+
 inline static matrix rotate_z(float t)
 {
   float c = cos(t);
@@ -124,9 +150,27 @@ inline static matrix rotate_z(float t)
   );
 }
 
+inline static matrix rotate_xyz(vector r)
+{
+  return mdotm(rotate_x(r.x), mdotm(rotate_y(r.y), rotate_z(r.z)));
+}
+
 inline static matrix transform(vector t, vector r, vector s)
 {
-  return mdotm(scale(s), mdotm(rotate_z(r.z), translate(t)));
+  return mdotm(scale(s), mdotm(rotate_xyz(r), translate(t)));
+}
+
+inline static matrix perspective(float w, float h, float n, float f)
+{
+  float u = (-f - n) / (-f + n);
+  float v = (2 * f * n) / (-f + n);
+  
+  return mat4(
+    vec4(w, 0, 0, 0),
+    vec4(0, h, 0, 0),
+    vec4(0, 0, u, v),
+    vec4(0, 0, 1, 0)
+  );
 }
 
 #endif
