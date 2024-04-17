@@ -29,9 +29,12 @@ void meshdata_add_quad(meshdata_t md, matrix T_p)
     vec2(+1, -1)
   };
   
+  matrix T_uv = mdotm(translate(vec2(1.0, 1.0)), scale(vec2(0.5, -0.5)));
+  
   for (int i = 0; i < sizeof(quad) / sizeof(quad[0]); i++) {
     vector p = mdotv(T_p, v2pt(quad[i]));
-    meshdata_add_vertex(md, vertex_create(p));
+    vector uv = mdotv(T_uv, v2pt(quad[i]));
+    meshdata_add_vertex(md, vertex_create(p, uv));
   }
 }
 

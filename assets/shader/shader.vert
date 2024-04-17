@@ -1,10 +1,13 @@
 layout(location = 0) in vec3 v_p;
+layout(location = 1) in vec3 v_n;
+layout(location = 2) in vec3 v_t;
+layout(location = 3) in vec3 v_bt;
+layout(location = 4) in vec2 v_uv;
 
-layout(std140) uniform ub_camera {
-  mat4 mvp;
-};
+out vec2 vs_uv;
 
 void main()
 {
+  vs_uv = v_uv;
   gl_Position = mvp * vec4(v_p, 1.0);
 }
