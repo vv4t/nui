@@ -35,6 +35,11 @@ void camera_shader_import(shaderdata_t sd)
   shaderdata_source(sd, "assets/shader/import/camera.glsl", S_VERT | S_FRAG);
 }
 
+void camera_orthogonal(float w, float h)
+{
+  camera.p = scale(vec3(w, h, 1.0));
+}
+
 void camera_perspective(float w, float h, float n, float f)
 {
   camera.p = perspective(w, h, n, f);
