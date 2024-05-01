@@ -47,7 +47,9 @@ void camera_perspective(float w, float h, float n, float f)
 
 void camera_move(vector position, vector rotation)
 {
-  camera.v = transform(fdotv(-1.0, position), fdotv(-1.0, rotation), vec3(1.0, 1.0, 1.0));
+  vector view_offset = fdotv(-1.0, position);
+  vector view_angle = fdotv(-1.0, rotation);
+  camera.v = mdotm(translate(view_offset), rotate_zyx(view_angle));
 }
 
 void camera_update(matrix m)

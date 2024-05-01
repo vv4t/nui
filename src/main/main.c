@@ -1,7 +1,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
-#include <stdbool.h>
+#include <stdint.h>
 #include <renderer/renderer.h>
+#include <game/game.h>
 
 #define MAX_KEY 256
 #define WIDTH 800
@@ -10,23 +11,25 @@
 static struct {
   SDL_Window *window;
   SDL_GLContext *gl;
+  game_t g;
   int mouse_x;
   int mouse_y;
-  bool key[MAX_KEY];
+  int key[MAX_KEY];
 } sdl;
 
 void glew_init();
 void sdl_init();
-bool sdl_poll();
+int sdl_poll();
 void sdl_quit();
 
-bool update();
+int update();
 
 int main(int argc, char *argv[])
 {
   sdl_init();
   glew_init();
   renderer_init();
+  game_init(&sdl.g);
   
   while (update());
   
@@ -35,17 +38,78 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-bool update()
+int update()
 {
   if (!sdl_poll()) {
-    return false;
+    return 0;
   }
   
-  renderer_render();
+  game_update(&sdl.g, sdl.key, sdl.mouse_x / (float) WIDTH, sdl.mouse_y / (float) HEIGHT);
+  renderer_render(&sdl.g);
   
   SDL_GL_SwapWindow(sdl.window);
   
-  return true;
+  return 1;
+}
+
+void sdl_init(int width, int height)
+{
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    printf("SDL_Error: %s\n", SDL_GetError());
+    return;
+  }
+  
+  sdl.window = SDL_CreateWindow(
+    "nui",
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    WIDTH,
+    HEIGHT,
+    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+  );
+  
+  sdl.gl = SDL_GL_CreateContext(sdl.window);
+  
+  sdl.mouse_x = 0;
+  sdl.mouse_y = 0;
+  
+  for (int i = 0; i < MAX_KEY; i++) {
+    sdl.key[i] = 0;
+  }
+  
+  SDL_SetRelativeMouseMode(1);
+}
+
+int sdl_poll()
+{
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+    case SDL_QUIT:
+      return 0;
+    case SDL_KEYUP:
+      if (event.key.keysym.sym >= MAX_KEY) break;
+      sdl.key[event.key.keysym.sym] = 0;
+      break;
+    case SDL_KEYDOWN:
+      if (event.key.keysym.sym >= MAX_KEY) break;
+      sdl.key[event.key.keysym.sym] = 1;
+      break;
+    case SDL_MOUSEMOTION:
+      sdl.mouse_x += event.motion.xrel;
+      sdl.mouse_y -= event.motion.yrel;
+      break;
+    }
+  }
+  
+  return 1;
+}
+
+void sdl_quit()
+{
+  SDL_GL_DeleteContext(sdl.gl);
+  SDL_DestroyWindow(sdl.window);
+  SDL_Quit();
 }
 
 void GLAPIENTRY
@@ -81,64 +145,4 @@ void glew_init()
   
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(MessageCallback, 0);
-}
-
-void sdl_init(int width, int height)
-{
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("SDL_Error: %s\n", SDL_GetError());
-    return;
-  }
-  
-  sdl.window = SDL_CreateWindow(
-    "nui",
-    SDL_WINDOWPOS_CENTERED,
-    SDL_WINDOWPOS_CENTERED,
-    WIDTH,
-    HEIGHT,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
-  );
-  
-  sdl.gl = SDL_GL_CreateContext(sdl.window);
-  
-  sdl.mouse_x = 0;
-  sdl.mouse_y = 0;
-  
-  for (int i = 0; i < MAX_KEY; i++) {
-    sdl.key[i] = false;
-  }
-  
-  SDL_SetRelativeMouseMode(true);
-}
-
-bool sdl_poll()
-{
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_QUIT:
-      return false;
-    case SDL_KEYUP:
-      if (event.key.keysym.sym >= MAX_KEY) break;
-      sdl.key[event.key.keysym.sym] = false;
-      break;
-    case SDL_KEYDOWN:
-      if (event.key.keysym.sym >= MAX_KEY) break;
-      sdl.key[event.key.keysym.sym] = true;
-      break;
-    case SDL_MOUSEMOTION:
-      sdl.mouse_x += event.motion.xrel;
-      sdl.mouse_y -= event.motion.yrel;
-      break;
-    }
-  }
-  
-  return true;
-}
-
-void sdl_quit()
-{
-  SDL_GL_DeleteContext(sdl.gl);
-  SDL_DestroyWindow(sdl.window);
-  SDL_Quit();
 }

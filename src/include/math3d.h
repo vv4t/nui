@@ -175,6 +175,11 @@ inline static matrix rotate_xyz(vector r)
   return mdotm(rotate_x(r.x), mdotm(rotate_y(r.y), rotate_z(r.z)));
 }
 
+inline static matrix rotate_zyx(vector r)
+{
+  return mdotm(rotate_z(r.z), mdotm(rotate_y(r.y), rotate_x(r.x)));
+}
+
 inline static matrix transform(vector t, vector r, vector s)
 {
   return mdotm(scale(s), mdotm(rotate_xyz(r), translate(t)));

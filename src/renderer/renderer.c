@@ -39,10 +39,12 @@ void renderer_init()
   
   meshdata_t md = meshdata_create();
   vector cube_axis[][2] = {
-    { vec3(+1, 0,  0), vec3(0, 1, 0) },
-    { vec3(-1, 0,  0), vec3(0, 1, 0) },
-    { vec3( 0, 0, +1), vec3(0, 1, 0) },
-    { vec3( 0, 0, -1), vec3(0, 1, 0) }
+    { vec3(+1,  0,  0), vec3(0, 1, 0) },
+    { vec3(-1,  0,  0), vec3(0, 1, 0) },
+    { vec3( 0,  0, +1), vec3(0, 1, 0) },
+    { vec3( 0,  0, -1), vec3(0, 1, 0) },
+    { vec3( 0, +1,  0), vec3(0, 0, -1) },
+    { vec3( 0, -1,  0), vec3(0, 0, 1) }
   };
   for (int i = 0; i < sizeof(cube_axis) / sizeof(*cube_axis); i++) {
     vector x = cube_axis[i][0];
@@ -75,9 +77,11 @@ void renderer_init()
 
 float t = 0.0;
 
-void renderer_render()
+void renderer_render(const game_t *g)
 {
   t += 0.015;
+  
+  camera_move(g->position, g->rotation);
   
   framebuffer_begin(renderer.fb[0]);
     shader_bind(renderer.surface);

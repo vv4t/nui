@@ -119,7 +119,7 @@ void meshdata_add_vertex(meshdata_t md, vertex_t v)
 {
   if (md->pos >= md->size) {
     md->size *= 2;
-    md->vertices = realloc(md->vertices, md->size);
+    md->vertices = realloc(md->vertices, md->size * sizeof(*md->vertices));
   }
   
   md->vertices[md->pos++] = v;
