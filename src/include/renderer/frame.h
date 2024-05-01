@@ -12,7 +12,7 @@ void frame_shader_source(shaderdata_t sd, const char *path);
 shader_t frame_shader_load(const char *path);
 void frame_draw(shader_t shader);
 
-framebuffer_t framebuffer_create(int width, int height);
+framebuffer_t framebuffer_create(int width, int height, texture_t depth_buffer);
 void framebuffer_begin(framebuffer_t fb);
 void framebuffer_end();
 void framebuffer_bind(framebuffer_t fb, int channel, GLuint type, texture_t texture);

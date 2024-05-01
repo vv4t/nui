@@ -35,6 +35,16 @@ inline static matrix mat4(vector a, vector b, vector c, vector d)
   };
 }
 
+inline static matrix mat3(vector a, vector b, vector c)
+{
+  return (matrix) {
+    .m[ 0] = a.x, .m[ 4] = a.y, .m[ 8] = a.z, .m[12] = 0.0,
+    .m[ 1] = b.x, .m[ 5] = b.y, .m[ 9] = b.z, .m[13] = 0.0,
+    .m[ 2] = c.x, .m[ 6] = c.y, .m[10] = c.z, .m[14] = 0.0,
+    .m[ 3] = 0.0, .m[ 7] = 0.0, .m[11] = 0.0, .m[15] = 1.0
+  };
+}
+
 inline static vector vaddv(vector A, vector B)
 {
   return (vector) {
@@ -63,6 +73,16 @@ inline static vector mdotv(matrix A, vector x)
     A.m[ 2] * x.x + A.m[ 6] * x.y + A.m[10] * x.z + A.m[14] * x.w,
     A.m[ 3] * x.x + A.m[ 7] * x.y + A.m[11] * x.z + A.m[15] * x.w
   );
+}
+
+inline static vector cross(vector a, vector b)
+{
+  return (vector) {
+    .x = a.y * b.z - a.z * b.y,
+    .y = a.z * b.x - a.x * b.z,
+    .z = a.x * b.y - a.y * b.x,
+    .w = 1.0
+  };
 }
 
 inline static matrix mdotm(matrix A, matrix B)

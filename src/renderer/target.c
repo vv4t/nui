@@ -19,7 +19,7 @@ target_t target_create(int num_bindings, ...)
     GLuint attachment = va_arg(vargs, GLuint);
     GLuint texture = va_arg(vargs, GLuint);
     
-    if (i < MAX_BUFFERS) {
+    if (attachment != GL_DEPTH_ATTACHMENT && i < MAX_BUFFERS) {
       buffers[i] = attachment;
     }
     
