@@ -32,7 +32,7 @@ void camera_shader_attach(shader_t shader)
 
 void camera_shader_import(shaderdata_t sd)
 {
-  shaderdata_source(sd, "assets/shader/import/camera.glsl", S_VERT | S_FRAG);
+  shaderdata_source(sd, "assets/shader/import/camera.glsl", SD_VERT | SD_FRAG);
 }
 
 void camera_orthogonal(float w, float h)

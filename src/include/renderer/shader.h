@@ -2,7 +2,19 @@
 #define SHADER_H
 
 #include <GL/glew.h>
-#include <renderer/shaderdata.h>
+
+typedef enum {
+  SD_VERT = 1,
+  SD_FRAG = 2
+} SHADERTYPE;
+
+typedef struct shaderdata_s *shaderdata_t;
+
+shaderdata_t shaderdata_create();
+void shaderdata_text(shaderdata_t sd, const char *text, SHADERTYPE type);
+void shaderdata_line(shaderdata_t sd, const char *text, SHADERTYPE type);
+void shaderdata_source(shaderdata_t sd, const char *src, SHADERTYPE type);
+void shaderdata_destroy(shaderdata_t sd);
 
 typedef GLuint shader_t;
 

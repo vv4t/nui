@@ -3,7 +3,6 @@
 
 #include <math3d.h>
 #include <renderer/shader.h>
-#include <renderer/shaderdata.h>
 
 void camera_init();
 void camera_orthogonal(float w, float h);
