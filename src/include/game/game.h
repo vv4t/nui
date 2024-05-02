@@ -1,14 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <math3d.h>
+#include <game/edict.h>
 
 typedef struct {
-  vector position;
-  vector rotation;
+  edict_t edict;
+  entity_t player;
+  float time;
 } game_t;
 
-void game_init(game_t *g);
-void game_update(game_t *g, int key[], float mx, float my);
+void game_init(game_t *game);
+void game_update(game_t *game, int key[], float mx, float my);
 
 #endif
