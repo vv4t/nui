@@ -20,6 +20,10 @@ void game_update(game_t *game, const usercmd_t *usercmd)
     vec3_t d = vec3_rotate(vec3_init(0.0, 0.0, 4.0), game->player.rotation);
     game->light_pos = vec3_add(game->player.position, d);
     game->light_update = true;
+  } else if(usercmd->esc)
+  {
+    //printf("Escape key pressed.\n");
+    game->quit = true;
   } else {
     game->light_update = false;
   }
