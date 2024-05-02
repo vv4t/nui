@@ -45,6 +45,19 @@ inline static matrix mat3(vector a, vector b, vector c)
   };
 }
 
+inline static matrix mat3_from_mat4(matrix m)
+{
+  m.m[3] = 0.0;
+  m.m[7] = 0.0;
+  m.m[11] = 0.0;
+  
+  m.m[12] = 0.0;
+  m.m[13] = 0.0;
+  m.m[14] = 0.0;
+  
+  return m;
+}
+
 inline static vector vaddv(vector A, vector B)
 {
   return (vector) {

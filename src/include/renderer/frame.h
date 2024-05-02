@@ -5,21 +5,20 @@
 #include <renderer/target.h>
 #include <renderer/texture.h>
 
-typedef struct framebuffer_s *framebuffer_t;
+typedef struct frame_s *frame_t;
 
 void frame_init();
 void frame_shader_source(shaderdata_t sd, const char *path);
 shader_t frame_shader_load(const char *path);
-void frame_draw(shader_t shader);
 
-framebuffer_t framebuffer_create(int width, int height, texture_t depth_buffer);
-void framebuffer_begin(framebuffer_t fb);
-void framebuffer_end();
-void framebuffer_bind(framebuffer_t fb, int channel, GLuint type, texture_t texture);
-void framebuffer_update(framebuffer_t fb, shader_t shader);
-void framebuffer_draw(framebuffer_t fb, shader_t shader);
-void framebuffer_destroy(framebuffer_t fb);
-texture_t framebuffer_get_texture(framebuffer_t fb);
-target_t framebuffer_get_target(framebuffer_t fb);
+frame_t frame_create(int width, int height, texture_t depth_buffer);
+void frame_begin(frame_t fb);
+void frame_end();
+void frame_bind(frame_t fb, int channel, GLuint type, texture_t texture);
+void frame_update(frame_t fb, shader_t shader);
+void frame_draw(frame_t fb, shader_t shader);
+void frame_destroy(frame_t fb);
+texture_t frame_get_texture(frame_t fb);
+target_t frame_get_target(frame_t fb);
 
 #endif

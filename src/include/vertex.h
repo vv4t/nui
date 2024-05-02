@@ -11,10 +11,11 @@ typedef struct {
   float uv[2];
 } vertex_t;
 
-inline static vertex_t vertex_create(vector p, vector uv)
+inline static vertex_t vertex_create(vector p, vector n, vector uv)
 {
   return (vertex_t) {
     .p = { p.x, p.y, p.z },
+    .n = { n.x, n.y, n.z },
     .uv = { uv.x, uv.y }
   };
 }

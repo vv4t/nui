@@ -18,7 +18,7 @@ void game_init(game_t *gs)
     t = ENTITY_GET_COMPONENT(gs->edict, e, transform);
     m = ENTITY_GET_COMPONENT(gs->edict, e, meshinstance);
     t->position = vec3(0, -1, 0);
-    t->scale = vec3(10, 0, 10);
+    t->scale = vec3(10, 1, 10);
     m->meshname = MESH_PLANE;
   }
   
@@ -50,7 +50,7 @@ void game_update(game_t *gs, int key[], float mx, float my)
   pt->rotation = vec3(-my * 4.0, -mx * 4.0, 0);
   pt->position = vaddv(pt->position, walk);
   
-  ENTITY_GET_COMPONENT(gs->edict, 2, transform)->position= vec3(cos(gs->time), 0, 0);
+  ENTITY_GET_COMPONENT(gs->edict, 2, transform)->rotation.y += 0.01;
   
   gs->time += 0.015;
 }

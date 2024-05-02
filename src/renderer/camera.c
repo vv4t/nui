@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 struct ub_camera {
+  matrix model;
   matrix mvp;
 };
 
@@ -52,10 +53,11 @@ void camera_move(vector position, vector rotation)
   camera.v = mdotm(translate(view_offset), rotate_zyx(view_angle));
 }
 
-void camera_update(matrix m)
+void camera_update(matrix model)
 {
   struct ub_camera ub_camera = {
-    .mvp = mdotm(m, mdotm(camera.v, camera.p))
+    .model = model,
+    .mvp = mdotm(model, mdotm(camera.v, camera.p))
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo);

@@ -20,7 +20,7 @@
 struct {
   mesh_t meshname[MAX_MESHNAME];
   
-  framebuffer_t buffer[2];
+  frame_t buffer[2];
   texture_t depth;
   texture_t texture;
   
@@ -45,7 +45,6 @@ void renderer_init()
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
-  glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
   
   renderer_init_asset();
   renderer_init_surface();
@@ -53,7 +52,6 @@ void renderer_init()
   
   float aspect_ratio = (float) SCR_WIDTH / (float) SCR_HEIGHT;
   camera_perspective(1.0, aspect_ratio, 0.1, 100.0);
-  
 }
 
 float t = 0.0;
@@ -65,17 +63,17 @@ void renderer_render(const game_t *gs)
   const transform_t *pt = ENTITY_GET_COMPONENT(gs->edict, gs->player, transform);
   camera_move(pt->position, pt->rotation);
   
-  framebuffer_begin(renderer.buffer[0]);
+  frame_begin(renderer.buffer[0]);
   shader_bind(renderer.surface);
   texture_bind(renderer.texture, GL_TEXTURE_2D, 0);
   renderer_draw_entities(gs);
-  framebuffer_end();
+  frame_end();
   
-  framebuffer_update(renderer.buffer[1], renderer.hdr);
+  frame_update(renderer.buffer[1], renderer.hdr);
   
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  framebuffer_draw(renderer.buffer[0], renderer.dither);
+  frame_draw(renderer.buffer[0], renderer.dither);
 }
 
 void renderer_draw_entities(const game_t *gs)
@@ -98,7 +96,7 @@ void renderer_init_surface()
   shaderdata_t sd = shaderdata_create();
   camera_shader_import(sd);
   shaderdata_source(sd, "assets/shader/vertex/surface.vert", SD_VERT);
-  shaderdata_source(sd, "assets/shader/surface/flat.frag", SD_FRAG);
+  shaderdata_source(sd, "assets/shader/surface/light.frag", SD_FRAG);
   renderer.surface = shader_load(sd);
   camera_shader_attach(renderer.surface);
   shaderdata_destroy(sd);
@@ -134,12 +132,12 @@ void renderer_init_asset()
 
 void renderer_init_buffer()
 {
-  renderer.depth = texture_create(400, 300, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
+  renderer.depth = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
   
-  renderer.buffer[0] = framebuffer_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  renderer.buffer[1] = framebuffer_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  framebuffer_bind(renderer.buffer[0], 0, GL_TEXTURE_2D, framebuffer_get_texture(renderer.buffer[1]));
-  framebuffer_bind(renderer.buffer[1], 0, GL_TEXTURE_2D, framebuffer_get_texture(renderer.buffer[0]));
+  renderer.buffer[0] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  renderer.buffer[1] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  frame_bind(renderer.buffer[0], 0, GL_TEXTURE_2D, frame_get_texture(renderer.buffer[1]));
+  frame_bind(renderer.buffer[1], 0, GL_TEXTURE_2D, frame_get_texture(renderer.buffer[0]));
   
   renderer.hdr = frame_shader_load("assets/shader/frame/hdr.frag");
   renderer.dither = frame_shader_load("assets/shader/frame/dither.frag");
@@ -147,8 +145,8 @@ void renderer_init_buffer()
 
 void renderer_deinit()
 {
-  framebuffer_destroy(renderer.buffer[0]);
-  framebuffer_destroy(renderer.buffer[1]);
+  frame_destroy(renderer.buffer[0]);
+  frame_destroy(renderer.buffer[1]);
   texture_destroy(renderer.texture);
   vbuffer_deinit();
   camera_deinit();

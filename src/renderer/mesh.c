@@ -106,12 +106,17 @@ void meshdata_add_quad(meshdata_t md, matrix T_p)
     vec2(+1, -1)
   };
   
+  vector up = vec3(0, 0, -1);
+  
+  matrix T_n = mat3_from_mat4(T_p);
   matrix T_uv = mdotm(translate(vec2(1.0, 1.0)), scale(vec2(0.5, 0.5)));
+  
+  vector n = mdotv(T_n, v2pt(up));
   
   for (int i = 0; i < sizeof(quad) / sizeof(quad[0]); i++) {
     vector p = mdotv(T_p, v2pt(quad[i]));
     vector uv = mdotv(T_uv, v2pt(quad[i]));
-    meshdata_add_vertex(md, vertex_create(p, uv));
+    meshdata_add_vertex(md, vertex_create(p, n, uv));
   }
 }
 

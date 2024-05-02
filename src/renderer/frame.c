@@ -10,7 +10,7 @@ typedef struct {
   texture_t texture;
 } channel_t;
 
-struct framebuffer_s {
+struct frame_s {
   int width;
   int height;
   texture_t texture;
@@ -20,7 +20,7 @@ struct framebuffer_s {
 
 static mesh_t frame_mesh;
 
-static framebuffer_t _framebuffer_create(int width, int height);
+static frame_t _frame_create(int width, int height);
 
 void frame_init()
 {
@@ -28,12 +28,6 @@ void frame_init()
   meshdata_add_quad(md, identity());
   frame_mesh = vbuffer_add(md);
   meshdata_destroy(md);
-}
-
-void frame_draw(shader_t shader)
-{
-  shader_bind(shader);
-  vbuffer_draw(frame_mesh);
 }
 
 void frame_shader_source(shaderdata_t sd, const char *path)
@@ -54,9 +48,9 @@ shader_t frame_shader_load(const char *path)
   return shader;
 }
 
-framebuffer_t framebuffer_create(int width, int height, texture_t depth_buffer)
+frame_t frame_create(int width, int height, texture_t depth_buffer)
 {
-  framebuffer_t fb= malloc(sizeof(*fb));
+  frame_t fb= malloc(sizeof(*fb));
   fb->width = width;
   fb->height = height;
   fb->texture = texture_create(width, height, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -73,19 +67,19 @@ framebuffer_t framebuffer_create(int width, int height, texture_t depth_buffer)
   return fb;
 }
 
-void framebuffer_begin(framebuffer_t fb)
+void frame_begin(frame_t fb)
 {
   target_bind(fb->target);
   glViewport(0, 0, fb->width, fb->height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void framebuffer_end()
+void frame_end()
 {
   target_unbind();
 }
 
-void framebuffer_bind(framebuffer_t fb, int channel, GLuint type, texture_t texture)
+void frame_bind(frame_t fb, int channel, GLuint type, texture_t texture)
 {
   if (channel < 0 || channel >= MAX_CHANNEL) {
     return;
@@ -97,14 +91,14 @@ void framebuffer_bind(framebuffer_t fb, int channel, GLuint type, texture_t text
   };
 }
 
-void framebuffer_update(framebuffer_t fb, shader_t shader)
+void frame_update(frame_t fb, shader_t shader)
 {
   target_bind(fb->target);
-  framebuffer_draw(fb, shader);
+  frame_draw(fb, shader);
   target_unbind();
 }
 
-void framebuffer_draw(framebuffer_t fb, shader_t shader)
+void frame_draw(frame_t fb, shader_t shader)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -114,21 +108,22 @@ void framebuffer_draw(framebuffer_t fb, shader_t shader)
     }
   }
   
-  frame_draw(shader);
+  shader_bind(shader);
+  vbuffer_draw(frame_mesh);
 }
 
-void framebuffer_destroy(framebuffer_t fb)
+void frame_destroy(frame_t fb)
 {
   texture_destroy(fb->texture);
   target_destroy(fb->target);
 }
 
-texture_t framebuffer_get_texture(framebuffer_t fb)
+texture_t frame_get_texture(frame_t fb)
 {
   return fb->texture;
 }
 
-target_t framebuffer_get_target(framebuffer_t fb)
+target_t frame_get_target(frame_t fb)
 {
   return fb->target;
 }
