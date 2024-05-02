@@ -13,6 +13,7 @@ typedef struct {
   
   vec3_t light_pos;
   bool light_update;
+  bool quit;
 } game_t;
 
 void game_init(game_t *game);
