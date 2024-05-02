@@ -13,3 +13,8 @@ make -f linux.mk
 ```
 make -f web.mk
 ```
+
+NOTES
+---
+
+You need SDL, GLEW, freetype, and Emscripten to run this properly.
