@@ -33,7 +33,7 @@ GLuint shader_load(shaderdata_t sd)
   glGetProgramiv(shader, GL_LINK_STATUS, &success);
   
   if (!success) {
-    glGetShaderInfoLog(shader, sizeof(info), NULL, info);
+    glGetProgramInfoLog(shader, sizeof(info), NULL, info);
     fprintf(stderr, "%s", info);
     exit(1);
   }
@@ -129,7 +129,7 @@ void shaderdata_text(shaderdata_t sd, const char *text, SHADERTYPE type)
   if (type & SD_VERT) {
     if (sd->num_vert >= sd->max_vert) {
       sd->max_vert *= 2;
-      sd->vert = realloc(sd->vert, sd->max_vert);
+      sd->vert = realloc(sd->vert, sd->max_vert * sizeof(char*));
     }
     
     sd->vert[sd->num_vert++] = strdup(text);
@@ -138,7 +138,7 @@ void shaderdata_text(shaderdata_t sd, const char *text, SHADERTYPE type)
   if (type & SD_FRAG) {
     if (sd->num_frag >= sd->max_frag) {
       sd->max_frag *= 2;
-      sd->frag = realloc(sd->frag, sd->max_frag);
+      sd->frag = realloc(sd->frag, sd->max_frag * sizeof(char*));
     }
     
     sd->frag[sd->num_frag++] = strdup(text);

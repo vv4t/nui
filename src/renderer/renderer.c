@@ -1,11 +1,13 @@
 #include <renderer/renderer.h>
 
+#include <renderer/surface.h>
 #include <renderer/frame.h>
 #include <renderer/texture.h>
 #include <renderer/shader.h>
 #include <renderer/mesh.h>
 #include <renderer/target.h>
 #include <renderer/camera.h>
+#include <renderer/light.h>
 #include <GL/glew.h>
 
 #define SCR_WIDTH 800
@@ -22,9 +24,12 @@ struct {
   
   frame_t buffer[2];
   texture_t depth;
-  texture_t texture;
+  texture_t albedo;
+  texture_t normal;
   
-  shader_t surface;
+  surface_t surface;
+  
+  shader_t flat;
   shader_t hdr;
   shader_t dither;
 } renderer;
@@ -41,10 +46,11 @@ void renderer_init()
   vbuffer_init(MAX_VERTICES);
   vbuffer_bind();
   frame_init();
+  light_init();
   
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  glCullFace(GL_FRONT);
+  glCullFace(GL_BACK);
   
   renderer_init_asset();
   renderer_init_surface();
@@ -64,8 +70,7 @@ void renderer_render(const game_t *gs)
   camera_move(pt->position, pt->rotation);
   
   frame_begin(renderer.buffer[0]);
-  shader_bind(renderer.surface);
-  texture_bind(renderer.texture, GL_TEXTURE_2D, 0);
+  surface_bind(renderer.surface, renderer.flat);
   renderer_draw_entities(gs);
   frame_end();
   
@@ -87,47 +92,46 @@ void renderer_draw_entities(const game_t *gs)
     const meshinstance_t *m = ENTITY_GET_COMPONENT(gs->edict, e, meshinstance);
     
     camera_update(transform(t->position, t->rotation, t->scale));
+    texture_bind(renderer.albedo, GL_TEXTURE_2D, 0);
+    texture_bind(renderer.normal, GL_TEXTURE_2D, 1);
     vbuffer_draw(renderer.meshname[m->meshname]);
   }
 }
 
 void renderer_init_surface()
 {
-  shaderdata_t sd = shaderdata_create();
-  camera_shader_import(sd);
-  shaderdata_source(sd, "assets/shader/vertex/surface.vert", SD_VERT);
-  shaderdata_source(sd, "assets/shader/surface/light.frag", SD_FRAG);
-  renderer.surface = shader_load(sd);
-  camera_shader_attach(renderer.surface);
-  shaderdata_destroy(sd);
+  renderer.surface = surface_create();
+  renderer.flat = surface_shader_load(renderer.surface, "assets/shader/surface/phong.frag");
+  light_shader_attach(renderer.flat);
 }
 
 void renderer_init_asset()
 {
   meshdata_t md = meshdata_create();
-    meshdata_add_quad(md, rotate_x(-M_PI / 2.0));
     meshdata_add_quad(md, rotate_x(+M_PI / 2.0));
     renderer.meshname[MESH_PLANE] = vbuffer_add(md);
   meshdata_destroy(md);
   
   md = meshdata_create();
     vector cube_axis[][2] = {
-      { vec3(+1,  0,  0), vec3( 0,  1,  0) },
-      { vec3(-1,  0,  0), vec3( 0,  1,  0) },
-      { vec3( 0,  0, +1), vec3( 0,  1,  0) },
-      { vec3( 0,  0, -1), vec3( 0,  1,  0) },
-      { vec3( 0, +1,  0), vec3( 0,  0, -1) },
-      { vec3( 0, -1,  0), vec3( 0,  0,  1) }
+      { vec3( 0, -1,  0), vec3(-1,  0,  0) },
+      { vec3( 0, +1,  0), vec3(+1,  0,  0) },
+      { vec3( 0, -1,  0), vec3( 0,  0, -1) },
+      { vec3( 0, +1,  0), vec3( 0,  0, +1) },
+      { vec3( 0,  0, -1), vec3( 0, -1,  0) },
+      { vec3( 0,  0, -1), vec3( 0, +1,  0) }
     };
     for (int i = 0; i < sizeof(cube_axis) / sizeof(*cube_axis); i++) {
-      vector x = cube_axis[i][0];
-      vector y = cube_axis[i][1];
-      meshdata_add_quad(md, mdotm(translate(vec3(0, 0, -1)), mat3(x, y, cross(x, y))));
+      vector y = cube_axis[i][0];
+      vector z = cube_axis[i][1];
+      
+      meshdata_add_quad(md, mdotm(translate(vec3(0, 0, -1)), mat3(cross(y, z), y, z)));
     }
     renderer.meshname[MESH_CUBE] = vbuffer_add(md);
   meshdata_destroy(md);
   
-  renderer.texture = texture_image("assets/image/test.png");
+  renderer.albedo = texture_image("assets/mtl/tile/albedo.jpg");
+  renderer.normal = texture_image("assets/mtl/tile/normal.jpg");
 }
 
 void renderer_init_buffer()
@@ -147,7 +151,9 @@ void renderer_deinit()
 {
   frame_destroy(renderer.buffer[0]);
   frame_destroy(renderer.buffer[1]);
-  texture_destroy(renderer.texture);
+  texture_destroy(renderer.albedo);
+  texture_destroy(renderer.normal);
+  light_deinit();
   vbuffer_deinit();
   camera_deinit();
 }

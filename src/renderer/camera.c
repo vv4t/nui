@@ -26,9 +26,7 @@ void camera_init()
 void camera_shader_attach(shader_t shader)
 {
   shader_bind(shader);
-  
-  GLuint ubl_camera = glGetUniformBlockIndex(shader, "ub_camera");
-  glUniformBlockBinding(shader, ubl_camera, 0);
+  glUniformBlockBinding(shader, glGetUniformBlockIndex(shader, "ub_camera"), 0);
 }
 
 void camera_shader_import(shaderdata_t sd)

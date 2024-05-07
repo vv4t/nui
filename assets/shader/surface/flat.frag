@@ -1,10 +1,10 @@
 out vec4 frag_color;
 
-in vec2 vs_uv;
-
-uniform sampler2D albedo;
-
-void main()
-{
-  frag_color = texture(albedo, vs_uv);
+void surface_shade(
+  in vec3 frag_pos,
+  in vec2 uv,
+  in mat3 TBN,
+  sampler2D albedo
+) {
+  frag_color = texture(albedo, uv);
 }

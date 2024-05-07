@@ -12,13 +12,12 @@ void frame_shader_source(shaderdata_t sd, const char *path);
 shader_t frame_shader_load(const char *path);
 
 frame_t frame_create(int width, int height, texture_t depth_buffer);
-void frame_begin(frame_t fb);
+void frame_begin(frame_t fr);
 void frame_end();
-void frame_bind(frame_t fb, int channel, GLuint type, texture_t texture);
-void frame_update(frame_t fb, shader_t shader);
-void frame_draw(frame_t fb, shader_t shader);
-void frame_destroy(frame_t fb);
-texture_t frame_get_texture(frame_t fb);
-target_t frame_get_target(frame_t fb);
+void frame_bind(frame_t fr, int channel, GLuint type, texture_t texture);
+void frame_update(frame_t fr, shader_t shader);
+void frame_draw(frame_t fr, shader_t shader);
+void frame_destroy(frame_t fr);
+texture_t frame_get_texture(frame_t fr);
 
 #endif

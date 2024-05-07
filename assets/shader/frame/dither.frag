@@ -7,7 +7,7 @@ float bayer_matrix[16] = float[] (
    0.4375,  -0.0625,  0.3125, -0.1875
 );
 
-float color_range = 8.0;
+float color_range = 16.0;
 float bayer_r = 1.0 / 32.0;
 
 void frame_shade(out vec4 frag_color, in vec2 frag_coord)

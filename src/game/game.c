@@ -28,7 +28,7 @@ void game_init(game_t *gs)
     ENTITY_ADD_COMPONENT(gs->edict, e, meshinstance);
     t = ENTITY_GET_COMPONENT(gs->edict, e, transform);
     m = ENTITY_GET_COMPONENT(gs->edict, e, meshinstance);
-    t->position = vec3(0, 0, 3);
+    t->position = vec3(0, 2, 3);
     m->meshname = MESH_CUBE;
   }
 }
@@ -50,7 +50,7 @@ void game_update(game_t *gs, int key[], float mx, float my)
   pt->rotation = vec3(-my * 4.0, -mx * 4.0, 0);
   pt->position = vaddv(pt->position, walk);
   
-  ENTITY_GET_COMPONENT(gs->edict, 2, transform)->rotation.y += 0.01;
+  // ENTITY_GET_COMPONENT(gs->edict, 2, transform)->rotation.y += 0.01;
   
   gs->time += 0.015;
 }
