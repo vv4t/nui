@@ -7,10 +7,11 @@
 
 typedef struct {
   texture_t albedo;
+  texture_t normal;
 } material_t;
 
-material_t material_create();
-void material_bind(material_t mtl);
+material_t material_create(texture_t albedo, texture_t normal);
+void material_bind(material_t mat);
 
 typedef struct surface_s *surface_t;
 

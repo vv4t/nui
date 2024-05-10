@@ -109,3 +109,17 @@ void surface_destroy(surface_t sf)
   
   free(sf);
 }
+
+material_t material_create(texture_t albedo, texture_t normal)
+{
+  return (material_t) {
+    .albedo = albedo,
+    .normal = normal
+  };
+}
+
+void material_bind(material_t mat)
+{
+  texture_bind(mat.albedo, GL_TEXTURE_2D, 0);
+  texture_bind(mat.normal, GL_TEXTURE_2D, 1);
+}

@@ -21,16 +21,18 @@
 
 struct {
   mesh_t meshname[MAX_MESHNAME];
+  material_t matname[MAX_MATNAME];
   
-  frame_t buffer[2];
+  frame_t frame[2];
   texture_t depth;
+  
   texture_t albedo;
   texture_t normal;
   texture_t sky_star;
   
-  surface_t surface;
+  surface_t sf;
   
-  shader_t sf_1;
+  shader_t sh1;
   shader_t hdr;
   shader_t dither;
 } renderer;
@@ -74,17 +76,17 @@ void renderer_render(const game_t *gs)
   const transform_t *pt = ENTITY_GET_COMPONENT(gs->edict, gs->player, transform);
   camera_move(pt->position, pt->rotation);
   
-  frame_begin(renderer.buffer[0]);
+  frame_begin(renderer.frame[0]);
   skybox_draw();
-  surface_bind(renderer.surface, renderer.sf_1);
+  surface_bind(renderer.sf, renderer.sh1);
   renderer_draw_entities(gs);
   frame_end();
   
-  frame_update(renderer.buffer[1], renderer.hdr);
+  frame_update(renderer.frame[1], renderer.hdr);
   
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  frame_draw(renderer.buffer[0], renderer.dither);
+  frame_draw(renderer.frame[0], renderer.dither);
 }
 
 void renderer_draw_entities(const game_t *gs)
@@ -98,23 +100,22 @@ void renderer_draw_entities(const game_t *gs)
     const meshinstance_t *m = ENTITY_GET_COMPONENT(gs->edict, e, meshinstance);
     
     camera_update(transform(t->position, t->rotation, t->scale));
-    texture_bind(renderer.albedo, GL_TEXTURE_2D, 0);
-    texture_bind(renderer.normal, GL_TEXTURE_2D, 1);
+    material_bind(renderer.matname[m->matname]);
     vbuffer_draw(renderer.meshname[m->meshname]);
   }
 }
 
 void renderer_init_surface()
 {
-  renderer.surface = surface_create();
-  surface_add_channel(renderer.surface, "u_cubemap", GL_TEXTURE_CUBE_MAP, renderer.sky_star);
+  renderer.sf = surface_create();
+  surface_add_channel(renderer.sf, "u_cubemap", GL_TEXTURE_CUBE_MAP, renderer.sky_star);
   
   shaderdata_t sd = shaderdata_create();
   light_shader_import(sd);
-  surface_shader_source(sd, "assets/shader/surface/sf_1.frag");
-  renderer.sf_1 = shader_load(sd);
-  surface_shader_attach(renderer.sf_1, renderer.surface);
-  light_shader_attach(renderer.sf_1);
+  surface_shader_source(sd, "assets/shader/surface/sh1.frag");
+  renderer.sh1 = shader_load(sd);
+  surface_shader_attach(renderer.sh1, renderer.sf);
+  light_shader_attach(renderer.sh1);
   shaderdata_destroy(sd);
 }
 
@@ -143,8 +144,16 @@ void renderer_init_assets()
     renderer.meshname[MESH_CUBE] = vbuffer_add(md);
   meshdata_destroy(md);
   
-  renderer.albedo = texture_load_image("assets/mtl/tile/albedo.jpg");
-  renderer.normal = texture_load_image("assets/mtl/tile/normal.jpg");
+  renderer.matname[MAT_TILE] = material_create(
+    texture_load_image("assets/mat/tile/albedo.jpg"),
+    texture_load_image("assets/mat/tile/normal.jpg")
+  );
+  
+  renderer.matname[MAT_BRICK] = material_create(
+    texture_load_image("assets/mat/brick/albedo.jpg"),
+    texture_load_image("assets/mat/brick/normal.jpg")
+  );
+  
   renderer.sky_star = texture_load_cubemap("assets/skybox/star", "jpg");
 }
 
@@ -152,10 +161,10 @@ void renderer_init_buffer()
 {
   renderer.depth = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
   
-  renderer.buffer[0] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  renderer.buffer[1] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  frame_bind(renderer.buffer[0], 0, GL_TEXTURE_2D, frame_get_texture(renderer.buffer[1]));
-  frame_bind(renderer.buffer[1], 0, GL_TEXTURE_2D, frame_get_texture(renderer.buffer[0]));
+  renderer.frame[0] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  renderer.frame[1] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  frame_bind(renderer.frame[0], 0, GL_TEXTURE_2D, frame_get_texture(renderer.frame[1]));
+  frame_bind(renderer.frame[1], 0, GL_TEXTURE_2D, frame_get_texture(renderer.frame[0]));
   
   renderer.hdr = frame_shader_load("assets/shader/frame/hdr.frag");
   renderer.dither = frame_shader_load("assets/shader/frame/dither.frag");
@@ -163,10 +172,13 @@ void renderer_init_buffer()
 
 void renderer_deinit()
 {
-  frame_destroy(renderer.buffer[0]);
-  frame_destroy(renderer.buffer[1]);
-  texture_destroy(renderer.albedo);
-  texture_destroy(renderer.normal);
+  for (int i = 0; i < MAX_MATNAME; i++) {
+    texture_destroy(renderer.matname[i].albedo);
+    texture_destroy(renderer.matname[i].normal);
+  }
+  
+  frame_destroy(renderer.frame[0]);
+  frame_destroy(renderer.frame[1]);
   skybox_deinit();
   light_deinit();
   vbuffer_deinit();
