@@ -20,7 +20,7 @@ void game_init(game_t *gs)
     t->position = vec3(0, -1, 0);
     t->scale = vec3(10, 1, 10);
     m->meshname = MESH_PLANE;
-    m->matname = MAT_BRICK;
+    m->matname = MAT_GRASS;
   }
   
   {
@@ -30,6 +30,7 @@ void game_init(game_t *gs)
     t = ENTITY_GET_COMPONENT(gs->edict, e, transform);
     m = ENTITY_GET_COMPONENT(gs->edict, e, meshinstance);
     t->position = vec3(0, 0, 3);
+    t->scale = vec3(1, 1, 2);
     m->meshname = MESH_CUBE;
     m->matname = MAT_TILE;
   }

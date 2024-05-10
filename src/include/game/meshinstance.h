@@ -10,6 +10,7 @@ typedef enum {
 typedef enum {
   MAT_TILE,
   MAT_BRICK,
+  MAT_GRASS,
   MAX_MATNAME
 } matname_t;
 

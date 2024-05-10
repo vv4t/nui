@@ -154,6 +154,11 @@ void renderer_init_assets()
     texture_load_image("assets/mat/brick/normal.jpg")
   );
   
+  renderer.matname[MAT_GRASS] = material_create(
+    texture_load_image("assets/mat/grass/albedo.jpg"),
+    texture_load_image("assets/mat/grass/normal.jpg")
+  );
+  
   renderer.sky_star = texture_load_cubemap("assets/skybox/star", "jpg");
 }
 
