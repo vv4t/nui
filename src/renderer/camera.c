@@ -4,12 +4,16 @@
 
 struct ub_camera {
   matrix model;
+  matrix view;
+  matrix project;
   matrix mvp;
+  vector view_pos;
 };
 
 struct {
   matrix p;
   matrix v;
+  vector view_pos;
   GLuint ubo;
 } camera;
 
@@ -20,7 +24,9 @@ void camera_init()
   glBufferData(GL_UNIFORM_BUFFER, 512, NULL, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, camera.ubo);
   
+  camera.p = identity();
   camera.v = identity();
+  camera.view_pos = (vector) {0};
 }
 
 void camera_shader_attach(shader_t shader)
@@ -48,6 +54,7 @@ void camera_move(vector position, vector rotation)
 {
   vector view_offset = fdotv(-1.0, position);
   vector view_angle = fdotv(-1.0, rotation);
+  camera.view_pos = position;
   camera.v = mdotm(translate(view_offset), rotate_zyx(view_angle));
 }
 
@@ -55,7 +62,10 @@ void camera_update(matrix model)
 {
   struct ub_camera ub_camera = {
     .model = model,
-    .mvp = mdotm(model, mdotm(camera.v, camera.p))
+    .view = camera.v,
+    .project = camera.p,
+    .mvp = mdotm(model, mdotm(camera.v, camera.p)),
+    .view_pos = camera.view_pos
   };
   
   glBindBuffer(GL_UNIFORM_BUFFER, camera.ubo);

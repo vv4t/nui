@@ -11,16 +11,16 @@ out mat3 vs_TBN;
 void main()
 {
   mat3 TBN = mat3(transpose(inverse(model))) * mat3(v_t, v_bt, v_n);
-  
-  vs_pos = vec3(model * vec4(v_p, 1.0));
   vs_TBN = mat3(
     normalize(TBN[0]),
     normalize(TBN[1]),
     normalize(TBN[2])
   );
   
+  vs_pos = vec3(model * vec4(v_p, 1.0));
+  
 #ifdef PLANAR_UV
-  vs_uv = (vs_TBN * vs_pos * 0.5).xy;
+  vs_uv = (inverse(vs_TBN) * vs_pos * 0.5).xy;
 #else
   vs_uv = vec2(v_uv.x, 1.0 - v_uv.y);
 #endif

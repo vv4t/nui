@@ -32,7 +32,7 @@ void frame_init()
 
 void frame_shader_source(shaderdata_t sd, const char *path)
 {
-  shaderdata_source(sd, "assets/shader/vertex/frame.vert", SD_VERT);
+  shaderdata_source(sd, "assets/shader/frame/frame.vert", SD_VERT);
   shaderdata_source(sd, path, SD_FRAG);
   shaderdata_text(sd, "in vec2 vs_uv;", SD_FRAG);
   shaderdata_text(sd, "layout (location = 0) out vec4 frag_color;", SD_FRAG);

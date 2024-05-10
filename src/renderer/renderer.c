@@ -1,5 +1,5 @@
 #include <renderer/renderer.h>
-
+#include <renderer/skybox.h>
 #include <renderer/surface.h>
 #include <renderer/frame.h>
 #include <renderer/texture.h>
@@ -26,15 +26,16 @@ struct {
   texture_t depth;
   texture_t albedo;
   texture_t normal;
+  texture_t sky_star;
   
   surface_t surface;
   
-  shader_t flat;
+  shader_t sf_1;
   shader_t hdr;
   shader_t dither;
 } renderer;
 
-static void renderer_init_asset();
+static void renderer_init_assets();
 static void renderer_init_buffer();
 static void renderer_init_surface();
 
@@ -47,14 +48,18 @@ void renderer_init()
   vbuffer_bind();
   frame_init();
   light_init();
+  skybox_init();
   
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   
-  renderer_init_asset();
+  renderer_init_assets();
   renderer_init_surface();
   renderer_init_buffer();
+  
+  light_add_point(vec3(0.0, 1.0, 0.0), vec4(1.0, 1.0, 1.0, 5.0));
+  skybox_set_cube_map(renderer.sky_star);
   
   float aspect_ratio = (float) SCR_WIDTH / (float) SCR_HEIGHT;
   camera_perspective(1.0, aspect_ratio, 0.1, 100.0);
@@ -70,7 +75,8 @@ void renderer_render(const game_t *gs)
   camera_move(pt->position, pt->rotation);
   
   frame_begin(renderer.buffer[0]);
-  surface_bind(renderer.surface, renderer.flat);
+  skybox_draw();
+  surface_bind(renderer.surface, renderer.sf_1);
   renderer_draw_entities(gs);
   frame_end();
   
@@ -101,11 +107,18 @@ void renderer_draw_entities(const game_t *gs)
 void renderer_init_surface()
 {
   renderer.surface = surface_create();
-  renderer.flat = surface_shader_load(renderer.surface, "assets/shader/surface/phong.frag");
-  light_shader_attach(renderer.flat);
+  surface_add_channel(renderer.surface, "u_cubemap", GL_TEXTURE_CUBE_MAP, renderer.sky_star);
+  
+  shaderdata_t sd = shaderdata_create();
+  light_shader_import(sd);
+  surface_shader_source(sd, "assets/shader/surface/sf_1.frag");
+  renderer.sf_1 = shader_load(sd);
+  surface_shader_attach(renderer.sf_1, renderer.surface);
+  light_shader_attach(renderer.sf_1);
+  shaderdata_destroy(sd);
 }
 
-void renderer_init_asset()
+void renderer_init_assets()
 {
   meshdata_t md = meshdata_create();
     meshdata_add_quad(md, rotate_x(+M_PI / 2.0));
@@ -130,8 +143,9 @@ void renderer_init_asset()
     renderer.meshname[MESH_CUBE] = vbuffer_add(md);
   meshdata_destroy(md);
   
-  renderer.albedo = texture_image("assets/mtl/tile/albedo.jpg");
-  renderer.normal = texture_image("assets/mtl/tile/normal.jpg");
+  renderer.albedo = texture_load_image("assets/mtl/tile/albedo.jpg");
+  renderer.normal = texture_load_image("assets/mtl/tile/normal.jpg");
+  renderer.sky_star = texture_load_cubemap("assets/skybox/star", "jpg");
 }
 
 void renderer_init_buffer()
@@ -153,6 +167,7 @@ void renderer_deinit()
   frame_destroy(renderer.buffer[1]);
   texture_destroy(renderer.albedo);
   texture_destroy(renderer.normal);
+  skybox_deinit();
   light_deinit();
   vbuffer_deinit();
   camera_deinit();
