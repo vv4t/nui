@@ -39,6 +39,14 @@ void frame_shader_source(shaderdata_t sd, const char *path)
   shaderdata_text(sd, "void main() { frame_shade(frag_color, vs_uv); }", SD_FRAG);
 }
 
+void frame_draw_mesh(shader_t shader)
+{
+  glDepthMask(GL_FALSE);
+  shader_bind(shader);
+  vbuffer_draw(frame_mesh);
+  glDepthMask(GL_TRUE);
+}
+
 shader_t frame_shader_load(const char *path)
 {
   shaderdata_t sd = shaderdata_create();
@@ -100,16 +108,13 @@ void frame_update(frame_t fr, shader_t shader)
 
 void frame_draw(frame_t fr, shader_t shader)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
   for (int i = 0; i < MAX_CHANNEL; i++) {
     if (fr->channel[i].texture != GL_INVALID_VALUE) {
       texture_bind(fr->channel[i].texture, fr->channel[i].type, i);
     }
   }
   
-  shader_bind(shader);
-  vbuffer_draw(frame_mesh);
+  frame_draw_mesh(shader);
 }
 
 void frame_destroy(frame_t fr)

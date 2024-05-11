@@ -13,7 +13,7 @@ typedef struct {
 } channel_t;
 
 struct surface_s {
-  target_t target;
+  GLuint shader;
   channel_t channel[MAX_CHANNEL];
   int num_channel;
 };
@@ -21,24 +21,12 @@ struct surface_s {
 surface_t surface_create()
 {
   surface_t sf = malloc(sizeof(*sf));
-  sf->target = GL_INVALID_VALUE;
-  
+  sf->shader = GL_INVALID_VALUE;
   sf->num_channel = 0;
-  
   return sf;
 }
 
-shader_t surface_shader_load(surface_t sf, const char *path)
-{
-  shaderdata_t sd = shaderdata_create();
-  surface_shader_source(sd, path);
-  shader_t shader = shader_load(sd);
-  surface_shader_attach(shader, sf);
-  shaderdata_destroy(sd);
-  return shader;
-}
-
-void surface_shader_source(shaderdata_t sd, const char *path)
+void surface_shader_load(surface_t sf, shaderdata_t sd, const char *path)
 {
   camera_shader_import(sd);
   shaderdata_text(sd, "#define PLANAR_UV\n", SD_VERT);
@@ -57,20 +45,19 @@ void surface_shader_source(shaderdata_t sd, const char *path)
     }",
     SD_FRAG
   );
-}
-
-void surface_shader_attach(shader_t shader, surface_t sf)
-{
-  camera_shader_attach(shader);
-  glUniform1i(glGetUniformLocation(shader, "u_albedo"), 0); 
-  glUniform1i(glGetUniformLocation(shader, "u_normal"), 1);
+  
+  sf->shader = shader_load(sd);
+  
+  camera_shader_attach(sf->shader);
+  glUniform1i(glGetUniformLocation(sf->shader, "u_albedo"), 0); 
+  glUniform1i(glGetUniformLocation(sf->shader, "u_normal"), 1);
   
   for (int i = 0; i < sf->num_channel; i++) {
-    glUniform1i(glGetUniformLocation(shader, sf->channel[i].name), 2 + i);
+    glUniform1i(glGetUniformLocation(sf->shader, sf->channel[i].name), 2 + i);
   }
 }
 
-void surface_add_channel(surface_t sf, const char *name, GLuint type, GLuint texture)
+void surface_bind(surface_t sf, const char *name, GLuint type, GLuint texture)
 {
   int channel = sf->num_channel++;
   
@@ -83,31 +70,29 @@ void surface_add_channel(surface_t sf, const char *name, GLuint type, GLuint tex
   sf->channel[channel].texture = texture;
 }
 
-void surface_bind(surface_t sf, shader_t shader)
+void surface_use(surface_t sf)
 {
-  shader_bind(shader);
-  
-  if (sf->target != GL_INVALID_VALUE) {
-    target_bind(sf->target);
-  }
+  shader_bind(sf->shader);
   
   for (int i = 0; i < sf->num_channel; i++) {
     texture_bind(sf->channel[i].texture, sf->channel[i].type, 2 + i); 
   }
 }
 
-void surface_unbind()
-{
-  target_unbind();
-}
-
 void surface_destroy(surface_t sf)
 {
-  for (int i = 0; i < MAX_CHANNEL; i++) {
+  shader_destroy(sf->shader);
+  
+  for (int i = 0; i < sf->num_channel; i++) {
     free(sf->channel[i].name);
   }
   
   free(sf);
+}
+
+shader_t surface_get_shader(surface_t sf)
+{
+  return sf->shader;
 }
 
 material_t material_create(texture_t albedo, texture_t normal)

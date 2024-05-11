@@ -9,6 +9,7 @@ typedef struct frame_s *frame_t;
 
 void frame_init();
 void frame_shader_source(shaderdata_t sd, const char *path);
+void frame_draw_mesh(shader_t shader);
 shader_t frame_shader_load(const char *path);
 
 frame_t frame_create(int width, int height, texture_t depth_buffer);
