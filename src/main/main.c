@@ -6,7 +6,7 @@
 
 #define MAX_KEY 256
 #define WIDTH 800
-#define HEIGHT 600
+#define HEIGHT 800
 
 static struct {
   SDL_Window *window;

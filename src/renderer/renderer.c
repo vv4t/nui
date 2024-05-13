@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #define SCR_WIDTH 800
-#define SCR_HEIGHT 600
+#define SCR_HEIGHT 800
 
 #define VIEW_SCALE 4
 #define VIEW_WIDTH (SCR_WIDTH / VIEW_SCALE)
