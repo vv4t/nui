@@ -5,7 +5,8 @@ layout(location = 3) in vec3 v_bt;
 layout(location = 4) in vec2 v_uv;
 
 out vec2 vs_uv;
-out vec3 vs_pos;
+out vec3 vs_frag_pos;
+out vec3 vs_world_pos;
 out mat3 vs_TBN;
 
 void main()
@@ -17,13 +18,14 @@ void main()
     normalize(TBN[2])
   );
   
-  vs_pos = vec3(model * vec4(v_p, 1.0));
+  vs_world_pos = vec3(model * vec4(v_p, 1.0));
   
 #ifdef PLANAR_UV
-  vs_uv = (inverse(vs_TBN) * vs_pos * 0.5).xy;
+  vs_uv = (inverse(vs_TBN) * vs_world_pos * 0.5).xy;
 #else
   vs_uv = vec2(v_uv.x, 1.0 - v_uv.y);
 #endif
   
   gl_Position = mvp * vec4(v_p, 1.0);
+  vs_frag_pos = gl_Position.xyz;
 }

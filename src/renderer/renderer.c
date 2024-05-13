@@ -1,11 +1,11 @@
 #include <renderer/renderer.h>
 #include <renderer/skybox.h>
 #include <renderer/surface.h>
+#include <renderer/deferred.h>
 #include <renderer/frame.h>
 #include <renderer/texture.h>
 #include <renderer/shader.h>
 #include <renderer/mesh.h>
-#include <renderer/target.h>
 #include <renderer/camera.h>
 #include <renderer/light.h>
 #include <GL/glew.h>
@@ -25,28 +25,22 @@ struct {
   material_t matname[MAX_MATNAME];
   
   frame_t frame[2];
-  texture_t depth;
   
-  texture_t albedo;
+  texture_t depth;
   texture_t position;
   texture_t normal;
   
-  target_t t_gbuffer;
-  target_t t_deferred;
-  
   texture_t sky_star;
   
-  surface_t sf_1;
-  surface_t sf_gbuffer;
+  gbuffer_t gb;
+  deferred_t df_1;
   
   shader_t hdr;
   shader_t dither;
-  shader_t deferred;
 } renderer;
 
 static void renderer_init_assets();
-static void renderer_init_frame();
-static void renderer_init_surface();
+static void renderer_init_setup();
 
 static void renderer_draw_entities(const game_t *gs);
 
@@ -58,28 +52,16 @@ void renderer_init()
   frame_init();
   light_init();
   skybox_init();
+  gbuffer_init();
   
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   
   renderer_init_assets();
-  renderer_init_surface();
-  renderer_init_frame();
+  renderer_init_setup();
   
-  renderer.albedo = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_RGBA, GL_FLOAT);
-  renderer.position = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_RGBA, GL_FLOAT);
-  renderer.normal = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_RGBA, GL_FLOAT);
-  
-  renderer.t_gbuffer = target_create(
-    4,
-    GL_COLOR_ATTACHMENT0, renderer.albedo,
-    GL_COLOR_ATTACHMENT1, renderer.position,
-    GL_COLOR_ATTACHMENT2, renderer.normal,
-    GL_DEPTH_ATTACHMENT, renderer.depth
-  );
-  
-  light_add_point(vec3(0.0, 1.0, 0.0), vec4(1.0, 1.0, 1.0, 5.0));
+  light_add_point(vec3(0.0, 3.0, 0.0), vec4(1.0, 1.0, 1.0, 16.0));
   skybox_set_cube_map(renderer.sky_star);
   
   float aspect_ratio = (float) SCR_WIDTH / (float) SCR_HEIGHT;
@@ -95,20 +77,21 @@ void renderer_render(const game_t *gs)
   const transform_t *pt = ENTITY_GET_COMPONENT(gs->edict, gs->player, transform);
   camera_move(pt->position, pt->rotation);
   
-  target_bind(renderer.t_gbuffer);
+  gbuffer_bind(renderer.gb);
     glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    skybox_draw();
-    surface_use(renderer.sf_gbuffer);
     renderer_draw_entities(gs);
-  target_unbind();
+  gbuffer_unbind();
+  
+  frame_begin(renderer.frame[1]);
+  deferred_display(renderer.df_1);
+  frame_end();
+  
+  frame_update(renderer.frame[0], renderer.hdr);
   
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  texture_bind(renderer.albedo, GL_TEXTURE_2D, 0);
-  texture_bind(renderer.position, GL_TEXTURE_2D, 1);
-  texture_bind(renderer.normal, GL_TEXTURE_2D, 2);
-  frame_draw_mesh(renderer.deferred);
+  frame_display(renderer.frame[1], renderer.dither);
 }
 
 void renderer_draw_entities(const game_t *gs)
@@ -127,33 +110,34 @@ void renderer_draw_entities(const game_t *gs)
   }
 }
 
-void renderer_init_surface()
+void renderer_init_setup()
 {
+  renderer.depth = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
+  renderer.position = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_RGBA16F, GL_FLOAT);
+  renderer.normal = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_RGBA16F, GL_FLOAT);
+  
+  renderer.frame[0] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  renderer.frame[1] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
+  frame_in(renderer.frame[0], "screen", GL_TEXTURE_2D, frame_get_texture(renderer.frame[1]));
+  frame_in(renderer.frame[1], "screen", GL_TEXTURE_2D, frame_get_texture(renderer.frame[0]));
+  
+  renderer.hdr = frame_shader_load("assets/shader/frame/hdr.frag");
+  renderer.dither = frame_shader_load("assets/shader/frame/dither.frag");
+  
+  renderer.gb = gbuffer_create(
+    frame_get_texture(renderer.frame[0]),
+    renderer.position,
+    renderer.normal,
+    renderer.depth
+  );
+  
+  renderer.df_1 = deferred_create(renderer.gb);
   shaderdata_t sd = shaderdata_create();
-    renderer.sf_1 = surface_create();
-    surface_bind(renderer.sf_1, "u_cubemap", GL_TEXTURE_CUBE_MAP, renderer.sky_star);
     light_shader_import(sd);
-    surface_shader_load(renderer.sf_1, sd, "assets/shader/surface/1.frag");
-    light_shader_attach(surface_get_shader(renderer.sf_1));
+    deferred_in(renderer.df_1, "u_cubemap", GL_TEXTURE_CUBE_MAP, renderer.sky_star);
+    deferred_shader_load(renderer.df_1, sd, "assets/shader/deferred/1.frag");
+    light_shader_attach(deferred_get_shader(renderer.df_1));
   shaderdata_destroy(sd);
-  
-  sd = shaderdata_create();
-    renderer.sf_gbuffer = surface_create();
-    surface_shader_load(renderer.sf_gbuffer, sd, "assets/shader/surface/gbuffer.frag");
-  shaderdata_destroy(sd);
-  
-  /*
-  renderer.sf_gbuffer = surface_create();
-  renderer.sh_gbuffer = surface_shader_load(renderer.sf_gbuffer, "assets/shader/surface/gbuffer.frag");
-  
-  shaderdata_t sd = shaderdata_create();
-    light_shader_import(sd);
-    surface_shader_source(sd, "assets/shader/surface/1.frag");
-    renderer.sh_1 = shader_load(sd);
-    surface_shader_attach(renderer.sh_1, renderer.sf_forward);
-    light_shader_attach(renderer.sh_1);
-  shaderdata_destroy(sd);
-  */
 }
 
 void renderer_init_assets()
@@ -196,26 +180,7 @@ void renderer_init_assets()
     texture_load_image("assets/mat/grass/normal.jpg")
   );
   
-  renderer.sky_star = texture_load_cubemap("assets/skybox/star", "jpg");
-}
-
-void renderer_init_frame()
-{
-  renderer.depth = texture_create(VIEW_WIDTH, VIEW_HEIGHT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
-  
-  renderer.frame[0] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  renderer.frame[1] = frame_create(VIEW_WIDTH, VIEW_HEIGHT, renderer.depth);
-  frame_bind(renderer.frame[0], 0, GL_TEXTURE_2D, frame_get_texture(renderer.frame[1]));
-  frame_bind(renderer.frame[1], 0, GL_TEXTURE_2D, frame_get_texture(renderer.frame[0]));
-  
-  renderer.hdr = frame_shader_load("assets/shader/frame/hdr.frag");
-  renderer.dither = frame_shader_load("assets/shader/frame/dither.frag");
-  renderer.deferred = frame_shader_load("assets/shader/frame/deferred.frag");
-  
-  shader_bind(renderer.deferred);
-  glUniform1i(glGetUniformLocation(renderer.deferred, "u_albedo"), 0); 
-  glUniform1i(glGetUniformLocation(renderer.deferred, "u_position"), 1); 
-  glUniform1i(glGetUniformLocation(renderer.deferred, "u_normal"), 2);
+  renderer.sky_star = texture_load_cubemap("assets/skybox/night2", "jpg");
 }
 
 void renderer_deinit()
@@ -225,9 +190,12 @@ void renderer_deinit()
     texture_destroy(renderer.matname[i].normal);
   }
   
-  surface_destroy(renderer.sf_1);
+  gbuffer_destroy(renderer.gb);
+  deferred_destroy(renderer.df_1);
   frame_destroy(renderer.frame[0]);
   frame_destroy(renderer.frame[1]);
+  
+  gbuffer_deinit();
   skybox_deinit();
   light_deinit();
   vbuffer_deinit();

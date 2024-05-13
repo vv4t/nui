@@ -1,21 +1,14 @@
 #include <renderer/frame.h>
-
-#include <stdlib.h>
 #include <renderer/mesh.h>
-
-#define MAX_CHANNEL 8
-
-typedef struct {
-  GLuint type;
-  texture_t texture;
-} channel_t;
+#include <renderer/channel.h>
+#include <stdlib.h>
 
 struct frame_s {
   int width;
   int height;
-  texture_t texture;
   target_t target;
-  channel_t channel[MAX_CHANNEL];
+  texture_t texture;
+  channel_t channel;
 };
 
 static mesh_t frame_mesh;
@@ -39,7 +32,7 @@ void frame_shader_source(shaderdata_t sd, const char *path)
   shaderdata_text(sd, "void main() { frame_shade(frag_color, vs_uv); }", SD_FRAG);
 }
 
-void frame_draw_mesh(shader_t shader)
+void frame_draw(shader_t shader)
 {
   glDepthMask(GL_FALSE);
   shader_bind(shader);
@@ -61,16 +54,13 @@ frame_t frame_create(int width, int height, texture_t depth_buffer)
   frame_t fr = malloc(sizeof(*fr));
   fr->width = width;
   fr->height = height;
+  fr->channel = channel_create();
   fr->texture = texture_create(width, height, GL_RGBA, GL_UNSIGNED_BYTE);
   fr->target = target_create(
     2,
     GL_COLOR_ATTACHMENT0, fr->texture,
     GL_DEPTH_ATTACHMENT, depth_buffer
   );
-  
-  for (int i = 0; i < MAX_CHANNEL; i++) {
-    fr->channel[i].texture = GL_INVALID_VALUE;
-  }
   
   return fr;
 }
@@ -87,34 +77,22 @@ void frame_end()
   target_unbind();
 }
 
-void frame_bind(frame_t fr, int channel, GLuint type, texture_t texture)
+void frame_in(frame_t fr, const char *name, GLuint type, texture_t texture)
 {
-  if (channel < 0 || channel >= MAX_CHANNEL) {
-    return;
-  }
-  
-  fr->channel[channel] = (channel_t) {
-    .type = type,
-    .texture = texture
-  };
+  channel_in(fr->channel, name, type, texture);
+}
+
+void frame_display(frame_t fr, shader_t shader)
+{
+  channel_bind(fr->channel);
+  frame_draw(shader);
 }
 
 void frame_update(frame_t fr, shader_t shader)
 {
   target_bind(fr->target);
-  frame_draw(fr, shader);
+  frame_display(fr, shader);
   target_unbind();
-}
-
-void frame_draw(frame_t fr, shader_t shader)
-{
-  for (int i = 0; i < MAX_CHANNEL; i++) {
-    if (fr->channel[i].texture != GL_INVALID_VALUE) {
-      texture_bind(fr->channel[i].texture, fr->channel[i].type, i);
-    }
-  }
-  
-  frame_draw_mesh(shader);
 }
 
 void frame_destroy(frame_t fr)

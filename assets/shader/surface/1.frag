@@ -5,11 +5,12 @@ out vec4 frag_color;
 uniform samplerCube u_cubemap;
 
 void surface_shade(
-  in vec3 frag_pos,
-  vec2 uv,
-  vec3 normal,
-  sampler2D albedo
-) {
+  in vec3   frag_pos,
+  in vec3   world_pos,
+  vec2      uv,
+  vec3      normal,
+  sampler2D albedo)
+{
   vec3 light = vec3(0.0);
   
   for (int i = 0; i < POINT_MAX; i++) {
@@ -18,7 +19,6 @@ void surface_shade(
   }
   
   vec3 R = reflect(normalize(frag_pos - view_pos), normal);
-  
   light += textureCube(u_cubemap, R).xyz * 0.5;
   
   frag_color = vec4(light.xyz * texture(albedo, uv).xyz, 1.0);

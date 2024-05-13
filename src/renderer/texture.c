@@ -92,7 +92,13 @@ texture_t texture_create(int width, int height, GLuint format, GLuint type)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   
-  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, type, NULL);
+  GLuint internalformat = format;
+  
+  if (format == GL_RGBA16F) {
+    internalformat = GL_RGBA;
+  }
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, internalformat, type, NULL);
   
   return texture;
 }
