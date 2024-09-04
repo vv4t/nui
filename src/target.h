@@ -12,9 +12,7 @@ public:
   texture_t& texture;
   
   inline binding_t(GLuint attachment_, texture_t& texture_)
-    : texture(texture_) {
-    attachment = attachment_;
-  }
+    : attachment(attachment_), texture(texture_) {}
 };
 
 class target_t {

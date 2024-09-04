@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <glad/glad.h>
+#include "uniform_buffer.h"
 
 class shader_t {
 private:
@@ -10,7 +11,9 @@ private:
 
 public:
   shader_t(std::stringstream& src_vertex, std::stringstream& src_fragment);
+  ~shader_t();
   void bind();
+  void attach(const uniform_buffer_t& uniform_buffer);
 };
 
 #endif
