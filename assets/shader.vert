@@ -4,11 +4,11 @@ layout(location = 1) in vec2 v_uv;
 out vec2 vs_uv;
 
 layout(std140) uniform ub_camera {
-  vec3 plus;
+  mat4 MVP;
 };
 
 void main()
 {
   vs_uv = v_uv;
-  gl_Position = vec4(v_pos + plus, 1.0);
+  gl_Position = MVP * vec4(v_pos, 1.0);
 }

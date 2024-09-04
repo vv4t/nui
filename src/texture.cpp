@@ -2,7 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
 
-static GLuint surface_format(SDL_Surface *surface);
+static GLuint surface_format(SDL_Surface* surface);
 
 texture_t::texture_t(const char *src) {
   SDL_Surface *surface = IMG_Load(src);
@@ -56,7 +56,7 @@ texture_t::~texture_t() {
   glDeleteTextures(1, &m_texture);
 }
 
-GLuint surface_format(SDL_Surface *surface) {
+GLuint surface_format(SDL_Surface* surface) {
   switch (surface->format->BytesPerPixel) {
   case 3:
     return GL_RGB;

@@ -19,7 +19,7 @@ int main() {
   glCullFace(GL_BACK);
   
   vertex_buffer_t vertex_buffer(256);
-  uniform_buffer_t uniform_buffer(0, "ubo_camera", 32);
+  uniform_buffer_t uniform_buffer(0, "ubo_camera", 512);
   
   mesh_t mesh = vertex_buffer.push(std::vector<vertex_t> {
     vertex_t(vec3(+1, +1, 0), vec2(1, 1)),
@@ -30,7 +30,7 @@ int main() {
     vertex_t(vec3(-1, -1, 0), vec2(0, 0))
   });
   
-  vec3 thing = vec3(0.5, 0.0, 0.0);
+  mat4 thing = mat4::translate(vec3(0.5, 0.0, 0.0));
   uniform_buffer.sub(&thing, 0, sizeof(thing));
   
   std::stringstream src_vertex, src_fragment;

@@ -33,7 +33,7 @@ void shader_t::bind() {
   glUseProgram(m_program);
 }
 
-void shader_t::attach(const uniform_buffer_t &uniform_buffer) {
+void shader_t::attach(const uniform_buffer_t& uniform_buffer) {
   bind();
   GLuint location = glGetUniformBlockIndex(m_program, uniform_buffer.get_name());
   glUniformBlockBinding(m_program, location, uniform_buffer.get_binding());
