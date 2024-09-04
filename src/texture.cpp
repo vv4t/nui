@@ -31,7 +31,7 @@ texture_t::texture_t(const char *src) {
   m_type = GL_TEXTURE_2D;
 }
 
-texture_t::texture_t(int width, int height, GLuint format, GLuint type)
+texture_t::texture_t(int width, int height, GLuint format, GLuint internalformat, GLuint type)
 {
   glGenTextures(1, &m_texture);
   glBindTexture(GL_TEXTURE_2D, m_texture);
@@ -39,7 +39,7 @@ texture_t::texture_t(int width, int height, GLuint format, GLuint type)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, type, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, type, NULL);
   m_type = GL_TEXTURE_2D;
 }
 
@@ -48,6 +48,13 @@ void texture_t::bind(int channel) {
   glBindTexture(m_type, m_texture);
 }
 
+GLuint texture_t::get_texture() {
+  return m_texture;
+}
+
+texture_t::~texture_t() {
+  glDeleteTextures(1, &m_texture);
+}
 
 GLuint surface_format(SDL_Surface *surface) {
   switch (surface->format->BytesPerPixel) {

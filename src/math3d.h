@@ -10,9 +10,9 @@ public:
     y = 0.0f;
   }
   
-  inline vec2(float _x, float _y) {
-    x = _x;
-    y = _y;
+  inline vec2(float x_, float y_) {
+    x = x_;
+    y = y_;
   }
 };
 
@@ -26,10 +26,10 @@ public:
     z = 0.0f;
   }
   
-  inline vec3(float _x, float _y, float _z) {
-    x = _x;
-    y = _y;
-    z = _z;
+  inline vec3(float x_, float y_, float z_) {
+    x = x_;
+    y = y_;
+    z = z_;
   }
 };
 
@@ -44,11 +44,11 @@ public:
     w = 1.0f;
   }
   
-  inline vec4(float _x, float _y, float _z, float _w) {
-    x = _x;
-    y = _y;
-    z = _z;
-    w = _w;
+  inline vec4(float x_, float y_, float z_, float w_) {
+    x = x_;
+    y = y_;
+    z = z_;
+    w = w_;
   }
 };
 

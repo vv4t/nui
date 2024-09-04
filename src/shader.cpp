@@ -34,8 +34,14 @@ void shader_t::bind() {
 }
 
 GLuint shader_compile(GLuint type, const char *src) {
+  const char *all[] = {
+    "#version 300 es\n",
+    "precision mediump float;\n",
+    src
+  };
+  
   GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, &src, NULL);
+  glShaderSource(shader, 3, all, NULL);
   
   int success;
   glCompileShader(shader);

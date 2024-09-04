@@ -8,9 +8,9 @@ public:
   vec3 pos;
   vec2 uv;
   
-  inline vertex_t(vec3 _pos, vec2 _uv) {
-    pos = _pos;
-    uv = _uv;
+  inline vertex_t(vec3 pos_, vec2 uv_) {
+    pos = pos_;
+    uv = uv_;
   }
 };
 
