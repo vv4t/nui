@@ -3,10 +3,6 @@ layout(location = 1) in vec2 v_uv;
 
 out vec2 vs_uv;
 
-layout(std140) uniform ub_camera {
-  mat4 MVP;
-};
-
 void main()
 {
   vs_uv = v_uv;

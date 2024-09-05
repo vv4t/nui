@@ -3,7 +3,7 @@
 
 static GLuint shader_compile(GLuint type, const char* src);
 
-shader_t::shader_t(std::stringstream& src_vertex, std::stringstream& src_fragment) {
+shader_t::shader_t(const std::stringstream& src_vertex, const std::stringstream& src_fragment) {
   GLuint vertex_shader = shader_compile(GL_VERTEX_SHADER, src_vertex.str().c_str());
   GLuint fragment_shader = shader_compile(GL_FRAGMENT_SHADER, src_fragment.str().c_str());
   
@@ -29,14 +29,12 @@ shader_t::shader_t(std::stringstream& src_vertex, std::stringstream& src_fragmen
   glDeleteShader(fragment_shader);
 }
 
-void shader_t::bind() {
+void shader_t::bind() const {
   glUseProgram(m_program);
 }
 
-void shader_t::attach(const uniform_buffer_t& uniform_buffer) {
-  bind();
-  GLuint location = glGetUniformBlockIndex(m_program, uniform_buffer.get_name());
-  glUniformBlockBinding(m_program, location, uniform_buffer.get_binding());
+GLuint shader_t::get_program() const {
+  return m_program;
 }
 
 shader_t::~shader_t() {

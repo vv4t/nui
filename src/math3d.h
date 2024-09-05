@@ -2,6 +2,7 @@
 #define MATH3D_H
 
 #include <ostream>
+#include <cmath>
 
 class vec2 {
 public:
@@ -79,10 +80,46 @@ public:
     );
   }
   
+  static mat4 perspective() {
+    return mat4(
+      vec4(1, 0, 0, 0),
+      vec4(0, 1, 0, 0),
+      vec4(0, 0, 1, 1),
+      vec4(0, 0, 0, 0)
+    );
+  }
+  
   static mat4 identity() {
     return mat4(
       vec4(1, 0, 0, 0),
       vec4(0, 1, 0, 0),
+      vec4(0, 0, 1, 0),
+      vec4(0, 0, 0, 1)
+    );
+  }
+  
+  static mat4 rotate_x(float t) {
+    return mat4(
+      vec4(1, 0, 0, 0),
+      vec4(0, +cos(t), sin(t), 0),
+      vec4(0, -sin(t), cos(t), 0),
+      vec4(0, 0, 0, 1)
+    );
+  }
+  
+  static mat4 rotate_y(float t) {
+    return mat4(
+      vec4(+cos(t), 0, sin(t), 0),
+      vec4(0, 1, 0, 0),
+      vec4(-sin(t), 0, cos(t), 0),
+      vec4(0, 0, 0, 1)
+    );
+  }
+  
+  static mat4 rotate_z(float t) {
+    return mat4(
+      vec4(+cos(t), sin(t), 0, 0),
+      vec4(-sin(t), cos(t), 0, 0),
       vec4(0, 0, 1, 0),
       vec4(0, 0, 0, 1)
     );

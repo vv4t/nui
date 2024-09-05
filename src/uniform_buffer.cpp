@@ -15,13 +15,11 @@ void uniform_buffer_t::sub(void* data, int offset, int size) {
   glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }
-  
-int uniform_buffer_t::get_binding() const {
-  return m_binding;
-}
 
-const char* uniform_buffer_t::get_name() const {
-  return m_name;
+void uniform_buffer_t::attach_shader(const shader_t& shader) {
+  shader.bind();
+  GLuint location = glGetUniformBlockIndex(shader.get_program(), m_name);
+  glUniformBlockBinding(shader.get_program(), location, m_binding);
 }
 
 uniform_buffer_t::~uniform_buffer_t() {
