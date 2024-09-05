@@ -48,7 +48,7 @@ void texture_t::bind(int channel) {
   glBindTexture(m_type, m_texture);
 }
 
-GLuint texture_t::get_texture() {
+GLuint texture_t::get_texture() const {
   return m_texture;
 }
 

@@ -9,9 +9,9 @@
 class binding_t {
 public:
   GLuint attachment;
-  texture_t& texture;
+  const texture_t& texture;
   
-  inline binding_t(GLuint attachment_, texture_t& texture_)
+  inline binding_t(GLuint attachment_, const texture_t& texture_)
     : attachment(attachment_), texture(texture_) {}
 };
 

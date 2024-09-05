@@ -17,22 +17,51 @@ public:
     x = x_;
     y = y_;
   }
+  
+  inline vec2 operator-() {
+    return vec2(-x, -y);
+  }
+  
+  inline friend vec2 operator+(const vec2& a, const vec2& b) {
+    return vec2(a.x + b.x, a.y + b.y);
+  }
+  
+  inline friend vec2 operator-(const vec2& a, const vec2& b) {
+    return vec2(a.x - b.x, a.y - b.y);
+  }
+  
+  inline friend vec2 operator*(const vec2& a, float b) {
+    return vec2(a.x * b, a.y * b);
+  }
 };
 
 class vec3 {
 public:
   float x, y, z;
   
-  inline vec3() {
-    x = 0.0f;
-    y = 0.0f;
-    z = 0.0f;
-  }
-  
   inline vec3(float x_, float y_, float z_) {
     x = x_;
     y = y_;
     z = z_;
+  }
+  
+  inline vec3(vec2 xy, float z_) : vec3(xy.x, xy.y, z_) {}
+  inline vec3() : vec3(0.0, 0.0, 0.0) {}
+  
+  inline vec3 operator-() {
+    return vec3(-x, -y, -z);
+  }
+  
+  inline friend vec3 operator+(const vec3& a, const vec3& b) {
+    return vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+  }
+  
+  inline friend vec3 operator-(const vec3& a, const vec3& b) {
+    return vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+  }
+  
+  inline friend vec3 operator*(const vec3& a, float b) {
+    return vec3(a.x * b, a.y * b, a.z * b);
   }
 };
 
@@ -40,18 +69,31 @@ class vec4 {
 public:
   float x, y, z, w;
   
-  inline vec4() {
-    x = 0.0f;
-    y = 0.0f;
-    z = 0.0f;
-    w = 1.0f;
-  }
-  
   inline vec4(float x_, float y_, float z_, float w_) {
     x = x_;
     y = y_;
     z = z_;
     w = w_;
+  }
+  
+  inline vec4(vec3 xyz, float w_) : vec4(xyz.x, xyz.y, xyz.z, w_) {}
+  inline vec4(vec2 xy, float z_, float w_) : vec4(xy.x, xy.y, z_, w_) {}
+  inline vec4() : vec4(0.0, 0.0, 0.0, 1.0) {}
+  
+  inline vec3 operator-() {
+    return vec3(-x, -y, -z);
+  }
+  
+  inline friend vec4 operator+(const vec4& a, const vec4& b) {
+    return vec4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+  }
+  
+  inline friend vec4 operator-(const vec4& a, const vec4& b) {
+    return vec4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+  }
+  
+  inline friend vec4 operator*(const vec4& a, float b) {
+    return vec4(a.x * b, a.y * b, a.z * b, a.w * b);
   }
 };
 

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <glad/glad.h>
 #include <vector>
+#include "input.h"
 #include "window.h"
 #include "shader.h"
 #include "vertex.h"
@@ -16,8 +17,12 @@
 #define HEIGHT 600
 
 int main() {
-  window_t::init();
-  window_t window(WIDTH, HEIGHT, "nui");
+  input_t input;
+  input.bind_move(0, 1);
+  input.bind_key(2, 'w');
+  
+  window_t window(WIDTH, HEIGHT, "nui", input);
+  window.cursor_lock(true);
   
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
@@ -52,7 +57,7 @@ int main() {
     t += 0.015;
     
     shader.bind();
-    camera.move(vec3(0, 0, cos(t * 2.0) * 4.0), vec3(0, cos(t), 0));
+    camera.move(vec3(0, 0, cos(t * 2.0) * 4.0), vec3(input.get_axis(1), input.get_axis(0), 0));
     camera.sub(mat4::identity());
     mesh.draw();
     

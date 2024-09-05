@@ -2,14 +2,12 @@
 #include <glad/glad.h>
 #include <iostream>
 
-void window_t::init() {
+window_t::window_t(int width, int height, const char *title, input_t& input) : m_input(input) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cerr << "error: SDL_Init: " << SDL_GetError();
     throw std::runtime_error("failed to initialise SDL");
   }
-}
-
-window_t::window_t(int width, int height, const char *title) {
+  
   m_window = SDL_CreateWindow(
     title,
     SDL_WINDOWPOS_CENTERED,
@@ -34,6 +32,12 @@ window_t::window_t(int width, int height, const char *title) {
   if (!gladLoadGLES2Loader((GLADloadproc) SDL_GL_GetProcAddress)) {
     throw std::runtime_error("failed to initialize GLAD");
   }
+  
+  m_width = width;
+  m_height = height;
+  m_mouse_x = 0;
+  m_mouse_y = 0;
+  m_is_cursor_lock = false;
 }
 
 void window_t::swap() {
@@ -46,17 +50,35 @@ bool window_t::poll() {
     switch (event.type) {
     case SDL_QUIT:
       return false;
-    case SDL_TEXTINPUT:
     case SDL_KEYUP:
+      m_input.key_event(event.key.keysym.sym, false);
+      break;
     case SDL_KEYDOWN:
+      m_input.key_event(event.key.keysym.sym, true);
+      break;
+    case SDL_MOUSEMOTION:
+      if (m_is_cursor_lock) {
+        m_mouse_x += event.motion.xrel;
+        m_mouse_y += event.motion.yrel;
+      } else {
+        m_mouse_x = event.motion.x;
+        m_mouse_y = event.motion.y;
+      }
+      m_input.move_event(m_mouse_x / (float) m_width, 1.0 - m_mouse_y / (float) m_height);
+      break;
+    case SDL_TEXTINPUT:
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEMOTION:
       break;
     }
   }
   
   return true;
+}
+
+void window_t::cursor_lock(bool state) {
+  SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
+  m_is_cursor_lock = state;
 }
 
 window_t::~window_t() {

@@ -19,9 +19,9 @@ void camera_t::move(vec3 position, vec3 rotation) {
   mat4 rx = mat4::rotate_x(rotation.x);
   mat4 ry = mat4::rotate_y(rotation.y);
   mat4 rz = mat4::rotate_z(rotation.z);
-  mat4 translate = mat4::translate(position);
+  mat4 translate = mat4::translate(-position);
   
-  m_view = rz * ry * rx * translate;
+  m_view = translate * rz * ry * rx;
 }
 
 void camera_t::import_shader(std::ostream& src_vertex, std::ostream& src_fragment) {
