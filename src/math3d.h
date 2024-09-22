@@ -30,6 +30,14 @@ public:
     return vec2(a.x - b.x, a.y - b.y);
   }
   
+  inline friend vec2 operator+(const vec2& a, float b) {
+    return a + vec2(b, b);
+  }
+  
+  inline friend vec2 operator-(const vec2& a, float b) {
+    return a - vec2(b, b);
+  }
+  
   inline friend vec2 operator*(const vec2& a, float b) {
     return vec2(a.x * b, a.y * b);
   }
@@ -97,6 +105,56 @@ public:
   }
 };
 
+class mat2 {
+private:
+  float m[4];
+
+public:
+  inline mat2(vec2 a, vec2 b) {
+    m[0] = a.x;  m[1] = a.y;
+    m[2] = b.x;  m[3] = b.y;
+  }
+  
+  inline mat2() {
+    *this = mat2::identity();
+  }
+  
+  inline static mat2 identity() {
+    return mat2(
+      vec2(1, 0),
+      vec2(0, 1)
+    );
+  }
+  
+  inline friend vec2 operator*(const vec2& a, const mat2& b) {
+    return vec2(b.m[0] * a.x + b.m[1] * a.x, b.m[2] * a.x + b.m[3] * a.y);
+  }
+  
+  inline friend mat2 operator*(const mat2& a, const mat2& b) {
+    mat2 r;
+    
+    for (int i = 0; i < 2; i++) {
+      for (int j = 0; j < 2; j++) {
+        r.m[i * 2 + j] = 0.0;
+        
+        for (int k = 0; k < 4; k++) {
+          r.m[i * 2 + j] += a.m[i * 2 + k] * b.m[k * 2 + j];
+        }
+      }
+    }
+    
+    return r;
+  }
+  
+  inline friend std::ostream& operator<<(std::ostream& stream, const mat2& m) {
+    stream << "mat2 {" << std::endl;
+    stream << "  " << m.m[0] << " " << m.m[2] << std::endl;
+    stream << "  " << m.m[1] << " " << m.m[3] << std::endl;
+    stream << "}";
+    return stream;
+  }
+};
+
 class mat4 {
 private:
   float m[16];
@@ -113,7 +171,7 @@ public:
     *this = mat4::identity();
   }
   
-  static mat4 translate(vec3 v) {
+  inline static mat4 translate(vec3 v) {
     return mat4(
       vec4(1, 0, 0, 0),
       vec4(0, 1, 0, 0),

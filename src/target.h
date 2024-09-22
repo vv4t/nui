@@ -12,7 +12,8 @@ public:
   const texture_t& texture;
   
   inline binding_t(GLuint attachment_, const texture_t& texture_)
-    : attachment(attachment_), texture(texture_) {}
+    : attachment(attachment_),
+      texture(texture_) {}
 };
 
 class target_t {

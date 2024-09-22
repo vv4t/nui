@@ -10,10 +10,9 @@ private:
   int m_offset;
   int m_count;
 public:
+  mesh_t();
   mesh_t(int offset, int count);
   void draw();
-  int get_offset();
-  int get_count();
 };
 
 class vertex_buffer_t {

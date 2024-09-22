@@ -1,5 +1,8 @@
 #include "shader.h"
 #include <iostream>
+#include <fstream>
+#include <regex>
+#include <filesystem>
 
 static GLuint shader_compile(GLuint type, const char* src);
 
@@ -63,4 +66,26 @@ GLuint shader_compile(GLuint type, const char* src) {
   }
   
   return shader;
+}
+
+std::stringstream shader_read_source(const char* src) {
+  std::stringstream ss;
+  std::ifstream in = std::ifstream(src);
+  
+  std::string line;
+  while (std::getline(in, line)) {
+    std::regex rgx("^\\s*#\\s*pragma use\\s+[<\"]([^>\"]*)[>\"]\\s*");
+    std::smatch matches;
+
+    if(std::regex_match(line, matches, rgx)) {
+      std::filesystem::path file(matches[1]);
+      std::filesystem::path base = std::filesystem::path(src).parent_path();
+      std::filesystem::path full = base / file;
+      ss << shader_read_source(full.u8string().c_str()).rdbuf() << std::endl;
+    } else {
+      ss << line << std::endl;
+    }
+  }
+  
+  return ss;
 }

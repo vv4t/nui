@@ -15,4 +15,6 @@ public:
   GLuint get_program() const;
 };
 
+std::stringstream shader_read_source(const char* src);
+
 #endif

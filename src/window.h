@@ -13,14 +13,14 @@ private:
   int m_height;
   int m_mouse_x;
   int m_mouse_y;
-  bool m_is_cursor_lock;
+  bool m_cursor_lock;
 
 public:
   window_t(int width, int height, const char *title, input_t& input);
   ~window_t();
   bool poll();
   void swap();
-  void cursor_lock(bool state);
+  void set_cursor_lock(bool state);
 };
 
 #endif

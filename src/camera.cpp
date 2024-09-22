@@ -24,12 +24,6 @@ void camera_t::move(vec3 position, vec3 rotation) {
   m_view = translate * rz * ry * rx;
 }
 
-void camera_t::import_shader(std::ostream& src_vertex, std::ostream& src_fragment) {
-  const char* text = "layout(std140) uniform ubo_camera { mat4 MVP; };";
-  src_vertex << text << std::endl;
-  src_fragment << text << std::endl;
-}
-
 void camera_t::attach_shader(const shader_t& shader) {
   m_uniform_buffer.attach_shader(shader);
 }

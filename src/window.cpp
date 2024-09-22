@@ -37,7 +37,7 @@ window_t::window_t(int width, int height, const char *title, input_t& input) : m
   m_height = height;
   m_mouse_x = 0;
   m_mouse_y = 0;
-  m_is_cursor_lock = false;
+  m_cursor_lock = false;
 }
 
 void window_t::swap() {
@@ -57,7 +57,7 @@ bool window_t::poll() {
       m_input.key_event(event.key.keysym.sym, true);
       break;
     case SDL_MOUSEMOTION:
-      if (m_is_cursor_lock) {
+      if (m_cursor_lock) {
         m_mouse_x += event.motion.xrel;
         m_mouse_y += event.motion.yrel;
       } else {
@@ -76,9 +76,9 @@ bool window_t::poll() {
   return true;
 }
 
-void window_t::cursor_lock(bool state) {
+void window_t::set_cursor_lock(bool state) {
   SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
-  m_is_cursor_lock = state;
+  m_cursor_lock = state;
 }
 
 window_t::~window_t() {

@@ -27,18 +27,19 @@ mesh_t vertex_buffer_t::push(std::vector<vertex_t> vertices) {
     throw std::runtime_error("vertex buffer out of memory");
   }
   
-  mesh_t mesh = mesh_t(m_offset, (int) vertices.size());
-  
-  m_offset += (int) vertices.size();
   bind();
+  
+  int offset = m_offset;
+  m_offset += (int) vertices.size();
+  
   glBufferSubData(
     GL_ARRAY_BUFFER,
-    mesh.get_offset() * sizeof(vertex_t),
-    mesh.get_count() * sizeof(vertex_t),
+    offset * sizeof(vertex_t),
+    (int) vertices.size() * sizeof(vertex_t),
     vertices.data()
   );
   
-  return mesh;
+  return mesh_t(offset, (int) vertices.size());
 }
 
 vertex_buffer_t::~vertex_buffer_t() {
@@ -51,14 +52,10 @@ mesh_t::mesh_t(int offset, int count) {
   m_count = count;
 }
 
+mesh_t::mesh_t() : mesh_t(0, 0) {
+  
+}
+
 void mesh_t::draw() {
   glDrawArrays(GL_TRIANGLES, m_offset, m_count);
-}
-
-int mesh_t::get_offset() {
-  return m_offset;
-}
-
-int mesh_t::get_count() {
-  return m_count;
 }
