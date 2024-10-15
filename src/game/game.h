@@ -13,11 +13,11 @@ typedef struct {
   
   vec3_t light_pos;
   bool light_update;
-  bool quit;
 } game_t;
 
 void game_init(game_t *game);
 void game_map_load(game_t *game, map_t *map);
 void game_update(game_t *game, const usercmd_t *usercmd);
+void game_exit();
 
 #endif
