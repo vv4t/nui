@@ -7,7 +7,7 @@ SRC=$(wildcard src/*/*.c)
 OBJ=$(patsubst src/%.c, bin/%.o, $(SRC))
 SRC_H=$(wildcard src/*/*.h)
 
-defualt: nui run
+#default: nui run
 
 nui: $(OBJ)
 	gcc $(CFLAGS) $^ $(LDFLAGS) -o $@
