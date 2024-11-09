@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include "vertex.h"
+#include "vertex.hpp"
 
 class mesh_t {
 private:

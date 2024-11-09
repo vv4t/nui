@@ -1,4 +1,4 @@
-#include "texture.h"
+#include "texture.hpp"
 #include <iostream>
 #include <SDL2/SDL_image.h>
 

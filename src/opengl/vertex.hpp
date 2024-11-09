@@ -1,7 +1,7 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
-#include "math3d.h"
+#include <util/math3d.hpp>
 
 class vertex_t {
 public:

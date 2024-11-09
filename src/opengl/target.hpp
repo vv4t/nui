@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include <utility>
-#include "texture.h"
+#include "texture.hpp"
 
 class binding_t {
 public:

@@ -2,7 +2,7 @@
 #define UNIFORM_BUFFER_H
 
 #include <glad/glad.h>
-#include "shader.h"
+#include "shader.hpp"
 
 class uniform_buffer_t {
 private:

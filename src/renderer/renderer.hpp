@@ -1,10 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "vertex_buffer.h"
-#include "camera.h"
-#include "shader.h"
-#include "input.h"
+#include "camera.hpp"
+#include <opengl/vertex_buffer.hpp>
+#include <opengl/shader.hpp>
+#include <core/input.hpp>
 
 class renderer_t {
 private:

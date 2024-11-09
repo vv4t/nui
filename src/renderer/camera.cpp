@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "camera.hpp"
 
 struct ubo_camera {
   mat4 MVP;

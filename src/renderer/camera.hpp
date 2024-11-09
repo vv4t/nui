@@ -1,9 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "math3d.h"
-#include "uniform_buffer.h"
-#include "shader.h"
+#include <util/math3d.hpp>
+#include <opengl/uniform_buffer.hpp>
+#include <opengl/shader.hpp>
 
 class camera_t {
 private:

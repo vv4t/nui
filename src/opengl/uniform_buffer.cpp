@@ -1,4 +1,4 @@
-#include "uniform_buffer.h"
+#include "uniform_buffer.hpp"
 #include <iostream>
 
 uniform_buffer_t::uniform_buffer_t(int binding, const char *name, int size) {

@@ -1,4 +1,4 @@
-#include "input.h"
+#include "input.hpp"
 #include <iostream>
 
 input_t::input_t() {

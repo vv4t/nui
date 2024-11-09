@@ -1,4 +1,4 @@
-#include "vertex_buffer.h"
+#include "vertex_buffer.hpp"
 #include <iostream>
 
 vertex_buffer_t::vertex_buffer_t(int max_vertices) {

@@ -2,7 +2,7 @@
 #define WINDOW_H
 
 #include <SDL2/SDL.h>
-#include "input.h"
+#include "input.hpp"
 
 class window_t {
 private:

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <vector>
-#include "input.h"
-#include "window.h"
-#include "renderer.h"
+#include "input.hpp"
+#include "window.hpp"
+#include <renderer/renderer.hpp>
 
 #define WIDTH 800
 #define HEIGHT 600
