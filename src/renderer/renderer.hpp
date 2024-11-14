@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "camera.hpp"
+#include <core/game.hpp>
 #include <opengl/vertex_buffer.hpp>
 #include <opengl/shader.hpp>
 #include <core/input.hpp>
@@ -12,12 +13,13 @@ private:
   camera_t m_camera;
   shader_t m_shader;
   mesh_t m_mesh;
+  game_t& m_game;
   
   shader_t shader_init();
   mesh_t mesh_init();
 
 public:
-  renderer_t();
+  renderer_t(game_t& game);
   void bind();
   void render(input_t& input);
 };

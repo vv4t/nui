@@ -1,10 +1,11 @@
 #include "renderer.hpp"
 #include <iostream>
 
-renderer_t::renderer_t()
+renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
     m_shader(shader_init()),
-    m_mesh(mesh_init()) {
+    m_mesh(mesh_init()),
+    m_game(game) {
 }
 
 void renderer_t::bind() {
@@ -13,9 +14,17 @@ void renderer_t::bind() {
 
 void renderer_t::render(input_t& input) {
   m_camera.move(vec3(0, 0, -3), vec3(input.get_axis(1), input.get_axis(0), 0.0));
-  m_camera.sub(mat4::identity());
   m_shader.bind();
-  m_mesh.draw();
+  
+  for (entity_t entity = 0; entity < m_game.count_entities(); entity++) {
+    if (m_game.has_component(entity, HAS_MODEL | HAS_TRANSFORM)) {
+      transform_t& transform = m_game.get_transform(entity);
+      model_t& model = m_game.get_model(entity);
+      
+      m_camera.sub(mat4::rotate_zyx(transform.rotation) * mat4::translate(transform.position));
+      m_mesh.draw();
+    }
+  }
 }
 
 mesh_t renderer_t::mesh_init() {

@@ -225,6 +225,10 @@ public:
     );
   }
   
+  static mat4 rotate_zyx(vec3 rotation) {
+    return mat4::rotate_z(rotation.z) * mat4::rotate_y(rotation.y) * mat4::rotate_x(rotation.x);
+  }
+  
   inline friend mat4 operator*(const mat4& a, const mat4& b) {
     mat4 r;
     

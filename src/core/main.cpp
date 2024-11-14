@@ -15,7 +15,24 @@ int main() {
   window_t window(WIDTH, HEIGHT, "nui", input);
   window.set_cursor_lock(true);
   
-  renderer_t renderer;
+  game_t game;
+  
+  {
+    entity_t e = game.add_entity();
+    transform_t& transform = game.enable_transform(e, transform_t());
+      transform.move_to(vec3(-2.0, 0.0, 0.0));
+      transform.rotate_to(vec3(0.0, 0.4, 0.0));
+    game.enable_model(e, model_t());
+  }
+  
+  {
+    entity_t e = game.add_entity();
+    transform_t& transform = game.enable_transform(e, transform_t());
+      transform.move_to(vec3(+2.0, 0.0, 0.0));
+    game.enable_model(e, model_t());
+  }
+  
+  renderer_t renderer(game);
   renderer.bind();
   
   while (window.poll()) {
