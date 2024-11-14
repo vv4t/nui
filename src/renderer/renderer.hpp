@@ -5,7 +5,6 @@
 #include <core/game.hpp>
 #include <opengl/vertex_buffer.hpp>
 #include <opengl/shader.hpp>
-#include <core/input.hpp>
 
 class renderer_t {
 private:
@@ -21,7 +20,7 @@ private:
 public:
   renderer_t(game_t& game);
   void bind();
-  void render(input_t& input);
+  void render();
 };
 
 #endif

@@ -12,17 +12,21 @@ void renderer_t::bind() {
   m_vertex_buffer.bind();
 }
 
-void renderer_t::render(input_t& input) {
-  m_camera.move(vec3(0, 0, -3), vec3(input.get_axis(1), input.get_axis(0), 0.0));
+void renderer_t::render() {
+  transform_t &camera_transform = m_game.get_transform(m_game.get_camera());
+  
+  m_camera.move(camera_transform.position, camera_transform.rotation);
   m_shader.bind();
   
-  for (entity_t entity = 0; entity < m_game.count_entities(); entity++) {
+  for (entity_t entity = 0; entity < m_game.entity_count(); entity++) {
     if (m_game.has_component(entity, HAS_MODEL | HAS_TRANSFORM)) {
       transform_t& transform = m_game.get_transform(entity);
       model_t& model = m_game.get_model(entity);
       
-      m_camera.sub(mat4::rotate_zyx(transform.rotation) * mat4::translate(transform.position));
-      m_mesh.draw();
+      if (model.meshname == MESHNAME_PLANE) {
+        m_camera.sub(mat4::rotate_zyx(transform.rotation) * mat4::translate(transform.position));
+        m_mesh.draw();
+      }
     }
   }
 }

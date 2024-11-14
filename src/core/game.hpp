@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <util/math3d.hpp>
+#include <core/input.hpp>
 
 using entity_t = int;
 
@@ -62,13 +63,16 @@ private:
   model_t m_models[MAX_ENTITIES];
   component_t m_components[MAX_ENTITIES];
   int m_num_entities;
+  entity_t m_camera;
 
 public:
   game_t();
+  
+  entity_t get_camera();
   entity_t add_entity();
   
-  int count_entities();
-  
+  void update(input_t& input);
+  int entity_count();
   bool has_component(entity_t entity, component_t components);
   
   transform_t& enable_transform(entity_t entity, transform_t transform);
