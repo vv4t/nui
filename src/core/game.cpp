@@ -8,15 +8,19 @@ game_t::game_t() : m_num_entities(0) {
   
   {
     entity_t entity = add_entity();
-    enable_transform(entity, transform_t());
+    transform_t& transform = enable_transform(entity, transform_t());
+      transform.position = vec3(0, 0, -3);
     m_camera = entity;
   }
 }
 
 void game_t::update(input_t& input) {
-  transform_t& camera_transform = get_transform(get_camera());
-  camera_transform.position = vec3(0, 0, -3);
-  camera_transform.rotation = vec3(input.get_axis(1), input.get_axis(0), 0.0);
+  transform_t& transform = get_transform(get_camera());
+  transform.rotation = vec3(-input.get_axis(1), -input.get_axis(0), 0.0);
+  
+  if (input.get_axis(2)) {
+    transform.position += (mat4::rotate_xyz(transform.rotation) * vec4(0, 0, 1, 1)).get_xyz() * 0.05;
+  }
 }
 
 entity_t game_t::get_camera() {

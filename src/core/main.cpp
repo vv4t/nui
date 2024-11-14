@@ -11,6 +11,7 @@
 int main() {
   input_t input;
   input.bind_move(0, 1);
+  input.bind_key(2, 'w');
   
   window_t window(WIDTH, HEIGHT, "nui", input);
   window.set_cursor_lock(true);
