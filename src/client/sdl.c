@@ -100,6 +100,11 @@ static void key_event(usercmd_t *usercmd, int key, int action)
     case ' ':
       usercmd->jump = action;
       break;
+    case '\x1B': //SDL_GetKeyName(): // escape key
+      usercmd->esc = action;
+      break;
+    default:
+      break;
     }
   }
   

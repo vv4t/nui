@@ -9,6 +9,7 @@ typedef struct {
   int jump;
   
   int attack1;
+  int esc;
   
   float d_yaw;
   float d_pitch;
