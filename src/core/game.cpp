@@ -21,6 +21,18 @@ void game_t::update(input_t& input) {
   if (input.get_axis(2)) {
     transform.position += (mat4::rotate_xyz(transform.rotation) * vec4(0, 0, 1, 1)).get_xyz() * 0.05;
   }
+  
+  if (input.get_axis(3)) {
+    transform.position += (mat4::rotate_xyz(transform.rotation) * vec4(-1, 0, 0, 1)).get_xyz() * 0.05;
+  }
+  
+  if (input.get_axis(4)) {
+    transform.position += (mat4::rotate_xyz(transform.rotation) * vec4(0, 0, -1, 1)).get_xyz() * 0.05;
+  }
+  
+  if (input.get_axis(5)) {
+    transform.position += (mat4::rotate_xyz(transform.rotation) * vec4(1, 0, 0, 1)).get_xyz() * 0.05;
+  }
 }
 
 entity_t game_t::get_camera() {
