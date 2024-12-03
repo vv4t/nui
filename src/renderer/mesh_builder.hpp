@@ -8,8 +8,9 @@ class mesh_builder_t {
   std::vector<vertex_t> m_vertices;
 
 public:
-  void add_vertex(vertex_t vertex);
-  void add_quad(mat4 T_p, mat4 T_uv);
+  void push_vertex(vertex_t vertex);
+  void push_quad(mat4 T_p, mat4 T_uv);
+  void push_cuboid(vec3 a, vec3 b);
   std::vector<vertex_t> get_vertices();
 };
 

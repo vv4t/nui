@@ -66,6 +66,14 @@ public:
     return vec3(-x, -y, -z);
   }
   
+  inline friend vec3 operator-(const vec3& v) {
+    return vec3(-v.x, -v.y, -v.z);
+  }
+  
+  inline friend vec3 operator+(const vec3& v) {
+    return v;
+  }
+  
   inline friend vec3 operator+(const vec3& a, const vec3& b) {
     return vec3(a.x + b.x, a.y + b.y, a.z + b.z);
   }
@@ -176,6 +184,7 @@ public:
     return stream;
   }
 };
+#include <iostream>
 
 class mat4 {
 private:
@@ -188,6 +197,14 @@ public:
     m[ 8] = c.x;  m[ 9] = c.y;  m[10] = c.z;  m[11] = c.w;
     m[12] = d.x;  m[13] = d.y;  m[14] = d.z;  m[15] = d.w;
   }
+  
+  inline mat4(vec3 a, vec3 b, vec3 c) :
+    mat4(
+      vec4(a.x, a.y, a.z, 0),
+      vec4(b.x, b.y, b.z, 0),
+      vec4(c.x, c.y, c.z, 0),
+      vec4(0, 0, 0, 1)
+    ) {}
   
   inline mat4() {
     *this = mat4::identity();
@@ -202,12 +219,27 @@ public:
     );
   }
   
-  static mat4 perspective() {
+  inline static mat4 scale(vec3 v) {
     return mat4(
-      vec4(1, 0, 0, 0),
-      vec4(0, 1, 0, 0),
-      vec4(0, 0, 1, 1),
-      vec4(0, 0, 0, 0)
+      vec4(v.x, 0, 0, 0),
+      vec4(0, v.y, 0, 0),
+      vec4(0, 0, v.z, 0),
+      vec4(0, 0, 0, 1)
+    );
+  }
+  
+  static mat4 perspective(float aspect_ratio = 1.0, float fov = M_PI / 2.0, float near = 0.01, float far = 100.0) {
+    float tan_fov = 1 / tan(fov / 2);
+    float ar_tan_fov = aspect_ratio * tan_fov;  
+
+    float z_scale = (-far + -near) / (-far - -near);
+    float z_offset = (2 * -far * -near) / (-far - -near);
+    
+    return mat4(
+      vec4(ar_tan_fov, 0, 0, 0),
+      vec4(0, tan_fov, 0, 0),
+      vec4(0, 0, z_scale, 1),
+      vec4(0, 0, z_offset, 0)
     );
   }
   

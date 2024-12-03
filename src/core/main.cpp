@@ -12,6 +12,9 @@ int main() {
   input_t input;
   input.bind_move(0, 1);
   input.bind_key(2, 'w');
+  input.bind_key(3, 'a');
+  input.bind_key(4, 's');
+  input.bind_key(5, 'd');
   
   window_t window(WIDTH, HEIGHT, "nui", input);
   window.set_cursor_lock(true);
@@ -19,26 +22,23 @@ int main() {
   game_t game;
   
   {
-    entity_t entity = game.add_entity();
-    transform_t& transform = game.enable_transform(entity, transform_t());
-      transform.move_to(vec3(-2.0, 0.0, 0.0));
-      transform.rotate_to(vec3(0.0, 0.4, 0.0));
-    game.enable_model(entity, model_t());
-  }
-  
-  {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(+2.0, 0.0, 0.0));
+      transform.move_to(vec3(0.0, 0.0, 0.0));
     game.enable_model(e, model_t());
   }
   
   renderer_t renderer(game);
   renderer.bind();
   
+  glEnable(GL_DEPTH_TEST);
+  
+  glClearColor(0.5, 0.5, 1.0, 1.0);
+  glDepthFunc(GL_LESS);
+  
   while (window.poll()) {
-    glClear(GL_COLOR_BUFFER_BIT);
     game.update(input);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderer.render();
     window.swap();
   }

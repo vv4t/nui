@@ -5,7 +5,7 @@ struct ubo_camera {
 };
 
 camera_t::camera_t() : m_uniform_buffer(0, "ubo_camera", 512) {
-  m_project = mat4::perspective();
+  m_project = mat4::perspective(600.0 / 800.0);
   m_view = mat4::identity();
 }
 

@@ -38,7 +38,7 @@ void renderer_t::render() {
 
 mesh_t renderer_t::mesh_init() {
   mesh_builder_t mesh_builder;
-  mesh_builder.add_quad(mat4::identity(), mat4::identity());
+  mesh_builder.push_cuboid(vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0));
   return m_vertex_buffer.push(mesh_builder.get_vertices());
 }
 
