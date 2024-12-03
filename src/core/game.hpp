@@ -29,7 +29,8 @@ public:
 
 enum meshname_t {
   MESHNAME_PLANE,
-  MESHNAME_CUBE
+  MESHNAME_CUBOID,
+  MAX_MESHNAME
 };
 
 class model_t {

@@ -13,11 +13,11 @@ private:
   camera_t m_camera;
   shader_t m_shader;
   texture_t m_texture;
-  mesh_t m_mesh;
+  mesh_t m_meshes[MAX_MESHNAME];
   game_t& m_game;
   
   shader_t shader_init();
-  mesh_t mesh_init();
+  void meshes_init();
 
 public:
   renderer_t(game_t& game);

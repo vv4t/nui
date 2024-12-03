@@ -25,7 +25,15 @@ int main() {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
-    game.enable_model(e, model_t());
+      transform.scale_to(vec3(10.0, 1.0, 10.0));
+    game.enable_model(e, model_t(MESHNAME_PLANE));
+  }
+  {
+    entity_t e = game.add_entity();
+    transform_t& transform = game.enable_transform(e, transform_t());
+      transform.move_to(vec3(0.0, 0.0, 0.0));
+      transform.scale_to(vec3(1.0, 1.0, 1.0));
+    game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   
   renderer_t renderer(game);
