@@ -41,6 +41,11 @@ public:
   inline friend vec2 operator*(const vec2& a, float b) {
     return vec2(a.x * b, a.y * b);
   }
+  
+  inline friend std::ostream& operator<<(std::ostream& stream, const vec2& m) {
+    stream << "vec2(" << m.x << ", " << m.y << ")";
+    return stream;
+  }
 };
 
 class vec3 {
@@ -55,6 +60,7 @@ public:
   
   inline vec3(vec2 xy, float z_) : vec3(xy.x, xy.y, z_) {}
   inline vec3() : vec3(0.0, 0.0, 0.0) {}
+  inline vec2 get_xy() { return vec2(x, y); }
   
   inline vec3 operator-() {
     return vec3(-x, -y, -z);
@@ -75,6 +81,11 @@ public:
   inline friend vec3& operator+=(vec3& a, const vec3& b) {
     return a = a + b;
   }
+  
+  inline friend std::ostream& operator<<(std::ostream& stream, const vec3& m) {
+    stream << "vec3(" << m.x << ", " << m.y << ", " << m.z << ")";
+    return stream;
+  }
 };
 
 class vec4 {
@@ -91,6 +102,7 @@ public:
   inline vec4(vec3 xyz, float w_) : vec4(xyz.x, xyz.y, xyz.z, w_) {}
   inline vec4(vec2 xy, float z_, float w_) : vec4(xy.x, xy.y, z_, w_) {}
   inline vec4() : vec4(0.0, 0.0, 0.0, 1.0) {}
+  inline vec2 get_xy() { return vec2(x, y); }
   inline vec3 get_xyz() { return vec3(x, y, z); }
   
   inline vec3 operator-() {
@@ -107,6 +119,11 @@ public:
   
   inline friend vec4 operator*(const vec4& a, float b) {
     return vec4(a.x * b, a.y * b, a.z * b, a.w * b);
+  }
+  
+  inline friend std::ostream& operator<<(std::ostream& stream, const vec4& m) {
+    stream << "vec3(" << m.x << ", " << m.y << ", " << m.z << ", " << m.w << ")";
+    return stream;
   }
 };
 

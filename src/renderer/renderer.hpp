@@ -3,6 +3,7 @@
 
 #include "camera.hpp"
 #include <core/game.hpp>
+#include <opengl/texture.hpp>
 #include <opengl/vertex_buffer.hpp>
 #include <opengl/shader.hpp>
 
@@ -11,6 +12,7 @@ private:
   vertex_buffer_t m_vertex_buffer;
   camera_t m_camera;
   shader_t m_shader;
+  texture_t m_texture;
   mesh_t m_mesh;
   game_t& m_game;
   
