@@ -126,6 +126,10 @@ public:
     return vec3(a.x * b, a.y * b, a.z * b);
   }
   
+  inline friend vec3& operator*=(vec3& a, float b) {
+    return a = a * b;
+  }
+  
   inline friend vec3& operator+=(vec3& a, const vec3& b) {
     return a = a + b;
   }

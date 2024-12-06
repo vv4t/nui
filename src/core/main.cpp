@@ -15,6 +15,7 @@ int main() {
   input.bind_key(3, 'a');
   input.bind_key(4, 's');
   input.bind_key(5, 'd');
+  input.bind_key(6, ' ');
   
   window_t window(WIDTH, HEIGHT, "nui", input);
   window.set_cursor_lock(true);
@@ -25,8 +26,8 @@ int main() {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
-      transform.scale_to(vec3(10.0, 1.0, 10.0));
-    game.enable_aabb_collider(e, aabb_collider_t(vec3(0.0, -1.0, 0.0), vec3(10.0, 0.0, 10.0)));
+      transform.scale_to(vec3(40.0, 1.0, 40.0));
+    game.enable_aabb(e, aabb_t(vec3(0.0, -1.0, 0.0), vec3(40.0, 0.0, 40.0)));
     game.enable_model(e, model_t(MESHNAME_PLANE));
   }
   
@@ -35,7 +36,7 @@ int main() {
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
       transform.scale_to(vec3(1.0, 1.0, 1.0));
-    game.enable_aabb_collider(e, aabb_collider_t());
+    game.enable_aabb(e, aabb_t());
     game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   
@@ -44,7 +45,7 @@ int main() {
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(1.0, 0.0, 0.0));
       transform.scale_to(vec3(1.0, 0.5, 1.0));
-    game.enable_aabb_collider(e, aabb_collider_t(vec3(0.0), vec3(1.0, 0.5, 1.0)));
+    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(1.0, 0.5, 1.0)));
     game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   

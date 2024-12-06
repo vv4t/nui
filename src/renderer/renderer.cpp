@@ -40,7 +40,8 @@ void renderer_t::render() {
 
 void renderer_t::meshes_init() {
   mesh_builder_t mesh_builder;
-  mesh_builder.push_quad(mat4::translate(vec3(1, 1, 0)) * mat4(vec3(1, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0)), mat4::identity());
+  mat4 up_basis = mat4(vec3(1, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0));
+  mesh_builder.push_quad(mat4::translate(vec3(1, 1, 0)) * up_basis * mat4::scale(vec3(0.5)), mat4::identity());
   m_meshes[MESHNAME_PLANE] = m_vertex_buffer.push(mesh_builder.get_vertices());
   
   mesh_builder = mesh_builder_t();
