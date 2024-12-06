@@ -33,23 +33,41 @@ enum meshname_t {
   MAX_MESHNAME
 };
 
+
 class model_t {
 public:
   meshname_t meshname;
   
-  inline model_t() {
-    meshname = MESHNAME_PLANE;
-  }
-  
   inline model_t(meshname_t _meshname) {
     meshname = _meshname;
   }
+  
+  inline model_t() : model_t(MESHNAME_PLANE) {}
+};
+
+class aabb_collider_t {
+public:
+  vec3 a, b;
+  
+  inline aabb_collider_t(vec3 _a, vec3 _b) {
+    a = _a;
+    b = _b;
+  }
+  
+  inline aabb_collider_t() : aabb_collider_t(vec3(0.0), vec3(1.0)) {}
+};
+
+class character_body_t {
+public:
+  entity_t entity;
+  vec3 velocity;
 };
 
 enum component_t {
-  HAS_NONE = 0,
-  HAS_TRANSFORM = (1 << 0),
-  HAS_MODEL = (1 << 1)
+  HAS_NONE          = 0,
+  HAS_TRANSFORM     = (1 << 0),
+  HAS_MODEL         = (1 << 1),
+  HAS_AABB_COLLIDER = (1 << 2)
 };
 
 inline component_t operator|(component_t a, component_t b) {
@@ -62,25 +80,37 @@ class game_t {
 private:
   transform_t m_transforms[MAX_ENTITIES];
   model_t m_models[MAX_ENTITIES];
+  aabb_collider_t m_aabb_colliders[MAX_ENTITIES];
   component_t m_components[MAX_ENTITIES];
+  character_body_t m_character_body;
   int m_num_entities;
   entity_t m_camera;
+  
+  void resolve_character_collision();
+  void control_character_movement(input_t& input);
+  void integrate_character_velocity();
 
 public:
   game_t();
   
   entity_t get_camera();
-  entity_t add_entity();
   
   void update(input_t& input);
+  
+  entity_t add_entity();
   int entity_count();
   bool has_component(entity_t entity, component_t components);
   
+  character_body_t& bind_character_body(entity_t entity);
+  
   transform_t& enable_transform(entity_t entity, transform_t transform);
   model_t& enable_model(entity_t entity, model_t model);
+  aabb_collider_t& enable_aabb_collider(entity_t entity, aabb_collider_t aabb_collider);
   
+  character_body_t& get_character_body();
   transform_t& get_transform(entity_t entity);
   model_t& get_model(entity_t entity);
+  aabb_collider_t& get_aabb_collider(entity_t entity);
 };
 
 #endif

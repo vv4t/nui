@@ -26,13 +26,25 @@ int main() {
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
       transform.scale_to(vec3(10.0, 1.0, 10.0));
+    game.enable_aabb_collider(e, aabb_collider_t(vec3(0.0, -1.0, 0.0), vec3(10.0, 0.0, 10.0)));
     game.enable_model(e, model_t(MESHNAME_PLANE));
   }
+  
   {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
       transform.scale_to(vec3(1.0, 1.0, 1.0));
+    game.enable_aabb_collider(e, aabb_collider_t());
+    game.enable_model(e, model_t(MESHNAME_CUBOID));
+  }
+  
+  {
+    entity_t e = game.add_entity();
+    transform_t& transform = game.enable_transform(e, transform_t());
+      transform.move_to(vec3(1.0, 0.0, 0.0));
+      transform.scale_to(vec3(1.0, 0.5, 1.0));
+    game.enable_aabb_collider(e, aabb_collider_t(vec3(0.0), vec3(1.0, 0.5, 1.0)));
     game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   

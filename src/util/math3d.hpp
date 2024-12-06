@@ -8,15 +8,14 @@ class vec2 {
 public:
   float x, y;
   
-  inline vec2() {
-    x = 0.0f;
-    y = 0.0f;
-  }
   
   inline vec2(float x_, float y_) {
     x = x_;
     y = y_;
   }
+  
+  inline vec2(float f) : vec2(f, f) {}
+  inline vec2() : vec2(0.0) {}
   
   inline vec2 operator-() {
     return vec2(-x, -y);
@@ -53,14 +52,55 @@ public:
   float x, y, z;
   
   inline vec3(float x_, float y_, float z_) {
-    x = x_;
+      x = x_;
     y = y_;
     z = z_;
   }
   
   inline vec3(vec2 xy, float z_) : vec3(xy.x, xy.y, z_) {}
+  inline vec3(float f) : vec3(f, f, f) {}
   inline vec3() : vec3(0.0, 0.0, 0.0) {}
   inline vec2 get_xy() { return vec2(x, y); }
+  
+  inline bool is_positive() {
+    return x >= 0 && y >= 0 && z >= 0;
+  }
+  
+  inline bool is_negative() {
+    return !is_positive();
+  }
+  
+  inline vec3 reduce_to_min_axis() {
+    if (x < y) {
+      return x < z ? vec3(x, 0, 0) : vec3(0, 0, z);
+    } else {
+      return y < z ? vec3(0, y, 0) : vec3(0, 0, z);
+    }
+  }
+  
+  inline float length() {
+    return sqrt(length_squared());
+  }
+  
+  inline float length_squared() {
+    return dot(*this, *this);
+  }
+  
+  inline vec3 normalize() {
+    return *this * (1.0 / length());
+  }
+  
+  inline static float dot(vec3 a, vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+  }
+  
+  inline static vec3 min(vec3 a, vec3 b) {
+    return vec3(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
+  }
+  
+  inline static vec3 max(vec3 a, vec3 b) {
+    return vec3(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
+  }
   
   inline vec3 operator-() {
     return vec3(-x, -y, -z);
@@ -184,7 +224,6 @@ public:
     return stream;
   }
 };
-#include <iostream>
 
 class mat4 {
 private:

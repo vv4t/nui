@@ -44,7 +44,7 @@ void mesh_builder_t::push_cuboid(vec3 a, vec3 b) {
   mat4 D = mat4(+h, +f, -v);
   
   mat4 p = mat4::translate(f);
-  mat4 q = mat4::scale(b - a) * mat4::translate(b);
+  mat4 q = mat4::scale(b - a) * mat4::translate(b) * mat4::scale(vec3(0.5));
   
   this->push_quad(p * F * q, mat4::identity());
   this->push_quad(p * B * q, mat4::identity());
