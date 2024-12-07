@@ -25,15 +25,6 @@ int main() {
   {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
-      transform.position = vec3(2, 2, 2);
-    game.enable_aabb(e, aabb_t(vec3(-0.25, -0.75, -0.25), vec3(0.25, 0.5, 0.25)));
-    game.bind_character_body(e);
-    game.bind_camera(e);
-  }
-  
-  {
-    entity_t e = game.add_entity();
-    transform_t& transform = game.enable_transform(e, transform_t());
       transform.move_to(vec3(0.0, 0.0, 0.0));
       transform.scale_to(vec3(40.0, 1.0, 40.0));
     game.enable_aabb(e, aabb_t(vec3(0.0, -1.0, 0.0), vec3(40.0, 0.0, 40.0)));
