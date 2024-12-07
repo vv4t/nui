@@ -10,7 +10,7 @@ game_t::game_t() : m_num_entities(0) {
     entity_t entity = add_entity();
     transform_t& transform = enable_transform(entity, transform_t());
       transform.position = vec3(2, 2, 2);
-    enable_aabb(entity, aabb_t(vec3(-0.5), vec3(0.5)));
+    enable_aabb(entity, aabb_t(vec3(-0.25, -0.75, -0.25), vec3(0.25, 0.5, 0.25)));
     bind_character_body(entity);
     m_camera = entity;
   }
@@ -22,17 +22,13 @@ void game_t::update(input_t& input) {
   resolve_character_collision();
 }
 
-vec3 character_accelerate(vec3 velocity, vec3 wish_dir, float accel, float wish_speed) {
+vec3 character_accelerate(vec3 velocity, vec3 wish_dir, float accel_speed, float wish_speed) {
   float current_speed = vec3::dot(velocity, wish_dir);
-  float add_speed = wish_speed - current_speed;
   
-  if (add_speed < 0)
-    return vec3();
+  if (current_speed + accel_speed > wish_speed)
+    accel_speed = wish_speed - current_speed;
   
-  if (current_speed + accel > wish_speed)
-    accel = wish_speed - current_speed;
-  
-  return wish_dir * accel;
+  return wish_dir * accel_speed;
 }
 
 void game_t::control_character_movement(input_t& input) {
@@ -54,7 +50,7 @@ void game_t::control_character_movement(input_t& input) {
   }
   
   if (input.get_axis(4)) {
-    wish_dir += (mat4::rotate_xyz(transform.rotation) * vec4(0, 0, -1, 1)).get_xyz() * 4.0;
+    wish_dir += (mat4::rotate_xyz(transform.rotation) * vec4(0, 0, -1, 1)).get_xyz();
   }
   
   if (input.get_axis(5)) {
@@ -75,10 +71,10 @@ void game_t::control_character_movement(input_t& input) {
   character_body.velocity.y -= 9.8 * 0.01;
   
   if (character_body.is_grounded) {
-    character_body.velocity *= 0.95;
+    character_body.velocity *= 0.92;
   }
   
-  character_body.velocity += character_accelerate(character_body.velocity, wish_dir, 0.1, 0.9);
+  character_body.velocity += character_accelerate(character_body.velocity, wish_dir, 0.05, 0.9);
 }
 
 void game_t::integrate_character_velocity() {
