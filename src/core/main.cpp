@@ -8,6 +8,15 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+void add_cuboid(game_t& game, vec3 a, vec3 b) {
+  entity_t e = game.add_entity();
+  transform_t& transform = game.enable_transform(e, transform_t());
+    transform.move_to(a);
+    transform.scale_to(b);
+  game.enable_aabb(e, aabb_t(vec3(), b));
+  game.enable_model(e, model_t(MESHNAME_CUBOID));
+}
+
 int WinMain() {
   input_t input;
   input.bind_move(0, 1);
@@ -21,33 +30,14 @@ int WinMain() {
   window.set_cursor_lock(true);
   
   game_t game;
-  
-  {
-    entity_t e = game.add_entity();
-    transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(0.0, -1.0, 0.0));
-      transform.scale_to(vec3(40.0, 1.0, 40.0));
-    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(40.0, 1.0, 40.0)));
-    game.enable_model(e, model_t(MESHNAME_CUBOID));
-  }
-  
-  {
-    entity_t e = game.add_entity();
-    transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(5.0, 0.0, 5.0));
-      transform.scale_to(vec3(3.0, 3.0, 5.0));
-    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(3.0, 3.0, 5.0)));
-    game.enable_model(e, model_t(MESHNAME_CUBOID));
-  }
-  
-  {
-    entity_t e = game.add_entity();
-    transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(2.0, 0.0, 5.0));
-      transform.scale_to(vec3(3.0, 0.5, 1.0));
-    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(3.0, 0.5, 1.0)));
-    game.enable_model(e, model_t(MESHNAME_CUBOID));
-  }
+
+  add_cuboid(game, vec3(0.0, -1.0, 0.0), vec3(40.0, 1.0, 40.0));
+  add_cuboid(game, vec3(5.0, 0.0, 5.0), vec3(5.0, 2.0, 4.0));
+
+  add_cuboid(game, vec3(2.0, 0.0, 5.0), vec3(3.0, 0.5, 1.0));
+  add_cuboid(game, vec3(2.0, 0.0, 6.0), vec3(3.0, 1.0, 1.0));
+  add_cuboid(game, vec3(2.0, 0.0, 7.0), vec3(3.0, 1.5, 1.0));
+  add_cuboid(game, vec3(2.0, 0.0, 8.0), vec3(3.0, 2.0, 1.0));
   
   renderer_t renderer(game);
   renderer.bind();
