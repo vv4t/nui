@@ -8,7 +8,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 
-int main() {
+int WinMain() {
   input_t input;
   input.bind_move(0, 1);
   input.bind_key(2, 'w');
@@ -25,27 +25,27 @@ int main() {
   {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(0.0, 0.0, 0.0));
+      transform.move_to(vec3(0.0, -1.0, 0.0));
       transform.scale_to(vec3(40.0, 1.0, 40.0));
-    game.enable_aabb(e, aabb_t(vec3(0.0, -1.0, 0.0), vec3(40.0, 0.0, 40.0)));
-    game.enable_model(e, model_t(MESHNAME_PLANE));
-  }
-  
-  {
-    entity_t e = game.add_entity();
-    transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(0.0, 0.0, 0.0));
-      transform.scale_to(vec3(1.0, 1.0, 1.0));
-    game.enable_aabb(e, aabb_t());
+    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(40.0, 1.0, 40.0)));
     game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   
   {
     entity_t e = game.add_entity();
     transform_t& transform = game.enable_transform(e, transform_t());
-      transform.move_to(vec3(1.0, 0.0, 0.0));
-      transform.scale_to(vec3(1.0, 0.5, 1.0));
-    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(1.0, 0.5, 1.0)));
+      transform.move_to(vec3(5.0, 0.0, 5.0));
+      transform.scale_to(vec3(3.0, 3.0, 5.0));
+    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(3.0, 3.0, 5.0)));
+    game.enable_model(e, model_t(MESHNAME_CUBOID));
+  }
+  
+  {
+    entity_t e = game.add_entity();
+    transform_t& transform = game.enable_transform(e, transform_t());
+      transform.move_to(vec3(2.0, 0.0, 5.0));
+      transform.scale_to(vec3(3.0, 0.5, 1.0));
+    game.enable_aabb(e, aabb_t(vec3(0.0), vec3(3.0, 0.5, 1.0)));
     game.enable_model(e, model_t(MESHNAME_CUBOID));
   }
   
@@ -55,13 +55,22 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   
   glClearColor(0.5, 0.5, 1.0, 1.0);
-  glDepthFunc(GL_LESS);
+
+  int old_time = window.get_time();
+  int lag_time = 0;
   
   while (window.poll()) {
-    game.update(input);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    renderer.render();
-    window.swap();
+    if (lag_time > 0) {
+      lag_time -= 15;
+      game.update(input);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      renderer.render();
+      window.swap();
+    }
+
+    int now_time = window.get_time();
+    lag_time += now_time - old_time;
+    old_time = now_time;
   }
   
   return 0;

@@ -78,7 +78,7 @@ std::stringstream shader_read_source(const char* src) {
     std::smatch matches;
 
     if(std::regex_match(line, matches, rgx)) {
-      std::filesystem::path file(matches[1]);
+      std::filesystem::path file(matches.str(1));
       std::filesystem::path base = std::filesystem::path(src).parent_path();
       std::filesystem::path full = base / file;
       ss << shader_read_source(full.u8string().c_str()).rdbuf() << std::endl;

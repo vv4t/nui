@@ -40,6 +40,10 @@ window_t::window_t(int width, int height, const char *title, input_t& input) : m
   m_cursor_lock = false;
 }
 
+int window_t::get_time() {
+  return SDL_GetTicks();
+}
+
 void window_t::swap() {
   SDL_GL_SwapWindow(m_window);
 }

@@ -271,7 +271,7 @@ public:
     );
   }
   
-  static mat4 perspective(float aspect_ratio = 1.0, float fov = M_PI / 2.0, float near = 0.01, float far = 100.0) {
+  static mat4 perspective(float aspect_ratio = 1.0, float fov = M_PI / 2.0, float near = 1.0, float far = 100.0) {
     float tan_fov = 1 / tan(fov / 2);
     float ar_tan_fov = aspect_ratio * tan_fov;  
 

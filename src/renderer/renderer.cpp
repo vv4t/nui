@@ -13,15 +13,14 @@ renderer_t::renderer_t(game_t& game)
 
 void renderer_t::bind() {
   m_vertex_buffer.bind();
+  m_texture.bind(0);
+  m_shader.bind();
 }
 
 void renderer_t::render() {
-  m_texture.bind(0);
-  
   transform_t &camera_transform = m_game.get_transform(m_game.get_camera());
   
   m_camera.move(camera_transform.position, camera_transform.rotation);
-  m_shader.bind();
   
   for (entity_t entity = 0; entity < m_game.entity_count(); entity++) {
     if (m_game.has_component(entity, HAS_MODEL | HAS_TRANSFORM)) {
@@ -32,7 +31,7 @@ void renderer_t::render() {
       mat4 T_translation = mat4::translate(transform.position);
       mat4 T_scale = mat4::scale(transform.scale);
       
-      m_camera.sub(T_rotation * T_translation * T_scale);
+      m_camera.sub(T_rotation * T_scale * T_translation);
       m_meshes[model.meshname].draw();
     }
   }
@@ -40,6 +39,8 @@ void renderer_t::render() {
 
 void renderer_t::meshes_init() {
   mesh_builder_t mesh_builder;
+
+  mesh_builder = mesh_builder_t();
   mat4 up_basis = mat4(vec3(1, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0));
   mesh_builder.push_quad(mat4::translate(vec3(1, 1, 0)) * up_basis * mat4::scale(vec3(0.5)), mat4::identity());
   m_meshes[MESHNAME_PLANE] = m_vertex_buffer.push(mesh_builder.get_vertices());

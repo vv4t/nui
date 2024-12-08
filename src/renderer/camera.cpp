@@ -1,11 +1,12 @@
 #include "camera.hpp"
+#include <iostream>
 
 struct ubo_camera {
   mat4 MVP;
 };
 
 camera_t::camera_t() : m_uniform_buffer(0, "ubo_camera", 512) {
-  m_project = mat4::perspective(600.0 / 800.0);
+  m_project = mat4::perspective(600.0 / 800.0, M_PI / 2.0, 0.1, 100.0);
   m_view = mat4::identity();
 }
 

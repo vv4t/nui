@@ -20,6 +20,7 @@ public:
   ~window_t();
   bool poll();
   void swap();
+  int get_time();
   void set_cursor_lock(bool state);
 };
 
