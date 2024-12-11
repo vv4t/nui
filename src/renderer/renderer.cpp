@@ -1,20 +1,33 @@
 #include "renderer.hpp"
 #include "mesh_builder.hpp"
+#include "shader_builder.hpp"
 #include <iostream>
 
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
-    m_shader(shader_init()),
+    m_game(game),
     m_texture("assets/bocchi.jpg"),
-    m_game(game)
+    m_buffer(800, 600, GL_RGBA, GL_RGBA32F, GL_FLOAT),
+    m_depth(800, 600, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
+    m_target({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer), binding_t(GL_DEPTH_ATTACHMENT, m_depth) }),
+    m_surface(
+      shader_builder_t()
+      .source_vertex_shader("assets/shader.vert")
+      .source_fragment_shader("assets/shader.frag")
+      .compile()
+    ),
+    m_frame(
+      shader_builder_t()
+      .source_vertex_shader("assets/frame.vert")
+      .source_fragment_shader("assets/frame.frag")
+      .compile()
+    )
 {
   meshes_init();
 }
 
 void renderer_t::bind() {
   m_vertex_buffer.bind();
-  m_texture.bind(0);
-  m_shader.bind();
 }
 
 void renderer_t::render() {
@@ -22,6 +35,20 @@ void renderer_t::render() {
   
   m_camera.move(camera_transform.position, camera_transform.rotation);
   
+  m_target.bind();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  m_surface.bind();
+  m_texture.bind(0);
+  draw_entities();
+  m_target.unbind();
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  m_frame.bind();
+  m_buffer.bind(0);
+  m_meshes[0].draw();
+}
+
+void renderer_t::draw_entities() {
   for (entity_t entity = 0; entity < m_game.entity_count(); entity++) {
     if (m_game.has_component(entity, HAS_MODEL | HAS_TRANSFORM)) {
       transform_t& transform = m_game.get_transform(entity);
@@ -41,8 +68,7 @@ void renderer_t::meshes_init() {
   mesh_builder_t mesh_builder;
 
   mesh_builder = mesh_builder_t();
-  mat4 up_basis = mat4(vec3(1, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0));
-  mesh_builder.push_quad(mat4::translate(vec3(1, 1, 0)) * up_basis * mat4::scale(vec3(0.5)), mat4::identity());
+  mesh_builder.push_quad(mat4::identity(), mat4::identity());
   m_meshes[MESHNAME_PLANE] = m_vertex_buffer.push(mesh_builder.get_vertices());
   
   mesh_builder = mesh_builder_t();
@@ -50,11 +76,3 @@ void renderer_t::meshes_init() {
   m_meshes[MESHNAME_CUBOID] = m_vertex_buffer.push(mesh_builder.get_vertices());
 }
 
-shader_t renderer_t::shader_init() {
-  std::stringstream src_vertex, src_fragment;
-  src_vertex << shader_read_source("assets/shader.vert").rdbuf();
-  src_fragment << shader_read_source("assets/shader.frag").rdbuf();
-  shader_t shader = shader_t(src_vertex, src_fragment);
-  m_camera.attach_shader(shader);
-  return shader;
-}
