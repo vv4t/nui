@@ -80,7 +80,7 @@ void game_t::control_character_movement(input_t& input) {
     character_body.velocity *= 0.95;
   }
   
-  character_body.velocity += character_accelerate(character_body.velocity, wish_dir, 0.09, 0.9);
+  character_body.velocity += character_accelerate(character_body.velocity, wish_dir, 0.03, 1.5);
 }
 
 void game_t::integrate_character_velocity() {

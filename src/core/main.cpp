@@ -17,7 +17,7 @@ void create_cuboid(game_t& game, vec3 a, vec3 b, materialname_t material) {
   game.enable_model(e, model_t(MESH_CUBOID, material));
 }
 
-int WinMain() {
+int main(int argc, char** argv) {
   input_t input;
   input.bind_move(0, 1);
   input.bind_key(2, 'w');
