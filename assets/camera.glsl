@@ -2,7 +2,9 @@
 #define CAMERA_GLSL
 
 layout (std140) uniform ubo_camera {
-  mat4 camera_MVP;
+  mat4 MVP;
+  mat4 model;
+  vec3 view_pos;
 };
 
 #endif

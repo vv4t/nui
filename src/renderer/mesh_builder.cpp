@@ -24,10 +24,14 @@ void mesh_builder_t::push_quad(mat4 T_p, mat4 T_uv) {
     vec2(0, 0)
   };
   
+  vec3 v_n = (T_p * vec4(0, 0, -1, 1) - T_p * vec4()).get_xyz().normalize();
+
+  std::cout << v_n << std::endl;
+  
   for (int i = 0; i < 6; i++) {
     vec3 v_p = (T_p * vec4(quad_p[i], 1)).get_xyz();
     vec2 v_uv = (T_uv * vec4(quad_uv[i], 0, 1)).get_xy();
-    push_vertex(vertex_t(v_p, v_uv));
+    push_vertex(vertex_t(v_p, v_n, v_uv));
   }
 }
 

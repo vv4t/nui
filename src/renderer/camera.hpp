@@ -9,6 +9,7 @@ class camera_t {
 private:
   mat4 m_project;
   mat4 m_view;
+  vec3 m_view_pos;
   uniform_buffer_t m_uniform_buffer;
 
 public:

@@ -28,21 +28,27 @@ public:
 };
 
 enum meshname_t {
-  MESHNAME_PLANE,
-  MESHNAME_CUBOID,
-  MAX_MESHNAME
+  MESH_PLANE,
+  MESH_CUBOID
 };
 
+enum materialname_t {
+  MATERIAL_DEFAULT,
+  MATERIAL_BRICK,
+  MATERIAL_GRASS
+};
 
 class model_t {
 public:
-  meshname_t meshname;
+  meshname_t mesh;
+  materialname_t material;
   
-  inline model_t(meshname_t _meshname) {
-    meshname = _meshname;
+  inline model_t(meshname_t _mesh, materialname_t _material) {
+    mesh = _mesh;
+    material = _material;
   }
   
-  inline model_t() : model_t(MESHNAME_PLANE) {}
+  inline model_t() : model_t(MESH_CUBOID, MATERIAL_DEFAULT) {}
 };
 
 class aabb_t {
