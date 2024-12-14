@@ -27,7 +27,7 @@ void main()
   
   vs_pos = (model * vec4(v_pos, 1.0)).xyz;
   vs_normal = N;
-  vs_uv = (inverse(TBN) * vs_pos).xy * 0.5;
+  vs_uv = (inverse(TBN) * vs_pos).xy * 0.75;
 
   gl_Position = MVP * vec4(v_pos, 1.0);
 }

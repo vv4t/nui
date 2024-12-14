@@ -47,7 +47,7 @@ shader_t::~shader_t() {
 GLuint shader_compile(GLuint type, const char* src) {
   const char *all[] = {
     "#version 300 es\n",
-    "precision mediump float;\n",
+    "precision highp float;\n",
     src
   };
   

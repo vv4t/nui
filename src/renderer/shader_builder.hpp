@@ -13,6 +13,7 @@ public:
   shader_builder_t();
   shader_builder_t& source_vertex_shader(const char* path);
   shader_builder_t& source_fragment_shader(const char* path);
+  shader_t create_frame_shader(const char* path);
   shader_t compile();
 };
 

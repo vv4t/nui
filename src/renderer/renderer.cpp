@@ -15,12 +15,7 @@ renderer_t::renderer_t(game_t& game)
       .source_fragment_shader("assets/baka.frag")
       .compile()
     ),
-    m_frame(
-      shader_builder_t()
-      .source_vertex_shader("assets/screen-space.vert")
-      .source_fragment_shader("assets/uoh.frag")
-      .compile()
-    )
+    m_frame(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
   m_textures.reserve(64);
   assets_init();
