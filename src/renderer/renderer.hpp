@@ -3,6 +3,7 @@
 
 #include "camera.hpp"
 #include "material.hpp"
+#include "lighting.hpp"
 #include <core/game.hpp>
 #include <opengl/texture.hpp>
 #include <opengl/vertex_buffer.hpp>
@@ -14,6 +15,7 @@ class renderer_t {
 private:
   vertex_buffer_t m_vertex_buffer;
   
+  lighting_t m_lighting;
   camera_t m_camera;
   game_t& m_game;
   
@@ -28,14 +30,15 @@ private:
   std::vector<texture_t> m_textures;
   std::vector<material_t> m_materials;
   
-  void assets_init();
+  void init_assets();
+  
+  void draw_entities();
   void draw_buffer(int width, int height, shader_t& shader);
 
 public:
   renderer_t(game_t& game);
   void bind();
   void render();
-  void draw_entities();
 };
 
 #endif

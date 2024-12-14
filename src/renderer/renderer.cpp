@@ -19,13 +19,17 @@ renderer_t::renderer_t(game_t& game)
       shader_builder_t()
       .source_vertex_shader("assets/planar-map.vert")
       .source_fragment_shader("assets/baka.frag")
+      .attach(m_camera)
+      .attach(m_lighting)
       .compile()
     ),
     m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
     m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
   m_textures.reserve(64);
-  assets_init();
+  init_assets();
+  m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
+  m_lighting.add_light(vec3(4,1,1), vec3(1,3,3));
 }
 
 void renderer_t::bind() {
@@ -77,7 +81,7 @@ void renderer_t::draw_entities() {
   }
 }
 
-void renderer_t::assets_init() {
+void renderer_t::init_assets() {
   mesh_builder_t mesh_builder;
 
   mesh_builder = mesh_builder_t();
