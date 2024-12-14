@@ -7,7 +7,7 @@ uniform sampler2D u_texture;
 void main()
 {
   const float gamma = 2.2;
-  const float exposure = 1.0;
+  const float exposure = 0.2;
 
   vec3 hdr_color = texture(u_texture, vs_uv).rgb;
 

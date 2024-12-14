@@ -6,16 +6,23 @@
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
     m_game(game),
-    m_buffer(800, 600, GL_RGBA, GL_RGBA32F, GL_FLOAT),
-    m_depth(800, 600, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
-    m_target({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer), binding_t(GL_DEPTH_ATTACHMENT, m_depth) }),
+    m_depth(400, 300, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
+    m_buffer {
+      texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT),
+      texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)
+    },
+    m_target{
+      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) }),
+      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) })
+    },
     m_surface(
       shader_builder_t()
       .source_vertex_shader("assets/planar-map.vert")
       .source_fragment_shader("assets/baka.frag")
       .compile()
     ),
-    m_frame(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
+    m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
+    m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
   m_textures.reserve(64);
   assets_init();
@@ -30,16 +37,27 @@ void renderer_t::render() {
   
   m_camera.move(camera_transform.position, camera_transform.rotation);
   
-  m_target.bind();
+  m_target[0].bind();
+  glViewport(0, 0, 400, 300);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_surface.bind();
   draw_entities();
-  m_target.unbind();
+  m_target[0].unbind();
+  
+  m_target[1].bind();
+  m_buffer[0].bind(0);
+  draw_buffer(400, 300, m_tone_map);
+  m_target[1].unbind();
+  
+  m_buffer[1].bind(0);
+  draw_buffer(800, 600, m_dither);
+}
 
+void renderer_t::draw_buffer(int width, int height, shader_t& shader) {
+  glViewport(0, 0, width, height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  m_frame.bind();
-  m_buffer.bind(0);
-  m_meshes[0].draw();
+  shader.bind();
+  m_meshes[MESH_PLANE].draw();
 }
 
 void renderer_t::draw_entities() {

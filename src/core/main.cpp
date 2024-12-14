@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   
   glEnable(GL_DEPTH_TEST);
   
-  glClearColor(0.1, 0.1, 0.1, 1.0);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
 
   int old_time = window.get_time();
   int lag_time = 0;

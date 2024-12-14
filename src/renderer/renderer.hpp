@@ -17,17 +17,19 @@ private:
   camera_t m_camera;
   game_t& m_game;
   
-  texture_t m_buffer;
   texture_t m_depth;
-  target_t m_target;
+  texture_t m_buffer[2];
+  target_t m_target[2];
   shader_t m_surface;
-  shader_t m_frame;
+  shader_t m_dither;
+  shader_t m_tone_map;
   
   std::vector<mesh_t> m_meshes;
   std::vector<texture_t> m_textures;
   std::vector<material_t> m_materials;
   
   void assets_init();
+  void draw_buffer(int width, int height, shader_t& shader);
 
 public:
   renderer_t(game_t& game);
