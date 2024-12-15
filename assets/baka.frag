@@ -1,5 +1,6 @@
 #pragma use "camera.glsl"
 #pragma use "lighting.glsl"
+#pragma use "PBR.glsl"
 
 in vec2 vs_uv;
 in vec3 vs_pos;
@@ -15,24 +16,22 @@ void main()
   vec3 light = vec3(0.0);
 
   vec3 albedo = texture(u_albedo, vs_uv).xyz;
-  vec3 normal = vs_TBN * (texture(u_normal, vs_uv).xyz - 0.5) * 2.0;
+
+  vec3 N = normalize(vs_TBN * (texture(u_normal, vs_uv).xyz - 0.5) * 2.0);
+  vec3 V = normalize(view_pos - vs_pos);
 
   for (int i = 0; i < MAX_LIGHTS; i++) {
+    if (lights[i].intensity <= 0.0) {
+      continue;
+    }
+
     vec3 delta_light_frag = lights[i].position - vs_pos;
-    vec3 delta_view_frag = view_pos - vs_pos;
-    
-    vec3 light_dir = normalize(delta_light_frag);
-    vec3 view_dir = normalize(delta_view_frag);
-    vec3 halfway_dir = normalize(light_dir + view_dir);
-    
-    float diffuse = max(dot(light_dir, normal), 0.0);
-    float specular = pow(max(dot(normal, halfway_dir), 0.0), 4.0);
+    vec3 L = normalize(delta_light_frag);
+    vec3 radiance = lights[i].radiance * lights[i].intensity;
     float attenuation = 1.0 / dot(delta_light_frag, delta_light_frag);
 
-    light += lights[i].radiance * (diffuse + specular) * attenuation;
+    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.4, L, V, N);
   }
-
-  light *= albedo;
 
   frag_color = vec4(light, 1.0);
 }

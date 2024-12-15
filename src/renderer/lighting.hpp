@@ -1,7 +1,7 @@
 #ifndef LIGHTING_H
 #define LIGHTING_H
 
-#define MAX_LIGHTS 32
+#define MAX_LIGHTS 4
 
 #include "shader_attachment.hpp"
 #include <util/math3d.hpp>

@@ -44,7 +44,7 @@ float t = 0.0;
 void renderer_t::render() {
   t += 0.01;
 
-  m_lighting.set_light(1, vec3(2 + cos(t) * 4.0, 1, 1), vec3(1, 3, 3));
+  m_lighting.set_light(1, vec3(2 + cos(t) * 4.0, 1, 1), vec3(1, 10, 10));
 
   transform_t &camera_transform = m_game.get_transform(m_game.get_camera());
   
