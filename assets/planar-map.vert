@@ -2,11 +2,13 @@
 
 layout(location = 0) in vec3 v_pos;
 layout(location = 1) in vec3 v_normal;
-layout(location = 2) in vec2 v_uv;
+layout(location = 2) in vec3 v_tangent;
+layout(location = 3) in vec3 v_bitangent;
+layout(location = 4) in vec2 v_uv;
 
 out vec2 vs_uv;
 out vec3 vs_pos;
-out vec3 vs_normal;
+out mat3 vs_TBN;
 
 vec3 get_axis(vec3 N) {
   if (abs(N.y) > abs(N.x) && abs(N.y) > abs(N.z)) {
@@ -18,16 +20,9 @@ vec3 get_axis(vec3 N) {
 
 void main()
 {
-  vec3 N = normalize(mat3(transpose(inverse(model))) * v_normal);
-  vec3 a = get_axis(N);
-  vec3 T = normalize(cross(N, a));
-  vec3 B = normalize(cross(N, T));
-
-  mat3 TBN = mat3(T, B, N);
-  
+  vs_TBN = mat3(v_tangent, v_bitangent, v_normal);
   vs_pos = (model * vec4(v_pos, 1.0)).xyz;
-  vs_normal = N;
-  vs_uv = (inverse(TBN) * vs_pos).xy * 0.75;
+  vs_uv = (inverse(vs_TBN) * vs_pos).xy * 0.75;
 
   gl_Position = MVP * vec4(v_pos, 1.0);
 }

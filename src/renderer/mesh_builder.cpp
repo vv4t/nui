@@ -56,6 +56,34 @@ void mesh_builder_t::push_cuboid(vec3 a, vec3 b) {
   this->push_quad(p * D * q, mat4::identity());
 }
 
-std::vector<vertex_t> mesh_builder_t::get_vertices() {
+void mesh_builder_t::solve_tangents() {
+  for (int i = 0; i < m_vertices.size(); i += 3) {
+    vertex_t& v1 = m_vertices[i + 0];
+    vertex_t& v2 = m_vertices[i + 1];
+    vertex_t& v3 = m_vertices[i + 2];
+
+    vec3 d_pos1 = v2.pos - v1.pos;
+    vec3 d_pos2 = v3.pos - v1.pos;
+    
+    vec2 d_uv1 = v2.uv - v1.uv;
+    vec2 d_uv2 = v3.uv - v1.uv;
+    
+    float f = 1.0f / (d_uv1.x * d_uv2.y - d_uv2.x * d_uv1.y);
+    
+    vec3 tangent = (d_pos1 * d_uv2.y - d_pos2 * d_uv1.y) * f;
+    vec3 bitangent = (d_pos2 * d_uv1.x - d_pos1 * d_uv2.x) * f;
+    
+    v1.tangent = tangent;
+    v2.tangent = tangent;
+    v3.tangent = tangent;
+    
+    v1.bitangent = bitangent;
+    v2.bitangent = bitangent;
+    v3.bitangent = bitangent;
+  }
+}
+
+std::vector<vertex_t> mesh_builder_t::compile() {
+  solve_tangents();
   return m_vertices;
 }

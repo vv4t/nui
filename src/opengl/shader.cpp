@@ -36,6 +36,13 @@ void shader_t::bind() const {
   glUseProgram(m_program);
 }
 
+shader_t& shader_t::uniform_int(const char* name, int value) {
+  bind();
+  GLuint location = glGetUniformLocation(m_program, name);
+  glUniform1i(location, value);
+  return *this;
+}
+
 GLuint shader_t::get_program() const {
   return m_program;
 }

@@ -12,6 +12,7 @@ public:
   shader_t(const std::stringstream& src_vertex, const std::stringstream& src_fragment);
   ~shader_t();
   void bind() const;
+  shader_t& uniform_int(const char* name, int value);
   GLuint get_program() const;
 };
 

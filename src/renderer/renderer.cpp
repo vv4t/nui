@@ -26,6 +26,9 @@ renderer_t::renderer_t(game_t& game)
     m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
     m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
+  m_surface.uniform_int("u_albedo", 0);  
+  m_surface.uniform_int("u_normal", 1);  
+
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
@@ -36,7 +39,13 @@ void renderer_t::bind() {
   m_vertex_buffer.bind();
 }
 
+float t = 0.0;
+
 void renderer_t::render() {
+  t += 0.01;
+
+  m_lighting.set_light(1, vec3(2 + cos(t) * 4.0, 1, 1), vec3(1, 3, 3));
+
   transform_t &camera_transform = m_game.get_transform(m_game.get_camera());
   
   m_camera.move(camera_transform.position, camera_transform.rotation);
@@ -76,6 +85,7 @@ void renderer_t::draw_entities() {
       
       m_camera.sub(T_rotation * T_scale * T_translation);
       m_materials[model.material].albedo.bind(0);
+      m_materials[model.material].normal.bind(1);
       m_meshes[model.mesh].draw();
     }
   }
@@ -86,17 +96,21 @@ void renderer_t::init_assets() {
 
   mesh_builder = mesh_builder_t();
   mesh_builder.push_quad(mat4::identity(), mat4::identity());
-  m_meshes.push_back(m_vertex_buffer.push(mesh_builder.get_vertices()));
+  m_meshes.push_back(m_vertex_buffer.push(mesh_builder.compile()));
   
   mesh_builder = mesh_builder_t();
   mesh_builder.push_cuboid(vec3(0.0), vec3(1.0));
-  m_meshes.push_back(m_vertex_buffer.push(mesh_builder.get_vertices()));
+  m_meshes.push_back(m_vertex_buffer.push(mesh_builder.compile()));
   
-  texture_t& default_albedo = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffffffff });
-  texture_t& brick_albedo = m_textures.emplace_back("assets/brick/albedo.jpg");
-  texture_t& grass_albedo = m_textures.emplace_back("assets/grass/albedo.jpg");
+  texture_t& default_albedo = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffffffffu });
+  texture_t& default_normal = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffff8888u });
+  m_materials.push_back(material_t(default_albedo, default_normal));
 
-  m_materials.push_back(material_t(default_albedo));
-  m_materials.push_back(material_t(brick_albedo));
-  m_materials.push_back(material_t(grass_albedo));
+  texture_t& brick_albedo = m_textures.emplace_back("assets/brick/albedo.jpg");
+  texture_t& brick_normal = m_textures.emplace_back("assets/brick/normal.jpg");
+  m_materials.push_back(material_t(brick_albedo, brick_normal));
+
+  texture_t& grass_albedo = m_textures.emplace_back("assets/grass/albedo.jpg");
+  texture_t& grass_normal = m_textures.emplace_back("assets/grass/normal.jpg");
+  m_materials.push_back(material_t(grass_albedo, grass_normal));
 }
