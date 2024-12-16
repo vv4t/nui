@@ -32,7 +32,7 @@ renderer_t::renderer_t(game_t& game)
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
-  m_lighting.add_light(vec3(4,1,1), vec3(1,3,3));
+  m_lighting.add_light(vec3(6,6,1), vec3(1,15,15));
 }
 
 void renderer_t::bind() {
@@ -43,8 +43,6 @@ float t = 0.0;
 
 void renderer_t::render() {
   t += 0.01;
-
-  m_lighting.set_light(1, vec3(2 + cos(t) * 4.0, 1, 1), vec3(1, 10, 10));
 
   transform_t &camera_transform = m_game.get_transform(m_game.get_camera());
   

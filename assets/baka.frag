@@ -30,7 +30,7 @@ void main()
     vec3 radiance = lights[i].radiance * lights[i].intensity;
     float attenuation = 1.0 / dot(delta_light_frag, delta_light_frag);
 
-    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.4, L, V, N);
+    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.7, L, V, N);
   }
 
   frag_color = vec4(light, 1.0);
