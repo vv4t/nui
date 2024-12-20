@@ -19,6 +19,11 @@ shader_builder_t& shader_builder_t::attach(shader_attachment_t& shader_attachmen
   return *this;
 }
 
+shader_builder_t& shader_builder_t::bind(const char* name, int channel) {
+  m_bindings.push_back({ name, channel });
+  return *this;
+}
+
 shader_t shader_builder_t::create_frame_shader(const char* path) {
   return source_vertex_shader("assets/screen-space.vert").source_fragment_shader(path).compile();
 }
@@ -28,6 +33,10 @@ shader_t shader_builder_t::compile() {
   
   for (shader_attachment_t& shader_attachment : m_attachments) {
     shader_attachment.attach_shader(shader);
+  }
+
+  for (std::pair<const char*, int> binding : m_bindings) {
+    shader.uniform_int(binding.first, binding.second);
   }
 
   return shader;

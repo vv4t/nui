@@ -7,6 +7,8 @@ renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
     m_game(game),
     m_depth(400, 300, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
+    m_normal(texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
+    m_radiance(texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
     m_buffer {
       texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT),
       texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)
@@ -15,20 +17,34 @@ renderer_t::renderer_t(game_t& game)
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) }),
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) })
     },
+    m_gbuffer_target({
+      binding_t(GL_COLOR_ATTACHMENT0, m_radiance),
+      binding_t(GL_COLOR_ATTACHMENT1, m_normal),
+      binding_t(GL_DEPTH_ATTACHMENT, m_depth)
+    }),
+    m_gbuffer(
+      shader_builder_t()
+      .source_vertex_shader("assets/planar-map.vert")
+      .source_fragment_shader("assets/gbuffer.frag")
+      .attach(m_camera)
+      .attach(m_lighting)
+      .bind("u_albedo", 0)
+      .bind("u_normal", 1)
+      .compile()
+    ),
     m_surface(
       shader_builder_t()
       .source_vertex_shader("assets/planar-map.vert")
       .source_fragment_shader("assets/baka.frag")
       .attach(m_camera)
       .attach(m_lighting)
+      .bind("u_albedo", 0)
+      .bind("u_normal", 1)
       .compile()
     ),
     m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
     m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
-  m_surface.uniform_int("u_albedo", 0);  
-  m_surface.uniform_int("u_normal", 1);  
-
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));

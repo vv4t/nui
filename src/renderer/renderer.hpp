@@ -20,8 +20,14 @@ private:
   game_t& m_game;
   
   texture_t m_depth;
+  texture_t m_normal;
+  texture_t m_radiance;
   texture_t m_buffer[2];
+
   target_t m_target[2];
+  target_t m_gbuffer_target;
+
+  shader_t m_gbuffer;
   shader_t m_surface;
   shader_t m_dither;
   shader_t m_tone_map;

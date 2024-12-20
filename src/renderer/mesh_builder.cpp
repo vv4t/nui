@@ -57,7 +57,7 @@ void mesh_builder_t::push_cuboid(vec3 a, vec3 b) {
 }
 
 void mesh_builder_t::solve_tangents() {
-  for (int i = 0; i < m_vertices.size(); i += 3) {
+  for (unsigned int i = 0; i < m_vertices.size(); i += 3) {
     vertex_t& v1 = m_vertices[i + 0];
     vertex_t& v2 = m_vertices[i + 1];
     vertex_t& v3 = m_vertices[i + 2];
