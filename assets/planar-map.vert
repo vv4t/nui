@@ -9,7 +9,6 @@ layout(location = 4) in vec2 v_uv;
 out vec2 vs_uv;
 out vec3 vs_pos;
 out mat3 vs_TBN;
-out vec3 vs_screen_normal;
 
 void main()
 {
@@ -20,7 +19,6 @@ void main()
   vs_TBN = mat3(T, B, N);
   vs_pos = (model * vec4(v_pos, 1.0)).xyz;
   vs_uv = (transpose(vs_TBN) * vs_pos).xy * 0.75;
-  vs_screen_normal = normalize(vec3(MVP * vec4(N, 0.0)));
 
   gl_Position = MVP * vec4(v_pos, 1.0);
 }

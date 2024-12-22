@@ -3,8 +3,8 @@
 #include "shader_builder.hpp"
 #include <iostream>
 
-#define BUFFER_WIDTH 600
-#define BUFFER_HEIGHT 600
+#define BUFFER_WIDTH 800
+#define BUFFER_HEIGHT 800
 
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
@@ -48,7 +48,7 @@ renderer_t::renderer_t(game_t& game)
     m_deferred(
       shader_builder_t()
       .source_vertex_shader("assets/screen-space.vert")
-      .source_fragment_shader("assets/deferred.frag")
+      .source_fragment_shader("assets/ssao.frag")
       .bind("u_radiance", 0)
       .bind("u_normal", 1)
       .bind("u_depth", 2)
