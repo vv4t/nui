@@ -3,18 +3,20 @@
 
 struct ubo_camera {
   mat4 MVP;
+  mat4 view_project;
   mat4 model;
   vec3 view_pos;
 };
 
 camera_t::camera_t() : m_uniform_buffer(0, "ubo_camera", 512) {
-  m_project = mat4::perspective(600.0 / 800.0, M_PI / 2.0, 0.1, 100.0);
+  m_project = mat4::perspective(600.0 / 600.0, M_PI / 2.0, 0.1, 100.0);
   m_view = mat4::identity();
 }
 
 void camera_t::sub(mat4 model) {
   struct ubo_camera data;
   data.MVP = model * m_view * m_project;
+  data.view_project = m_view * m_project;
   data.model = model;
   data.view_pos = m_view_pos;
   m_uniform_buffer.sub(&data, 0, sizeof(data));

@@ -29,6 +29,7 @@ private:
 
   shader_t m_gbuffer;
   shader_t m_surface;
+  shader_t m_deferred;
   shader_t m_dither;
   shader_t m_tone_map;
   

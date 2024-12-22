@@ -3,19 +3,22 @@
 #include "shader_builder.hpp"
 #include <iostream>
 
+#define BUFFER_WIDTH 600
+#define BUFFER_HEIGHT 600
+
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
     m_game(game),
-    m_depth(400, 300, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
-    m_normal(texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
-    m_radiance(texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
+    m_depth(BUFFER_WIDTH, BUFFER_HEIGHT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
+    m_normal(texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
+    m_radiance(texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
     m_buffer {
-      texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT),
-      texture_t(400, 300, GL_RGBA, GL_RGBA32F, GL_FLOAT)
+      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT),
+      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)
     },
     m_target{
-      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) }),
-      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]), binding_t(GL_DEPTH_ATTACHMENT, m_depth) })
+      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]) }),
+      target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]) })
     },
     m_gbuffer_target({
       binding_t(GL_COLOR_ATTACHMENT0, m_radiance),
@@ -35,11 +38,20 @@ renderer_t::renderer_t(game_t& game)
     m_surface(
       shader_builder_t()
       .source_vertex_shader("assets/planar-map.vert")
-      .source_fragment_shader("assets/baka.frag")
+      .source_fragment_shader("assets/surface.frag")
       .attach(m_camera)
       .attach(m_lighting)
       .bind("u_albedo", 0)
       .bind("u_normal", 1)
+      .compile()
+    ),
+    m_deferred(
+      shader_builder_t()
+      .source_vertex_shader("assets/screen-space.vert")
+      .source_fragment_shader("assets/deferred.frag")
+      .bind("u_radiance", 0)
+      .bind("u_normal", 1)
+      .bind("u_depth", 2)
       .compile()
     ),
     m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
@@ -48,7 +60,7 @@ renderer_t::renderer_t(game_t& game)
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
-  m_lighting.add_light(vec3(6,6,1), vec3(1,15,15));
+  m_lighting.add_light(vec3(6,4,1), vec3(0.1,32,32));
 }
 
 void renderer_t::bind() {
@@ -64,20 +76,22 @@ void renderer_t::render() {
   
   m_camera.move(camera_transform.position, camera_transform.rotation);
   
-  m_target[0].bind();
-  glViewport(0, 0, 400, 300);
+  m_gbuffer_target.bind();
+  glViewport(0, 0, BUFFER_WIDTH, BUFFER_HEIGHT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  m_surface.bind();
+  m_gbuffer.bind();
   draw_entities();
+  m_gbuffer_target.unbind();
+  
+  m_target[0].bind();
+  m_radiance.bind(0);
+  m_normal.bind(1);
+  m_depth.bind(2);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_deferred);
   m_target[0].unbind();
   
-  m_target[1].bind();
   m_buffer[0].bind(0);
-  draw_buffer(400, 300, m_tone_map);
-  m_target[1].unbind();
-  
-  m_buffer[1].bind(0);
-  draw_buffer(800, 600, m_dither);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
 }
 
 void renderer_t::draw_buffer(int width, int height, shader_t& shader) {

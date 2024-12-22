@@ -32,6 +32,6 @@ void main()
 
     light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.7, L, V, N);
   }
-
+  
   frag_color = vec4(light, 1.0);
 }

@@ -9,20 +9,18 @@ layout(location = 4) in vec2 v_uv;
 out vec2 vs_uv;
 out vec3 vs_pos;
 out mat3 vs_TBN;
-
-vec3 get_axis(vec3 N) {
-  if (abs(N.y) > abs(N.x) && abs(N.y) > abs(N.z)) {
-    return vec3(0.0, 0.0, 1.0);
-  } else {
-    return vec3(0.0, 1.0, 0.0);
-  }
-}
+out vec3 vs_screen_normal;
 
 void main()
 {
-  vs_TBN = mat3(v_tangent, v_bitangent, v_normal);
+  vec3 T = normalize(vec3(model * vec4(v_tangent, 0.0)));
+  vec3 B = normalize(vec3(model * vec4(v_bitangent, 0.0)));
+  vec3 N = normalize(vec3(model * vec4(v_normal, 0.0)));
+
+  vs_TBN = mat3(T, B, N);
   vs_pos = (model * vec4(v_pos, 1.0)).xyz;
-  vs_uv = (inverse(vs_TBN) * vs_pos).xy * 0.75;
+  vs_uv = (transpose(vs_TBN) * vs_pos).xy * 0.75;
+  vs_screen_normal = normalize(vec3(MVP * vec4(N, 0.0)));
 
   gl_Position = MVP * vec4(v_pos, 1.0);
 }
