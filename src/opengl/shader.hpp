@@ -2,6 +2,8 @@
 #define SHADER_H
 
 #include <sstream>
+#include <vector>
+#include <util/math3d.hpp>
 #include <glad/glad.h>
 
 class shader_t {
@@ -13,6 +15,8 @@ public:
   ~shader_t();
   void bind() const;
   shader_t& uniform_int(const char* name, int value);
+  shader_t& uniform_vec3(const char* name, vec3 value);
+  shader_t& uniform_vector_vec3(const char* name, std::vector<vec3> value);
   GLuint get_program() const;
 };
 

@@ -43,6 +43,20 @@ shader_t& shader_t::uniform_int(const char* name, int value) {
   return *this;
 }
 
+shader_t& shader_t::uniform_vec3(const char* name, vec3 value) {
+  bind();
+  GLuint location = glGetUniformLocation(m_program, name);
+  glUniform3f(location, value.x, value.y, value.z);
+  return *this;
+}
+
+shader_t& shader_t::uniform_vector_vec3(const char* name, std::vector<vec3> value) {
+  bind();
+  GLuint location = glGetUniformLocation(m_program, name);
+  glUniform3fv(location, value.size(), (float*) value.data());
+  return *this;
+}
+
 GLuint shader_t::get_program() const {
   return m_program;
 }

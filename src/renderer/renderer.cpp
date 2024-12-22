@@ -3,8 +3,8 @@
 #include "shader_builder.hpp"
 #include <iostream>
 
-#define BUFFER_WIDTH 800
-#define BUFFER_HEIGHT 800
+#define BUFFER_WIDTH 400
+#define BUFFER_HEIGHT 400
 
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
@@ -57,6 +57,19 @@ renderer_t::renderer_t(game_t& game)
     m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
     m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
 {
+  std::vector<vec3> samples;
+  
+  for (int i = 0; i < 32; i++) {
+    float x = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float y = (rand() % 256) / 256.0f * 2.0 - 1.0;
+    float z = (rand() % 256) / 256.0f;
+    float t = (rand() % 256) / 256.0f;
+
+    samples.push_back(vec3(x, y, z).normalize() * t);
+  }
+
+  m_deferred.uniform_vector_vec3("u_samples", samples);
+
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
@@ -89,9 +102,14 @@ void renderer_t::render() {
   m_depth.bind(2);
   draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_deferred);
   m_target[0].unbind();
-  
+
+  m_target[1].bind();
   m_buffer[0].bind(0);
   draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
+  m_target[1].unbind();
+  
+  m_buffer[1].bind(0);
+  draw_buffer(800, 800, m_dither);
 }
 
 void renderer_t::draw_buffer(int width, int height, shader_t& shader) {
