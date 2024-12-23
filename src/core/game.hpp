@@ -35,7 +35,8 @@ enum meshname_t {
 enum materialname_t {
   MATERIAL_DEFAULT,
   MATERIAL_BRICK,
-  MATERIAL_GRASS
+  MATERIAL_GRASS,
+  MATERIAL_TILE
 };
 
 class model_t {

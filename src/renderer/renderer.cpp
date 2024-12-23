@@ -159,4 +159,8 @@ void renderer_t::init_assets() {
   texture_t& grass_albedo = m_textures.emplace_back("assets/grass/albedo.jpg");
   texture_t& grass_normal = m_textures.emplace_back("assets/grass/normal.jpg");
   m_materials.push_back(material_t(grass_albedo, grass_normal));
+
+  texture_t& tile_albedo = m_textures.emplace_back("assets/tile/albedo.jpg");
+  texture_t& tile_normal = m_textures.emplace_back("assets/tile/normal.jpg");
+  m_materials.push_back(material_t(tile_albedo, tile_normal));
 }
