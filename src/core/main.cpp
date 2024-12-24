@@ -33,14 +33,14 @@ int main(int argc, char** argv) {
 
   // create_player(game);
 
-  create_cuboid(game, vec3(-20.0, -1.0, -20.0), vec3(40.0, 1.0, 40.0), MATERIAL_GRASS);
+  create_cuboid(game, vec3(-20.0, -1.0, -20.0), vec3(40.0, 1.0, 40.0), MATERIAL_TILE);
   create_cuboid(game, vec3(-20.0, 5.0, -20.0), vec3(40.0, 1.0, 40.0), MATERIAL_BRICK);
 
   create_cuboid(game, vec3(-20.0, 0.0, -20.0), vec3(1.0, 5.0, 40.0), MATERIAL_BRICK);
   create_cuboid(game, vec3(+20.0, 0.0, -20.0), vec3(1.0, 5.0, 40.0), MATERIAL_BRICK);
   create_cuboid(game, vec3(-20.0, 0.0, -20.0), vec3(40.0, 5.0, 1.0), MATERIAL_BRICK);
   create_cuboid(game, vec3(-20.0, 0.0, +20.0), vec3(40.0, 5.0, 1.0), MATERIAL_BRICK);
-  
+
   create_cuboid(game, vec3(5.0, 0.0, 5.0), vec3(5.0, 2.0, 4.0), MATERIAL_TILE);
   create_cuboid(game, vec3(10.0, 0.0, 5.0), vec3(5.0, 3.0, 6.0), MATERIAL_BRICK);
   

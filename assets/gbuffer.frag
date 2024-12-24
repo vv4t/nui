@@ -31,9 +31,9 @@ void main() {
     vec3 radiance = lights[i].radiance * lights[i].intensity;
     float attenuation = 1.0 / dot(delta_light_frag, delta_light_frag);
 
-    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.6, L, V, N) * NdotL;
+    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.3, L, V, N) * NdotL;
   }
 
   g_radiance = vec4(light, 1.0);
-  g_normal = vec4(normalize(vec3(view_project * vec4(vs_TBN[2], 0.0))), 1.0);
+  g_normal = vec4(normalize(vec3(view_project * vec4(N, 0.0))), 1.0);
 }

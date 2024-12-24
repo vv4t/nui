@@ -4,6 +4,7 @@
 struct ubo_camera {
   mat4 MVP;
   mat4 view_project;
+  mat4 view;
   mat4 model;
   vec3 view_pos;
 };
@@ -17,6 +18,7 @@ void camera_t::sub(mat4 model) {
   struct ubo_camera data;
   data.MVP = model * m_view * m_project;
   data.view_project = m_view * m_project;
+  data.view = m_view;
   data.model = model;
   data.view_pos = m_view_pos;
   m_uniform_buffer.sub(&data, 0, sizeof(data));

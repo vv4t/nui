@@ -10,18 +10,17 @@ renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
     m_game(game),
     m_depth(BUFFER_WIDTH, BUFFER_HEIGHT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT),
-    m_normal(texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
-    m_radiance(texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)),
+    m_normal(texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT)),
     m_buffer {
-      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT),
-      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA32F, GL_FLOAT)
+      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT),
+      texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT)
     },
     m_target{
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]) }),
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]) })
     },
     m_gbuffer_target({
-      binding_t(GL_COLOR_ATTACHMENT0, m_radiance),
+      binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]),
       binding_t(GL_COLOR_ATTACHMENT1, m_normal),
       binding_t(GL_DEPTH_ATTACHMENT, m_depth)
     }),
@@ -45,12 +44,30 @@ renderer_t::renderer_t(game_t& game)
       .bind("u_normal", 1)
       .compile()
     ),
-    m_deferred(
+    m_ssr(
+      shader_builder_t()
+      .source_vertex_shader("assets/screen-space.vert")
+      .source_fragment_shader("assets/ssr.frag")
+      .bind("u_radiance", 0)
+      .bind("u_normal", 1)
+      .bind("u_depth", 2)
+      .compile()
+    ),
+    m_ssao(
       shader_builder_t()
       .source_vertex_shader("assets/screen-space.vert")
       .source_fragment_shader("assets/ssao.frag")
       .bind("u_radiance", 0)
       .bind("u_normal", 1)
+      .bind("u_depth", 2)
+      .compile()
+    ),
+    m_point_light_scatter(
+      shader_builder_t()
+      .source_vertex_shader("assets/screen-space.vert")
+      .source_fragment_shader("assets/point-light-scatter.frag")
+      .attach(m_camera)
+      .attach(m_lighting)
       .bind("u_depth", 2)
       .compile()
     ),
@@ -68,12 +85,12 @@ renderer_t::renderer_t(game_t& game)
     samples.push_back(vec3(x, y, z).normalize() * t);
   }
 
-  m_deferred.uniform_vector_vec3("u_samples", samples);
+  m_ssao.uniform_vector_vec3("u_samples", samples);
 
   m_textures.reserve(64);
   init_assets();
   m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
-  m_lighting.add_light(vec3(6,4,1), vec3(0.1,32,32));
+  m_lighting.add_light(vec3(6,4,16), vec3(0.1,32,32));
 }
 
 void renderer_t::bind() {
@@ -96,19 +113,30 @@ void renderer_t::render() {
   draw_entities();
   m_gbuffer_target.unbind();
   
-  m_target[0].bind();
-  m_radiance.bind(0);
   m_normal.bind(1);
   m_depth.bind(2);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_deferred);
-  m_target[0].unbind();
-
+  
   m_target[1].bind();
   m_buffer[0].bind(0);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssr);
   m_target[1].unbind();
   
+  m_target[0].bind();
   m_buffer[1].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssao);
+  m_target[0].unbind();
+  
+  m_target[1].bind();
+  m_buffer[0].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_point_light_scatter);
+  m_target[1].unbind();
+
+  m_target[0].bind();
+  m_buffer[1].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
+  m_target[0].unbind();
+  
+  m_buffer[0].bind(0);
   draw_buffer(800, 800, m_dither);
 }
 
@@ -149,7 +177,7 @@ void renderer_t::init_assets() {
   m_meshes.push_back(m_vertex_buffer.push(mesh_builder.compile()));
   
   texture_t& default_albedo = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffffffffu });
-  texture_t& default_normal = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffff8888u });
+  texture_t& default_normal = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffff8080u });
   m_materials.push_back(material_t(default_albedo, default_normal));
 
   texture_t& brick_albedo = m_textures.emplace_back("assets/brick/albedo.jpg");
