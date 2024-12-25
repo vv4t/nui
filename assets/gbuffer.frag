@@ -11,11 +11,13 @@ in mat3 vs_TBN;
 
 uniform sampler2D u_albedo;
 uniform sampler2D u_normal;
+uniform sampler2D u_roughness;
 
 void main() {
   vec3 light = vec3(0.0);
 
   vec3 albedo = texture(u_albedo, vs_uv).xyz;
+  float roughness = texture(u_roughness, vs_uv).r;
 
   vec3 N = normalize(vs_TBN * (texture(u_normal, vs_uv).xyz * 2.0 - 1.0));
   vec3 V = normalize(view_pos - vs_pos);
@@ -31,9 +33,9 @@ void main() {
     vec3 radiance = lights[i].radiance * lights[i].intensity;
     float attenuation = 1.0 / dot(delta_light_frag, delta_light_frag);
 
-    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.1, 0.3, L, V, N) * NdotL;
+    light += radiance * attenuation * CookTorranceBRDF(albedo, 0.05, roughness, L, V, N) * NdotL;
   }
 
   g_radiance = vec4(light, 1.0);
-  g_normal = vec4(normalize(vec3(view_project * vec4(N, 0.0))), 1.0);
+  g_normal = vec4(normalize(vec3(view_project * vec4(N, 0.0))), roughness);
 }

@@ -26,7 +26,7 @@ void main() {
   vec3 color = texture(u_radiance, vs_uv).xyz;
 
   for (int i = 0; i < 128; i++) {
-    frag_pos += d_p / 8.0;
+    frag_pos += d_p / 32.0 * (frag_pos.z + d_p.z / 32.0);
 
     vec2 uv = frag_pos.xy / frag_pos.z * 0.5 + 0.5;
     depth = texture(u_depth, uv).z;
@@ -35,7 +35,7 @@ void main() {
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0 || frag_pos.z < 0.1) break;
 
     if (frag_pos.z > z + 0.01 && frag_pos.z < z + 1.0) {
-      color += texture(u_radiance, uv).xyz * pow(0.97, float(i));
+      color += texture(u_radiance, uv).xyz * pow(0.94, float(i));
       break;
     }
   }

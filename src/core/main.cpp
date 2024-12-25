@@ -45,10 +45,18 @@ int main(int argc, char** argv) {
   create_cuboid(game, vec3(10.0, 0.0, 5.0), vec3(5.0, 3.0, 6.0), MATERIAL_BRICK);
   
   create_cuboid(game, vec3(9.0, 2.0, 5.0), vec3(1.0, 0.5, 4.0), MATERIAL_DEFAULT);
-  create_cuboid(game, vec3(2.0, 0.0, 5.0), vec3(3.0, 0.5, 1.0), MATERIAL_DEFAULT);
-  create_cuboid(game, vec3(2.0, 0.0, 6.0), vec3(3.0, 1.0, 1.0), MATERIAL_DEFAULT);
-  create_cuboid(game, vec3(2.0, 0.0, 7.0), vec3(3.0, 1.5, 1.0), MATERIAL_DEFAULT);
-  create_cuboid(game, vec3(2.0, 0.0, 8.0), vec3(3.0, 2.0, 1.0), MATERIAL_DEFAULT);
+  create_cuboid(game, vec3(2.0, 0.0, 5.0), vec3(3.0, 0.5, 1.0), MATERIAL_GRASS);
+  create_cuboid(game, vec3(2.0, 0.0, 6.0), vec3(3.0, 1.0, 1.0), MATERIAL_GRASS);
+  create_cuboid(game, vec3(2.0, 0.0, 7.0), vec3(3.0, 1.5, 1.0), MATERIAL_GRASS);
+  create_cuboid(game, vec3(2.0, 0.0, 8.0), vec3(3.0, 2.0, 1.0), MATERIAL_GRASS);
+  
+  create_cuboid(game, vec3(-3.0, 0.0, 0.0), vec3(1.0, 5.0, 1.0), MATERIAL_BRICK);
+  create_cuboid(game, vec3(-3.0, 0.0, -5.0), vec3(1.0, 5.0, 1.0), MATERIAL_BRICK);
+  create_cuboid(game, vec3(-3.0, 0.0, -10.0), vec3(1.0, 5.0, 1.0), MATERIAL_BRICK);
+  
+  create_cuboid(game, vec3(5.0, 2.0, -7.0), vec3(0.7, 3.0, 0.7), MATERIAL_TILE);
+  create_cuboid(game, vec3(10.0, 2.0, -7.0), vec3(0.7, 3.0, 0.7), MATERIAL_TILE);
+  create_cuboid(game, vec3(15.0, 2.0, -7.0), vec3(0.7, 3.0, 0.7), MATERIAL_TILE);
   
   renderer_t renderer(game);
   renderer.bind();

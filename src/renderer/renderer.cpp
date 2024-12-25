@@ -32,6 +32,7 @@ renderer_t::renderer_t(game_t& game)
       .attach(m_lighting)
       .bind("u_albedo", 0)
       .bind("u_normal", 1)
+      .bind("u_roughness", 2)
       .compile()
     ),
     m_surface(
@@ -89,8 +90,8 @@ renderer_t::renderer_t(game_t& game)
 
   m_textures.reserve(64);
   init_assets();
-  m_lighting.add_light(vec3(1,1,1), vec3(3,1,3));
-  m_lighting.add_light(vec3(6,4,16), vec3(0.1,32,32));
+  m_lighting.add_light(vec3(-8,1,-8), vec3(16,3,16));
+  m_lighting.add_light(vec3(6,4,16), vec3(3,32,32));
 }
 
 void renderer_t::bind() {
@@ -160,6 +161,7 @@ void renderer_t::draw_entities() {
       m_camera.sub(T_rotation * T_scale * T_translation);
       m_materials[model.material].albedo.bind(0);
       m_materials[model.material].normal.bind(1);
+      m_materials[model.material].roughness.bind(2);
       m_meshes[model.mesh].draw();
     }
   }
@@ -178,17 +180,21 @@ void renderer_t::init_assets() {
   
   texture_t& default_albedo = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffffffffu });
   texture_t& default_normal = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffff8080u });
-  m_materials.push_back(material_t(default_albedo, default_normal));
+  texture_t& default_roughness = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xff888888u });
+  m_materials.push_back(material_t(default_albedo, default_normal, default_roughness));
 
   texture_t& brick_albedo = m_textures.emplace_back("assets/brick/albedo.jpg");
   texture_t& brick_normal = m_textures.emplace_back("assets/brick/normal.jpg");
-  m_materials.push_back(material_t(brick_albedo, brick_normal));
+  texture_t& brick_roughness = m_textures.emplace_back("assets/brick/roughness.jpg");
+  m_materials.push_back(material_t(brick_albedo, brick_normal, brick_roughness));
 
   texture_t& grass_albedo = m_textures.emplace_back("assets/grass/albedo.jpg");
   texture_t& grass_normal = m_textures.emplace_back("assets/grass/normal.jpg");
-  m_materials.push_back(material_t(grass_albedo, grass_normal));
+  texture_t& grass_roughness = m_textures.emplace_back("assets/grass/roughness.jpg");
+  m_materials.push_back(material_t(grass_albedo, grass_normal, grass_roughness));
 
   texture_t& tile_albedo = m_textures.emplace_back("assets/tile/albedo.jpg");
   texture_t& tile_normal = m_textures.emplace_back("assets/tile/normal.jpg");
-  m_materials.push_back(material_t(tile_albedo, tile_normal));
+  texture_t& tile_roughness = m_textures.emplace_back("assets/tile/roughness.jpg");
+  m_materials.push_back(material_t(tile_albedo, tile_normal, tile_roughness));
 }
