@@ -3,8 +3,8 @@
 #include "shader_builder.hpp"
 #include <iostream>
 
-#define BUFFER_WIDTH 800
-#define BUFFER_HEIGHT 800
+#define BUFFER_WIDTH 400
+#define BUFFER_HEIGHT 400
 
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
@@ -122,13 +122,14 @@ void renderer_t::render() {
   m_target[!c].unbind();
   c = !c;
 
-  // m_target[0].bind();
+  m_target[!c].bind();
   m_buffer[c].bind(0);
-  draw_buffer(800, 800, m_tone_map);
-  // m_target[0].unbind();
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
+  m_target[!c].unbind();
+  c = !c;
   
-  // m_buffer[0].bind(0);
-  // draw_buffer(800, 800, m_dither);
+  m_buffer[c].bind(0);
+  draw_buffer(800, 800, m_dither);
 }
 
 void renderer_t::draw_buffer(int width, int height, shader_t& shader) {

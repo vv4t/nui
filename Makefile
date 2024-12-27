@@ -20,5 +20,8 @@ bin/%.o: src/%.cpp $(SRC_HPP)
 build:
 	g++ $(CFLAGS) $(LDFLAGS) $(INCLUDE) $(SRC) -o nui
 
+clean:
+	rm -f $(OBJ)
+
 run: nui
 	./nui
