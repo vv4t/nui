@@ -9,7 +9,7 @@ game_t::game_t() : m_num_entities(0) {
   {
     entity_t entity = add_entity();
     transform_t& transform = enable_transform(entity, transform_t());
-      transform.position = vec3(2, 2, 2);
+      transform.position = vec3(2, 2, 0);
     enable_aabb(entity, aabb_t(vec3(-0.25, -0.75, -0.25), vec3(0.25, 0.5, 0.25)));
     bind_character_body(entity);
     m_camera = entity;

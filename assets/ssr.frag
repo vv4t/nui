@@ -13,7 +13,7 @@ void main() {
   float z_offset = (2.0 * -far * -near) / (-far - -near);
 
   float depth = texture(u_depth, vs_uv).z;
-  float z = z_offset / (depth - z_scale);
+  float z = z_offset / (depth * 2.0 - 1.0 - z_scale);
 
   vec3 frag_pos = vec3((vs_uv * 2.0 - 1.0) * z, z);
 
@@ -30,7 +30,7 @@ void main() {
 
     vec2 uv = frag_pos.xy / frag_pos.z * 0.5 + 0.5;
     depth = texture(u_depth, uv).z;
-    z = z_offset / (depth - z_scale);
+    z = z_offset / (depth * 2.0 - 1.0 - z_scale);
 
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0 || frag_pos.z < 0.1) break;
 

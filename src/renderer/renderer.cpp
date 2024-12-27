@@ -3,8 +3,8 @@
 #include "shader_builder.hpp"
 #include <iostream>
 
-#define BUFFER_WIDTH 400
-#define BUFFER_HEIGHT 400
+#define BUFFER_WIDTH 800
+#define BUFFER_HEIGHT 800
 
 renderer_t::renderer_t(game_t& game)
   : m_vertex_buffer(256),
@@ -15,6 +15,7 @@ renderer_t::renderer_t(game_t& game)
       texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT),
       texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT)
     },
+    m_water_normal("assets/water/normal.jpg"),
     m_target{
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]) }),
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]) })
@@ -46,6 +47,7 @@ renderer_t::renderer_t(game_t& game)
       shader_builder_t()
       .source_deferred_shader("assets/water.frag")
       .attach(m_camera)
+      .bind("u_water_normal", 3)
       .compile()
     ),
     m_ssr(shader_builder_t().source_deferred_shader("assets/ssr.frag").compile()),
@@ -91,37 +93,44 @@ void renderer_t::render() {
   m_gbuffer.bind();
   draw_entities();
   m_gbuffer_target.unbind();
+
+  int c = 0;
   
   m_normal.bind(1);
   m_depth.bind(2);
   
-  // m_target[1].bind();
-  // m_buffer[0].bind(0);
-  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssr);
-  // m_target[1].unbind();
-  // 
-  // m_target[0].bind();
-  // m_buffer[1].bind(0);
-  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssao);
-  // m_target[0].unbind();
+  m_target[!c].bind();
+  m_buffer[c].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssr);
+  m_target[!c].unbind();
+  c = !c;
+  
+  m_target[!c].bind();
+  m_buffer[c].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssao);
+  m_target[!c].unbind();
+  c = !c;
 
-  m_target[1].bind();
-  m_buffer[0].bind(0);
+  m_target[!c].bind();
+  m_buffer[c].bind(0);
+  m_water_normal.bind(3);
   draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_water);
-  m_target[1].unbind();
-  
-  // m_target[1].bind();
-  // m_buffer[0].bind(0);
-  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_point_light_scatter);
-  // m_target[1].unbind();
+  m_target[!c].unbind();
+  c = !c;
 
-  m_target[0].bind();
-  m_buffer[1].bind(0);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_tone_map);
-  m_target[0].unbind();
+  m_target[!c].bind();
+  m_buffer[c].bind(0);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_point_light_scatter);
+  m_target[!c].unbind();
+  c = !c;
+
+  // m_target[0].bind();
+  m_buffer[c].bind(0);
+  draw_buffer(800, 800, m_tone_map);
+  // m_target[0].unbind();
   
-  m_buffer[0].bind(0);
-  draw_buffer(800, 800, m_dither);
+  // m_buffer[0].bind(0);
+  // draw_buffer(800, 800, m_dither);
 }
 
 void renderer_t::draw_buffer(int width, int height, shader_t& shader) {

@@ -15,7 +15,7 @@ void main() {
   float z_offset = (2.0 * -far * -near) / (-far - -near);
 
   float depth = texture(u_depth, vs_uv).z;
-  float z = z_offset / (depth - z_scale);
+  float z = z_offset / (depth * 2.0 - 1.0 - z_scale);
   vec3 frag_pos = vec3((vs_uv * 2.0 - 1.0) * z, z);
 
   vec3 normal = texture(u_normal, vs_uv).xyz;
@@ -27,7 +27,7 @@ void main() {
 
   float occlusion = 0.0;
   
-  float radius = 0.25;
+  float radius = 0.125;
   float bias = 0.03;
   
   for (int i = 0; i < 32; i++) {
@@ -43,13 +43,13 @@ void main() {
     }
     
     float sample_depth = texture(u_depth, screen_pos).z;
-    sample_depth = z_offset / (sample_depth - z_scale);
+    sample_depth = z_offset / (sample_depth * 2.0 - 1.0 - z_scale);
     
     float range_check = smoothstep(0.0, 1.0, radius / abs(sample_pos.z - sample_depth));
     occlusion += (sample_depth + bias < sample_pos.z ? 1.0 : 0.0) * range_check;
   }
 
-  occlusion = pow(1.0 - occlusion / 32.0, 2.0);
+  occlusion = pow(1.0 - occlusion / 32.0, 4.0);
 
   vec3 color = texture(u_radiance, vs_uv).xyz * occlusion;
 
