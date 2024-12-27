@@ -21,12 +21,10 @@ void main() {
   vec3 N = texture(u_normal, vs_uv).xyz;
   vec3 R = reflect(V, N);
 
-  vec3 d_p = R;
-
   vec3 color = texture(u_radiance, vs_uv).xyz;
 
   for (int i = 0; i < 128; i++) {
-    frag_pos += d_p / 32.0 * (frag_pos.z + d_p.z / 32.0);
+    frag_pos += R / 32.0 * (frag_pos.z + R.z / 32.0);
 
     vec2 uv = frag_pos.xy / frag_pos.z * 0.5 + 0.5;
     depth = texture(u_depth, uv).z;

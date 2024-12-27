@@ -15,7 +15,6 @@ renderer_t::renderer_t(game_t& game)
       texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT),
       texture_t(BUFFER_WIDTH, BUFFER_HEIGHT, GL_RGBA, GL_RGBA16F, GL_FLOAT)
     },
-    m_water_normal("assets/water/normal.jpg"),
     m_target{
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[0]) }),
       target_t({ binding_t(GL_COLOR_ATTACHMENT0, m_buffer[1]) })
@@ -47,7 +46,6 @@ renderer_t::renderer_t(game_t& game)
       shader_builder_t()
       .source_deferred_shader("assets/water.frag")
       .attach(m_camera)
-      .bind("u_water_normal", 3)
       .compile()
     ),
     m_ssr(shader_builder_t().source_deferred_shader("assets/ssr.frag").compile()),
@@ -66,12 +64,12 @@ renderer_t::renderer_t(game_t& game)
     samples.push_back(vec3(x, y, z).normalize() * t);
   }
 
-  m_ssao.uniform_vector_vec3("u_samples", samples);
+  m_ssao.uniform_vec3_array("u_samples", samples);
 
   m_textures.reserve(64);
   init_assets();
-  m_lighting.add_light(vec3(6,1,-8), vec3(32,32,32));
-  m_lighting.add_light(vec3(6,4,16), vec3(32,32,32));
+  m_lighting.add_light(vec3(-6,1,-8), vec3(20,32,32));
+  m_lighting.add_light(vec3(6,4,16), vec3(32,20,32));
 }
 
 void renderer_t::bind() {
@@ -113,7 +111,7 @@ void renderer_t::render() {
 
   m_target[!c].bind();
   m_buffer[c].bind(0);
-  m_water_normal.bind(3);
+  m_water.uniform_float("g_time", t);
   draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_water);
   m_target[!c].unbind();
   c = !c;

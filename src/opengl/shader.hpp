@@ -15,8 +15,9 @@ public:
   ~shader_t();
   void bind() const;
   shader_t& uniform_int(const char* name, int value);
+  shader_t& uniform_float(const char* name, float value);
   shader_t& uniform_vec3(const char* name, vec3 value);
-  shader_t& uniform_vector_vec3(const char* name, std::vector<vec3> value);
+  shader_t& uniform_vec3_array(const char* name, std::vector<vec3> value);
   GLuint get_program() const;
 };
 

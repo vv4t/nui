@@ -41,7 +41,7 @@ void main() {
     float b = dot(frag_pos, V) - c;
     float fog = atan(b / h) / h - atan(a / h) / h;
     
-    color += lights[i].radiance * lights[i].intensity * fog * 0.007;
+    color += lights[i].radiance * lights[i].intensity * fog * 0.006;
   }
 
   frag_color = vec4(color, 1.0);

@@ -22,7 +22,6 @@ private:
   texture_t m_depth;
   texture_t m_normal;
   texture_t m_buffer[2];
-  texture_t m_water_normal;
 
   target_t m_target[2];
   target_t m_gbuffer_target;
