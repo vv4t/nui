@@ -35,45 +35,23 @@ renderer_t::renderer_t(game_t& game)
       .bind("u_roughness", 2)
       .compile()
     ),
-    m_surface(
-      shader_builder_t()
-      .source_vertex_shader("assets/planar-map.vert")
-      .source_fragment_shader("assets/surface.frag")
-      .attach(m_camera)
-      .attach(m_lighting)
-      .bind("u_albedo", 0)
-      .bind("u_normal", 1)
-      .compile()
-    ),
-    m_ssr(
-      shader_builder_t()
-      .source_vertex_shader("assets/screen-space.vert")
-      .source_fragment_shader("assets/ssr.frag")
-      .bind("u_radiance", 0)
-      .bind("u_normal", 1)
-      .bind("u_depth", 2)
-      .compile()
-    ),
-    m_ssao(
-      shader_builder_t()
-      .source_vertex_shader("assets/screen-space.vert")
-      .source_fragment_shader("assets/ssao.frag")
-      .bind("u_radiance", 0)
-      .bind("u_normal", 1)
-      .bind("u_depth", 2)
-      .compile()
-    ),
     m_point_light_scatter(
       shader_builder_t()
-      .source_vertex_shader("assets/screen-space.vert")
-      .source_fragment_shader("assets/point-light-scatter.frag")
+      .source_deferred_shader("assets/point-light-scatter.frag")
       .attach(m_camera)
       .attach(m_lighting)
-      .bind("u_depth", 2)
       .compile()
     ),
-    m_dither(shader_builder_t().create_frame_shader("assets/dither.frag")),
-    m_tone_map(shader_builder_t().create_frame_shader("assets/tone-map.frag"))
+    m_water(
+      shader_builder_t()
+      .source_deferred_shader("assets/water.frag")
+      .attach(m_camera)
+      .compile()
+    ),
+    m_ssr(shader_builder_t().source_deferred_shader("assets/ssr.frag").compile()),
+    m_ssao(shader_builder_t().source_deferred_shader("assets/ssao.frag").compile()),
+    m_dither(shader_builder_t().source_frame_shader("assets/dither.frag").compile()),
+    m_tone_map(shader_builder_t().source_frame_shader("assets/tone-map.frag").compile())
 {
   std::vector<vec3> samples;
   
@@ -90,8 +68,8 @@ renderer_t::renderer_t(game_t& game)
 
   m_textures.reserve(64);
   init_assets();
-  m_lighting.add_light(vec3(-8,1,-8), vec3(16,3,16));
-  m_lighting.add_light(vec3(6,4,16), vec3(3,32,32));
+  m_lighting.add_light(vec3(6,1,-8), vec3(32,32,32));
+  m_lighting.add_light(vec3(6,4,16), vec3(32,32,32));
 }
 
 void renderer_t::bind() {
@@ -117,20 +95,25 @@ void renderer_t::render() {
   m_normal.bind(1);
   m_depth.bind(2);
   
+  // m_target[1].bind();
+  // m_buffer[0].bind(0);
+  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssr);
+  // m_target[1].unbind();
+  // 
+  // m_target[0].bind();
+  // m_buffer[1].bind(0);
+  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssao);
+  // m_target[0].unbind();
+
   m_target[1].bind();
   m_buffer[0].bind(0);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssr);
+  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_water);
   m_target[1].unbind();
   
-  m_target[0].bind();
-  m_buffer[1].bind(0);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_ssao);
-  m_target[0].unbind();
-  
-  m_target[1].bind();
-  m_buffer[0].bind(0);
-  draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_point_light_scatter);
-  m_target[1].unbind();
+  // m_target[1].bind();
+  // m_buffer[0].bind(0);
+  // draw_buffer(BUFFER_WIDTH, BUFFER_HEIGHT, m_point_light_scatter);
+  // m_target[1].unbind();
 
   m_target[0].bind();
   m_buffer[1].bind(0);
@@ -180,7 +163,7 @@ void renderer_t::init_assets() {
   
   texture_t& default_albedo = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffffffffu });
   texture_t& default_normal = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xffff8080u });
-  texture_t& default_roughness = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xff888888u });
+  texture_t& default_roughness = m_textures.emplace_back(1, 1, GL_RGBA, GL_RGBA32F, GL_UNSIGNED_BYTE, std::vector { 0xff101010u });
   m_materials.push_back(material_t(default_albedo, default_normal, default_roughness));
 
   texture_t& brick_albedo = m_textures.emplace_back("assets/brick/albedo.jpg");

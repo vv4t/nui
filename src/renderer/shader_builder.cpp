@@ -24,8 +24,16 @@ shader_builder_t& shader_builder_t::bind(const char* name, int channel) {
   return *this;
 }
 
-shader_t shader_builder_t::create_frame_shader(const char* path) {
-  return source_vertex_shader("assets/screen-space.vert").source_fragment_shader(path).compile();
+shader_builder_t& shader_builder_t::source_frame_shader(const char* path) {
+  return source_vertex_shader("assets/screen-space.vert").source_fragment_shader(path);
+}
+
+shader_builder_t& shader_builder_t::source_deferred_shader(const char* path) {
+    return source_vertex_shader("assets/screen-space.vert")
+      .source_fragment_shader(path)
+      .bind("u_radiance", 0)
+      .bind("u_normal", 1)
+      .bind("u_depth", 2);
 }
 
 shader_t shader_builder_t::compile() {

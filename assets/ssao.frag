@@ -49,7 +49,7 @@ void main() {
     occlusion += (sample_depth + bias < sample_pos.z ? 1.0 : 0.0) * range_check;
   }
 
-  occlusion = pow(1.0 - occlusion / 32.0, 5.0);
+  occlusion = pow(1.0 - occlusion / 32.0, 2.0);
 
   vec3 color = texture(u_radiance, vs_uv).xyz * occlusion;
 

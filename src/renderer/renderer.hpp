@@ -27,10 +27,10 @@ private:
   target_t m_gbuffer_target;
 
   shader_t m_gbuffer;
-  shader_t m_surface;
+  shader_t m_point_light_scatter;
+  shader_t m_water;
   shader_t m_ssr;
   shader_t m_ssao;
-  shader_t m_point_light_scatter;
   shader_t m_dither;
   shader_t m_tone_map;
   

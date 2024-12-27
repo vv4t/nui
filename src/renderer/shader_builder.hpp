@@ -18,7 +18,8 @@ public:
   shader_builder_t& source_fragment_shader(const char* path);
   shader_builder_t& attach(shader_attachment_t& shader_attachment);
   shader_builder_t& bind(const char* name, int channel);
-  shader_t create_frame_shader(const char* path);
+  shader_builder_t& source_frame_shader(const char* path);
+  shader_builder_t& source_deferred_shader(const char* path);
   shader_t compile();
 };
 
