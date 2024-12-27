@@ -5,5 +5,8 @@
 Dependencies
 - SDL2
 - SDL2-image
+- make
 
-> make
+```
+$ make
+```
